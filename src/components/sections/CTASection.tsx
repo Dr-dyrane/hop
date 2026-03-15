@@ -48,7 +48,7 @@ export function CTASection() {
             transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             viewport={{ once: true }}
           >
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-8 block">
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-12 block">
               Join the House
             </span>
             <h2 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.9] tracking-tighter">
@@ -59,7 +59,8 @@ export function CTASection() {
               <Button
                 size="lg"
                 variant="primary"
-                className="px-12 md:px-20 !h-20 text-lg md:text-xl font-black uppercase tracking-widest !bg-accent !text-accent-foreground rounded-2xl shadow-float hover:scale-105 transition-all duration-500"
+                className="px-12 md:px-20 !h-20 text-lg md:text-xl font-black uppercase tracking-widest !bg-accent !text-accent-foreground rounded-2xl shadow-float hover:scale-105 transition-all duration-700 ease-premium"
+                whileTap={{ scale: 0.98 }}
                 onClick={handleFinalCheckout}
               >
                 Checkout Now — $54.99

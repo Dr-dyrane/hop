@@ -21,7 +21,7 @@ export function LifestyleGallery() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/60"
+          className="block text-[11px] font-black uppercase tracking-[0.5em] text-accent mb-12"
         >
           Life in HOP
         </motion.span>
@@ -30,13 +30,22 @@ export function LifestyleGallery() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           viewport={{ once: true }}
-          className="mt-6 text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight"
+          className="mt-12 text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight"
         >
           Fuel Your Training.
         </motion.h2>
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          viewport={{ once: true }}
+          className="mt-12 text-xl text-muted font-medium italic max-w-xl"
+        >
+          Designed for the athlete, refined for the everyday. Witness the House of Prax in action.
+        </motion.p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 auto-rows-[250px] md:auto-rows-[300px] max-w-7xl mx-auto px-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 auto-rows-[250px] md:auto-rows-[300px] max-w-7xl mx-auto">
         {IMAGES.map((img, i) => (
           <motion.div
             key={i}

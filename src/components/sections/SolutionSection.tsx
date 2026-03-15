@@ -24,8 +24,8 @@ export function SolutionSection() {
           viewport={{ once: true }}
           className="mb-12"
         >
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/60">The System</span>
-          <h2 className="mt-6 text-5xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tight leading-none">
+          <span className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-12">The System</span>
+          <h2 className="mt-12 text-5xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tight leading-none">
             Meet {BRAND.name}
           </h2>
         </motion.div>
@@ -40,7 +40,7 @@ export function SolutionSection() {
           "Protein redesigned for the modern athlete. No fillers, no excuses. Just pure, plant-powered performance."
         </motion.p>
 
-        <div className="mt-24 w-full grid grid-cols-2 md:grid-cols-4 gap-12 lg:gap-24 max-w-5xl">
+        <div className="mt-24 w-full grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 lg:gap-24 max-w-5xl">
           {TRUST_INDICATORS.map((indicator, i) => {
             const Icon = indicator.icon;
             return (

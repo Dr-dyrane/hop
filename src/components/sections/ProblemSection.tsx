@@ -33,12 +33,12 @@ export function ProblemSection() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="lg:w-1/2"
         >
-          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent/60 mb-8 block">The Market Status</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-accent/60 mb-12 block">The Market Status</span>
           <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-foreground leading-[0.9] tracking-tighter">
             Most Protein <br />
             <span className="text-muted/20">Are Junk.</span>
           </h2>
-          <p className="mt-12 text-xl text-muted/60 font-medium leading-relaxed max-w-md">
+          <p className="mt-12 text-xl text-muted/60 font-medium leading-relaxed max-w-md italic">
             The industry is built on compromises. We chose a different path—prioritizing gut health and biological performance over cheap manufacturing.
           </p>
         </motion.div>

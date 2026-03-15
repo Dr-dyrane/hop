@@ -21,7 +21,7 @@ export function HowItWorks() {
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="text-[10px] font-black uppercase tracking-[0.5em] text-accent/60"
+          className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-12"
         >
           The Ritual
         </motion.span>
@@ -30,10 +30,19 @@ export function HowItWorks() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           viewport={{ once: true }}
-          className="mt-6 text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tighter"
+          className="mt-12 text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tighter"
         >
           Simple Daily Fuel.
         </motion.h2>
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          viewport={{ once: true }}
+          className="mt-12 text-xl text-muted font-medium italic max-w-xl mx-auto"
+        >
+          A minimalist ritual designed for the maximalist life. Pure performance in under 30 seconds.
+        </motion.p>
       </div>
 
       <div className="relative max-w-6xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden bg-background shadow-float mb-20 group">
@@ -47,7 +56,7 @@ export function HowItWorks() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between max-w-5xl mx-auto gap-8 relative z-10">
+      <div className="container-shell flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
         {steps.map((step, i) => (
           <React.Fragment key={step.label}>
             <motion.div 

@@ -208,7 +208,7 @@ canvas {
 }
 
 .container-shell {
-  width: min(100% - 32px, var(--container-max));
+  width: min(100% - 16px, var(--container-max));
   margin-inline: auto;
 }
 

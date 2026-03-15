@@ -46,7 +46,7 @@ export function ProductSelector() {
           <p className="mt-4 text-muted text-xl font-medium">Pure performance, two classic ways.</p>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-24 w-full px-4">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-24 w-full">
           {/* Flavor Toggles */}
           <div className="flex md:flex-col gap-4 order-2 md:order-1 w-full md:w-auto">
             {(Object.keys(FLAVORS) as Array<keyof typeof FLAVORS>).map((key) => (
@@ -133,16 +133,16 @@ export function ProductSelector() {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-xs mx-auto md:mx-0"
               >
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent px-4 py-2 bg-accent/10 rounded-full">
+                <span className="inline-block text-[10px] font-black uppercase tracking-[0.2em] text-accent px-4 py-2 bg-accent/10 rounded-full mb-10">
                   Premium Quality
                 </span>
-                <h3 className="text-4xl md:text-5xl font-black text-foreground mt-8 leading-none">
+                <h3 className="text-4xl md:text-5xl font-black text-foreground leading-[0.9] tracking-tighter">
                   {FLAVORS[selected].name}
                 </h3>
                 <p className="mt-6 text-muted text-lg leading-relaxed font-medium">
                   {FLAVORS[selected].description} meticulously crafted with organic pea protein and pure extracts. No fillers, just fuel.
                 </p>
-                <div className="mt-10 pt-10 shadow-[inset_0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
+                <div className="mt-10 pt-10">
                   <div className="flex items-baseline gap-2 mb-6 justify-center md:justify-start">
                     <span className="text-4xl font-black text-foreground">$54.</span>
                     <span className="text-xl font-bold text-foreground">99</span>
@@ -150,7 +150,8 @@ export function ProductSelector() {
                   </div>
                   <Button 
                     size="lg" 
-                    className="w-full !h-16 rounded-2xl text-base font-black uppercase tracking-widest shadow-float hover:scale-[1.02] transition-transform"
+                    className="w-full !h-16 rounded-2xl text-base font-black uppercase tracking-widest shadow-float hover:scale-[1.02] transition-transform duration-700 ease-smooth"
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleCheckout(selected)}
                   >
                     Checkout with WhatsApp

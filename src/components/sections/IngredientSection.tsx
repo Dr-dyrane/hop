@@ -16,11 +16,11 @@ export function IngredientSection() {
           viewport={{ once: true }}
           className="lg:w-1/3 sticky top-32"
         >
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/60">Transparency</span>
-          <h2 className="mt-6 text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-[1.05] tracking-tight">
+          <span className="block text-[10px] font-black uppercase tracking-[0.5em] text-accent mb-12">Transparency</span>
+          <h2 className="mt-12 text-4xl md:text-5xl lg:text-6xl font-black text-foreground leading-[1.05] tracking-tight">
             Nothing Hidden. <br /> Nothing Fake.
           </h2>
-          <p className="mt-10 text-xl text-muted leading-relaxed font-medium">
+          <p className="mt-12 text-xl text-muted leading-relaxed font-medium italic">
             We believe in complete transparency. Every ingredient in House of Prax is meticulously selected for its purity and performance benefits.
           </p>
         </motion.div>

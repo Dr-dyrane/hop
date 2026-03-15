@@ -16,13 +16,13 @@ const ICON_MAP = {
 export function BenefitsGrid() {
   return (
     <SectionContainer variant="alt" id="benefits">
-      <div className="flex flex-col lg:flex-row items-end justify-between mb-24 gap-8">
-        <div className="max-w-2xl">
+      <div className="flex flex-col lg:flex-row items-start justify-between mb-32 gap-y-12 gap-x-20">
+        <div className="max-w-4xl">
           <motion.span 
             initial={{ opacity: 0, x: -10 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="text-[10px] font-black uppercase tracking-[0.4em] text-accent/60"
+            className="block text-[11px] font-black uppercase tracking-[0.5em] text-accent mb-12"
           >
             Capabilities
           </motion.span>
@@ -31,7 +31,7 @@ export function BenefitsGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             viewport={{ once: true }}
-            className="mt-6 text-5xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.95]"
+            className="text-5xl md:text-8xl lg:text-9xl font-black text-foreground tracking-tighter leading-[0.85] text-balance"
           >
             Built for <br /> <span className="text-muted/20">Real Performance.</span>
           </motion.h2>
@@ -42,7 +42,7 @@ export function BenefitsGrid() {
           whileInView={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           viewport={{ once: true }}
-          className="text-muted/60 text-sm font-medium max-w-[280px] lg:text-right leading-relaxed mb-4"
+          className="text-muted/60 text-lg md:text-xl font-medium max-w-md lg:text-right leading-relaxed mt-12 lg:mt-48 italic"
         >
           Each benefit is a result of meticulous engineering and plant-powered science.
         </motion.p>
@@ -58,7 +58,7 @@ export function BenefitsGrid() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1, duration: 1, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true }}
-              className="group relative h-[380px] rounded-[2.5rem] bg-background p-10 flex flex-col justify-between overflow-hidden hover:shadow-float shadow-soft transition-all duration-700"
+              className="group relative min-h-[380px] rounded-[2.5rem] bg-background p-10 flex flex-col justify-between overflow-hidden hover:shadow-float shadow-soft transition-all duration-700"
             >
               {/* Subtle background texture/glow */}
               <div className="absolute -right-20 -bottom-20 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-colors" />

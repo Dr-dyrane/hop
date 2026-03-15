@@ -21,7 +21,7 @@ export function SocialProof() {
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="flex items-center justify-center space-x-1 mb-8 text-accent/40"
+            className="flex items-center justify-center space-x-1 mb-12 text-accent/40"
           >
             {[...Array(5)].map((_, i) => (
               <Star key={i} size={16} fill="currentColor" stroke="none" />
@@ -32,13 +32,22 @@ export function SocialProof() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.95]"
+            className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.9]"
           >
             Trusted by the Driven.
           </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            viewport={{ once: true }}
+            className="mt-12 text-xl text-muted font-medium italic max-w-xl mx-auto"
+          >
+            Powering thousands of sessions daily. Join a community built on uncompromising standards.
+          </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-24 max-w-6xl mx-auto w-full px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-24 max-w-6xl mx-auto w-full">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}

@@ -121,6 +121,7 @@ export function HeroSection() {
               size="lg"
               variant="primary"
               className="px-10"
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 const el = document.getElementById("shop");
                 if (el) {
@@ -134,6 +135,7 @@ export function HeroSection() {
               size="lg"
               variant="secondary"
               className="px-10"
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 const el = document.getElementById("ingredients");
                 if (el) {
