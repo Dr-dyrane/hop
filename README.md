@@ -1,12 +1,12 @@
-# House of Nutrition Developer Specification
+# House of Prax Developer Specification
 
-This document consolidates all of the design and engineering decisions for the House of Nutrition project. It serves as both a **design dossier** and a **developer specification** for building a premium, single‑page marketing website. The dossier is organized into numbered sections for easy reference and shows the locked decisions and implementation details agreed upon so far.
+This document consolidates all of the design and engineering decisions for the House of Prax project. It serves as both a **design dossier** and a **developer specification** for building a premium, single‑page marketing website. The dossier is organized into numbered sections for easy reference and shows the locked decisions and implementation details agreed upon so far.
 
 ---
 
 ## 1\. Brand Identity
 
-* **Brand name:** **House of Nutrition** (shorthand for UI and favicon: **HON**).
+* **Brand name:** **House of Prax** (shorthand for UI and favicon: **HOP**).
 
 * **Positioning:** Premium plant‑based protein designed for gym‑focused performance and recovery.
 
@@ -86,7 +86,7 @@ This document consolidates all of the design and engineering decisions for the H
 
 * **Problem** – Highlight common issues with most protein powders (junk ingredients, fillers, bad digestion).
 
-* **Solution** – Present House of Nutrition as the answer, emphasizing plant‑based ingredients and smooth digestion.
+* **Solution** – Present House of Prax as the answer, emphasizing plant‑based ingredients and smooth digestion.
 
 * **Benefits** – Display key benefits in a grid (e.g., Clean Energy, Smooth Digestion, High Protein, Natural Flavor).
 
@@ -180,7 +180,7 @@ This system defines how the product appears across the site to ensure a consiste
 
 ### Image Assets
 
-* Required: hero-product.webp, product-chocolate.webp, product-vanilla.webp, product-shadow.webp, hon-mark.svg.
+* Required: hero-product.webp, product-chocolate.webp, product-vanilla.webp, product-shadow.webp, hop-mark.svg.
 
 * Optional: ingredient icons such as ingredient-pea.webp, ingredient-rice.webp, ingredient-cocoa.webp, and powder-particle.png.
 
@@ -220,7 +220,7 @@ The page is designed to guide visitors through the following psychological steps
 
 ### Solution Section Copy
 
-* **Headline:** “Meet House of Nutrition”
+* **Headline:** “Meet House of Prax”
 
 * **Subtext:** “A clean plant‑based protein designed for performance, recovery, and smooth digestion.”
 
@@ -286,13 +286,13 @@ The page is designed to guide visitors through the following psychological steps
 
 The site is composed of modular sections with generous spacing. Each section performs a single purpose.
 
-* **Navbar:** Minimal navigation bar with the HON logo on the left and links (Shop, Ingredients, Science, Cart) on the right. Transparent over the hero; turns solid on scroll.
+* **Navbar:** Minimal navigation bar with the HOP logo on the left and links (Shop, Ingredients, Science, Cart) on the right. Transparent over the hero; turns solid on scroll.
 
 * **Hero Section:** Full‑screen height. Contains headline, subtext, primary and secondary CTAs, and the floating jar visual.
 
 * **Problem Section:** Cream background. Contains headline, problem bullets, and transition statement.
 
-* **Solution Section:** White background. Introduces House of Nutrition with a centered product image and trust indicators.
+* **Solution Section:** White background. Introduces House of Prax with a centered product image and trust indicators.
 
 * **Benefits Grid:** A three‑column grid on desktop (single column on mobile) with icons, headings, and descriptions.
 
@@ -308,7 +308,7 @@ The site is composed of modular sections with generous spacing. Each section per
 
 * **Final CTA:** Bold call to action encouraging immediate purchase.
 
-* **Footer:** Simple footer with links and the HON logo.
+* **Footer:** Simple footer with links and the HOP logo.
 
 Spacing guidelines: \~120px vertical padding between sections (160px in the hero) to maintain a luxurious feel.
 
@@ -527,7 +527,7 @@ A suggested folder structure:
       ingredient-pea.webp  
       ingredient-rice.webp  
       ingredient-cocoa.webp  
-      hon-mark.svg
+      hop-mark.svg
 
 ### Page Assembly
 
@@ -699,7 +699,7 @@ module.exports \= {
 
 The dossier is structured so that AI tools (like Cursor or VS Code coding assistants) can read and generate code. Developers or AI assistants can issue a prompt such as:
 
-*“Build a premium, single‑page Next.js landing page for the House of Nutrition using the design and implementation guidelines outlined in the project dossier.”*
+*“Build a premium, single‑page Next.js landing page for the House of Prax using the design and implementation guidelines outlined in the project dossier.”*
 
 The site should then be generated according to the specifications documented here.
 
@@ -718,7 +718,7 @@ rather than chasing flashy visuals or unnecessary complexity. Keeping clarity an
 
 ## Conclusion
 
-This specification consolidates every locked decision and guideline required to build the House of Nutrition website. It covers brand identity, target audience, product strategy, visual and animation systems, conversion copy, wireframes, reusable components, animation details, and a development blueprint. This comprehensive dossier allows any developer or AI code assistant to build a premium single‑page site that matches the strategic and aesthetic vision of the House of Nutrition brand.
+This specification consolidates every locked decision and guideline required to build the House of Prax website. It covers brand identity, target audience, product strategy, visual and animation systems, conversion copy, wireframes, reusable components, animation details, and a development blueprint. This comprehensive dossier allows any developer or AI code assistant to build a premium single‑page site that matches the strategic and aesthetic vision of the House of Prax brand.
 
 ---
 
