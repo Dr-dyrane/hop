@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { SectionContainer } from "@/components/ui/SectionContainer";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { useTheme } from "next-themes";
 
@@ -23,18 +24,21 @@ export function CTASection() {
   };
 
   return (
-    <SectionContainer className="flex items-center justify-center px-4 pb-24">
+    <SectionContainer className="flex items-center justify-center px-4 pb-32 pt-20 relative">
+      {/* Atmosphere bridge - Extreme soft golden bleed */}
+      <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-transparent to-[#d7c5a3]/5 pointer-events-none" />
+      
       <motion.div 
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
         viewport={{ once: true }}
-        className="relative overflow-hidden w-full bg-foreground text-background rounded-[3rem] md:rounded-[4rem] shadow-float max-w-6xl mx-auto"
+        className="relative overflow-hidden w-full cta-inverse rounded-[3.5rem] md:rounded-[5rem] shadow-float max-w-6xl mx-auto"
       >
-        {/* Abstract background elements */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute -top-1/2 -right-1/4 w-full h-full bg-accent/30 rounded-full blur-[120px]" />
-          <div className="absolute -bottom-1/2 -left-1/4 w-full h-full bg-accent/20 rounded-full blur-[100px]" />
+        {/* Abstract background elements - Vibrant Gold Depth */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[80%] h-full bg-[radial-gradient(circle_at_top_right,_#d7c5a3_0%,_transparent_70%)] opacity-20 blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 left-0 w-[60%] h-full bg-[radial-gradient(circle_at_bottom_left,_#d7c5a3_0%,_transparent_60%)] opacity-10 blur-3xl" />
         </div>
 
         <div className="relative z-10 text-center max-w-4xl mx-auto py-24 px-6 md:px-12 md:py-36">
@@ -61,10 +65,19 @@ export function CTASection() {
                 Checkout Now — $54.99
               </Button>
 
-              <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-                <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-accent" /> Plant-Based</span>
-                <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-accent" /> Zero Additives</span>
-                <span className="flex items-center gap-2"><div className="w-1 h-1 rounded-full bg-accent" /> Clean Fuel</span>
+              <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 text-[11px] font-black uppercase tracking-[0.4em] text-background/60">
+                <span className="flex items-center gap-3 transition-colors hover:text-accent">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#d7c5a3] shadow-[0_0_10px_rgba(215,197,163,0.5)]" /> 
+                  Plant-Based
+                </span>
+                <span className="flex items-center gap-3 transition-colors hover:text-accent">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#d7c5a3] shadow-[0_0_10px_rgba(215,197,163,0.5)]" /> 
+                  Zero Additives
+                </span>
+                <span className="flex items-center gap-3 transition-colors hover:text-accent">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#d7c5a3] shadow-[0_0_10px_rgba(215,197,163,0.5)]" /> 
+                  Clean Fuel
+                </span>
               </div>
             </div>
           </motion.div>

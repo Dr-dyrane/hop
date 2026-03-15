@@ -231,9 +231,7 @@ canvas {
 
 .surface {
   background: var(--surface);
-  transition:
-    background-color var(--duration-base) var(--ease-premium),
-    border-color var(--duration-base) var(--ease-premium);
+  transition: background-color var(--duration-base) var(--ease-premium);
 }
 
 .surface-alt {
@@ -535,5 +533,32 @@ canvas {
   background: var(--surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-soft);
+}
+
+.cta-inverse {
+  background: #0d0f0d !important;
+  color: #f4f2ea !important;
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.4);
+  transition: transform var(--duration-base) var(--ease-premium);
+}
+
+.cta-inverse h2, 
+.cta-inverse h3, 
+.cta-inverse p, 
+.cta-inverse span {
+  color: #f4f2ea !important;
+}
+
+.cta-inverse .text-accent {
+  color: #d7c5a3 !important;
+}
+
+.mask-white {
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+}
+
+/* Zero Ring Policy */
+:focus-visible {
+  outline: none;
 }

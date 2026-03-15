@@ -54,10 +54,10 @@ export function ProductSelector() {
                 key={key}
                 onClick={() => setSelected(key)}
                 className={cn(
-                  "flex-1 md:flex-none px-8 py-5 rounded-3xl transition-all duration-500 text-left min-w-[200px] border",
+                  "flex-1 md:flex-none px-8 py-5 rounded-3xl transition-all duration-500 text-left md:min-w-[240px]",
                   selected === key 
-                    ? "bg-foreground text-background shadow-float scale-105 border-transparent" 
-                    : "bg-surface border-border/10 opacity-60 hover:opacity-100 hover:shadow-md"
+                    ? "bg-foreground text-background shadow-float scale-105" 
+                    : "bg-surface opacity-60 hover:opacity-100 hover:shadow-md"
                 )}
               >
                 <div className={cn(
@@ -116,7 +116,7 @@ export function ProductSelector() {
                     height={650}
                     className="w-[85%] h-auto max-w-[300px] drop-shadow-2xl animate-float mask-radial"
                   />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover/jar:opacity-100 transition-opacity bg-accent/20 backdrop-blur-sm px-4 py-2 rounded-full border border-accent/30 text-[8px] font-black uppercase tracking-widest pointer-events-none whitespace-nowrap">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover/jar:opacity-100 transition-opacity bg-accent/20 backdrop-blur-sm px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest pointer-events-none whitespace-nowrap">
                     Switch Flavor
                   </div>
                 </motion.div>
@@ -133,7 +133,7 @@ export function ProductSelector() {
                 exit={{ opacity: 0, x: -20 }}
                 className="max-w-xs mx-auto md:mx-0"
               >
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent px-4 py-2 bg-accent/10 rounded-full border border-accent/20">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent px-4 py-2 bg-accent/10 rounded-full">
                   Premium Quality
                 </span>
                 <h3 className="text-4xl md:text-5xl font-black text-foreground mt-8 leading-none">
@@ -142,7 +142,7 @@ export function ProductSelector() {
                 <p className="mt-6 text-muted text-lg leading-relaxed font-medium">
                   {FLAVORS[selected].description} meticulously crafted with organic pea protein and pure extracts. No fillers, just fuel.
                 </p>
-                <div className="mt-10 pt-10 border-t border-border/10">
+                <div className="mt-10 pt-10 shadow-[inset_0_1px_0_0_rgba(0,0,0,0.05)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
                   <div className="flex items-baseline gap-2 mb-6 justify-center md:justify-start">
                     <span className="text-4xl font-black text-foreground">$54.</span>
                     <span className="text-xl font-bold text-foreground">99</span>

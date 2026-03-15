@@ -36,7 +36,7 @@ export function HeroSection() {
     }
   };
 
-  const revealVariants = {
+  const revealVariants: any = {
     hidden: { opacity: 0, y: 30 },
     visible: (i: number) => ({
       opacity: 1,
@@ -218,7 +218,7 @@ export function HeroSection() {
                   />
 
                   {/* Tiny click indicator */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 text-[8px] font-black uppercase tracking-widest pointer-events-none whitespace-nowrap">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/20 backdrop-blur-sm px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-widest pointer-events-none whitespace-nowrap">
                     Click to Toggle
                   </div>
                 </div>
@@ -231,7 +231,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 1 }}
-            className="flex items-center gap-3 mt-8 bg-surface/50 backdrop-blur-md p-2 rounded-full border border-border/10 shadow-soft"
+            className="flex items-center gap-3 mt-8 bg-surface/50 backdrop-blur-md p-2 rounded-full shadow-soft"
           >
             {(Object.keys(FLAVORS) as Array<keyof typeof FLAVORS>).map((flavor) => (
               <button

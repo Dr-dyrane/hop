@@ -36,7 +36,7 @@ export function HowItWorks() {
         </motion.h2>
       </div>
 
-      <div className="relative max-w-6xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden bg-background border border-border/5 shadow-float mb-20 group">
+      <div className="relative max-w-6xl mx-auto rounded-[3rem] md:rounded-[4rem] overflow-hidden bg-background shadow-float mb-20 group">
         <Image 
           src="/images/how-it-works.png" 
           alt="How it works ritual" 
@@ -57,7 +57,7 @@ export function HowItWorks() {
               viewport={{ once: true }}
               className="flex flex-col items-center group"
             >
-              <div className="w-20 h-20 rounded-2xl surface border border-border/5 flex items-center justify-center mb-8 text-accent shadow-sm group-hover:scale-110 group-hover:shadow-float transition-all duration-700">
+              <div className="w-20 h-20 rounded-2xl surface flex items-center justify-center mb-8 text-accent shadow-sm group-hover:scale-110 group-hover:shadow-float transition-all duration-700">
                 <span className="text-[10px] font-black uppercase tracking-tighter text-accent/60">HOP</span>
               </div>
               <h3 className="text-xl font-black text-foreground tracking-tight">{step.label}</h3>
@@ -86,7 +86,7 @@ export function HowItWorks() {
         viewport={{ once: true }}
         className="mt-24 text-center"
       >
-        <span className="surface px-8 py-4 rounded-full text-[11px] font-black uppercase tracking-widest text-muted border border-border/5 shadow-sm">
+        <span className="surface px-8 py-4 rounded-full text-[11px] font-black uppercase tracking-widest text-muted shadow-sm">
           Total Prep Time: <span className="text-accent underline decoration-2 underline-offset-4">Under 30 Seconds</span>
         </span>
       </motion.div>

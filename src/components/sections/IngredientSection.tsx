@@ -33,22 +33,22 @@ export function IngredientSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true }}
-              className="group relative h-[350px] rounded-[2.5rem] overflow-hidden card-premium border border-border/5"
+              className="group relative h-[350px] rounded-[2.5rem] overflow-hidden bg-white dark:bg-[#0d0f0d] shadow-soft hover:shadow-float transition-all duration-700"
             >
               <Image 
                 src={ing.image}
                 alt={ing.name}
                 fill
-                className="object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000 ease-out mask-soft-edge"
+                className="object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000 ease-out mask-white"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent dark:from-[#0d0f0d] dark:via-[#0d0f0d]/70 z-10" />
               
               <div className="absolute inset-0 p-10 flex flex-col justify-end z-20">
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent mb-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
                   Essential Ingredient
                 </span>
-                <h3 className="text-3xl font-black tracking-tighter text-white transition-transform duration-500 group-hover:-translate-y-2">{ing.name}</h3>
-                <p className="mt-4 text-white/60 text-sm font-medium leading-relaxed max-w-[240px] translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 delay-100">
+                <h3 className="text-3xl font-black tracking-tighter text-foreground transition-transform duration-500 group-hover:-translate-y-2">{ing.name}</h3>
+                <p className="mt-4 text-muted text-sm font-medium leading-relaxed max-w-[240px] translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 delay-100">
                    {ing.detail}
                 </p>
               </div>

@@ -32,7 +32,7 @@ export function SocialProof() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-5xl lg:text-7xl font-black text-foreground tracking-tighter"
+            className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter leading-[0.95]"
           >
             Trusted by the Driven.
           </motion.h2>
@@ -48,11 +48,11 @@ export function SocialProof() {
               viewport={{ once: true }}
               className="text-center group"
             >
-              <div className="text-6xl md:text-8xl font-black text-foreground mb-6 tracking-tighter italic group-hover:scale-110 transition-transform duration-700">
+              <div className="text-5xl md:text-8xl font-black text-foreground mb-6 tracking-tighter italic group-hover:scale-110 transition-transform duration-700">
                 {stat.value}
               </div>
               <div className="text-[11px] font-black uppercase tracking-[0.4em] text-accent/60 mb-3">{stat.label}</div>
-              <div className="h-[1px] w-12 bg-border/10 mx-auto my-6" />
+              <div className="w-1.5 h-1.5 rounded-full bg-accent/20 mx-auto my-8" />
               <div className="text-muted/40 text-[10px] font-black uppercase tracking-widest">{stat.sub}</div>
             </motion.div>
           ))}

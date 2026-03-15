@@ -58,13 +58,13 @@ export function BenefitsGrid() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1, duration: 1, ease: [0.22, 1, 0.36, 1] }}
               viewport={{ once: true }}
-              className="group relative h-[380px] rounded-[2.5rem] bg-background border border-border/5 p-10 flex flex-col justify-between overflow-hidden hover:shadow-float shadow-soft transition-all duration-700"
+              className="group relative h-[380px] rounded-[2.5rem] bg-background p-10 flex flex-col justify-between overflow-hidden hover:shadow-float shadow-soft transition-all duration-700"
             >
               {/* Subtle background texture/glow */}
               <div className="absolute -right-20 -bottom-20 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-colors" />
               
               <div className="relative z-10">
-                <div className="w-14 h-14 rounded-2xl surface border border-border/5 flex items-center justify-center mb-10 text-accent shadow-sm group-hover:scale-110 group-hover:shadow-soft transition-all duration-700">
+                <div className="w-14 h-14 rounded-2xl surface flex items-center justify-center mb-10 text-accent shadow-sm group-hover:scale-110 group-hover:shadow-soft transition-all duration-700">
                   <Icon size={24} strokeWidth={1.5} />
                 </div>
                 <h3 className="text-2xl font-black text-foreground mb-6 tracking-tighter">{benefit.title}</h3>

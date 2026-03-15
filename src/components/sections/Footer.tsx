@@ -15,7 +15,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="relative surface py-24 px-6 border-t border-border/5">
+    <footer className="relative surface py-32 px-6">
       <div className="container-shell flex flex-col items-center">
         <div className="mb-16">
           <Logo />

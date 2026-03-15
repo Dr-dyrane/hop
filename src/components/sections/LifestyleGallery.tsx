@@ -45,7 +45,7 @@ export function LifestyleGallery() {
             transition={{ delay: i * 0.1, duration: 1, ease: [0.22, 1, 0.36, 1] }}
             viewport={{ once: true }}
             className={cn(
-              "relative rounded-[2rem] md:rounded-[3rem] overflow-hidden group border border-border/5",
+              "relative rounded-[2rem] md:rounded-[3rem] overflow-hidden group shadow-soft",
               img.span
             )}
           >
@@ -58,7 +58,7 @@ export function LifestyleGallery() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20" />
             <div className="absolute bottom-8 left-10 z-30 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
-               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white bg-black/20 backdrop-blur-md px-4 py-2 rounded-full">
                  {img.alt}
                </span>
             </div>
