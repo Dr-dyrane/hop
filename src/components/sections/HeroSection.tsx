@@ -60,7 +60,7 @@ export function HeroSection() {
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-xl text-center lg:text-left pt-12 lg:pt-0 mx-auto lg:mx-0"
         >
-          <div className="flex justify-center lg:justify-start">
+          <div className="flex justify-center lg:justify-start mb-8">
             <span className="hero-eyebrow">
               <Image
                 src="/images/hero/hon-mark.svg"
@@ -73,7 +73,7 @@ export function HeroSection() {
             </span>
           </div>
 
-          <h1 className="mt-8 font-headline text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[0.92] tracking-[-0.03em] text-foreground">
+          <h1 className="font-headline text-5xl sm:text-6xl lg:text-7xl xl:text-8xl leading-[0.92] tracking-[-0.03em] text-foreground">
             Clean Plant Protein
             <span className="block mt-4 sm:mt-6 text-muted italic">Built for Real Training</span>
           </h1>
