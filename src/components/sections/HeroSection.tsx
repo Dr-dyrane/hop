@@ -126,7 +126,7 @@ export function HeroSection() {
                     alt=""
                     width={600}
                     height={100}
-                    className={`w-full h-auto ${isDark ? 'opacity-50' : 'opacity-30'}`}
+                    className={`w-full h-auto ${isDark ? 'opacity-50' : 'opacity-60'}`}
                   />
                 </motion.div>
               </AnimatePresence>
