@@ -15,7 +15,7 @@ const ICON_MAP = {
 
 export function BenefitsGrid() {
   return (
-    <SectionContainer variant="white" id="benefits">
+    <SectionContainer variant="alt" id="benefits">
       <div className="text-center mb-20">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}

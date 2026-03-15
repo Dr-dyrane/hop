@@ -28,16 +28,18 @@ export default function Home() {
       <Footer />
       
       {/* 
-        The following sections will be built out to match the README:
+        The following sections will be built out to match the README rhythm:
+        - HeroSection (White)
+        - ProblemSection (Cream/alt)
         - SolutionSection (White)
-        - BenefitsGrid (White)
-        - IngredientSection (Cream)
-        - HowItWorks (White)
+        - BenefitsGrid (Cream/alt)
+        - IngredientSection (White)
+        - HowItWorks (Cream/alt)
         - LifestyleGallery (Image Full)
-        - ProductSelector (Cream)
-        - SocialProof (White)
-        - CTASection (Forest)
-        - Footer
+        - ProductSelector (White)
+        - SocialProof (Cream/alt)
+        - CTASection (White wrapper, colored pill)
+        - Footer 
       */}
     </main>
   );

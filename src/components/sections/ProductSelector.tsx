@@ -21,7 +21,7 @@ export function ProductSelector() {
   const [selected, setSelected] = useState<keyof typeof FLAVORS>("chocolate");
 
   return (
-    <SectionContainer variant="alt" id="shop">
+    <SectionContainer variant="white" id="shop">
       <div className="flex flex-col items-center">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-black text-foreground">Choose Your Flavor.</h2>

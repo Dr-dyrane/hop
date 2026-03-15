@@ -14,7 +14,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <SectionContainer variant="white" id="how-it-works">
+    <SectionContainer variant="alt" id="how-it-works">
       <div className="text-center mb-24">
         <h2 className="text-4xl md:text-5xl font-black text-foreground">Simple Daily Fuel.</h2>
       </div>

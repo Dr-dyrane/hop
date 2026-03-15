@@ -14,7 +14,7 @@ export function SocialProof() {
   ];
 
   return (
-    <SectionContainer variant="white" id="social">
+    <SectionContainer variant="alt" id="social">
       <div className="text-center mb-16">
         <div className="flex items-center justify-center space-x-1 mb-6 text-accent">
           {[...Array(5)].map((_, i) => (
