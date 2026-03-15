@@ -23,13 +23,21 @@ export function Logo({ className, showWordmark = true }: LogoProps) {
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
+      <Image
+        src={isDark ? "/images/hero/hon-mark-dark.svg" : "/images/hero/hon-mark.svg"}
+        alt=""
+        width={28}
+        height={28}
+        className="h-7 w-auto"
+        priority
+      />
       {showWordmark && (
         <Image
           src={isDark ? "/images/hero/hon-wordmark-dark.svg" : "/images/hero/hon-wordmark.svg"}
           alt="House of Nutrition"
           width={100}
           height={28}
-          className="h-6 w-auto"
+          className="h-5 w-auto"
           priority
         />
       )}
