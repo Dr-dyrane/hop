@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, useScroll, AnimatePresence } from "framer-motion";
+import { Equal, X } from "lucide-react";
 import { NAVIGATION } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -52,7 +53,7 @@ export function Navbar() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
           isScrolled
-            ? "py-4 bg-background/80 backdrop-blur-xl border-b border-border-soft"
+            ? "py-3 bg-background/60 backdrop-blur-2xl"
             : "py-5 bg-transparent"
         )}
       >
@@ -63,12 +64,12 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden md:flex items-center gap-8">
             {NAVIGATION.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted hover:text-foreground transition-colors duration-300"
+                className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted hover:text-foreground transition-colors duration-300"
               >
                 {item.label}
               </Link>
@@ -76,35 +77,38 @@ export function Navbar() {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
             
             <Link
               href="#shop"
-              className="hidden sm:inline-flex button-primary min-h-[42px] px-6 text-[10px] font-bold uppercase tracking-[0.2em]"
+              className="hidden md:inline-flex button-primary min-h-[40px] px-5 text-[10px] font-semibold uppercase tracking-[0.15em]"
             >
               Get HON
             </Link>
 
-            {/* Mobile Menu Toggle - Modern text-based approach */}
+            {/* Mobile Menu Toggle */}
             <button
               type="button"
               onClick={toggleMobileMenu}
-              className="md:hidden relative h-10 px-3 z-50 overflow-hidden"
+              className="md:hidden relative z-50 h-10 w-10 flex items-center justify-center"
               aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMobileMenuOpen}
             >
               <AnimatePresence mode="wait" initial={false}>
-                <motion.span
+                <motion.div
                   key={isMobileMenuOpen ? "close" : "menu"}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -20, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                  className="block text-[11px] font-bold uppercase tracking-[0.2em] text-foreground"
+                  initial={{ opacity: 0, rotate: -90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: 90 }}
+                  transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  {isMobileMenuOpen ? "Close" : "Menu"}
-                </motion.span>
+                  {isMobileMenuOpen ? (
+                    <X className="w-5 h-5 text-foreground" strokeWidth={1.5} />
+                  ) : (
+                    <Equal className="w-5 h-5 text-foreground" strokeWidth={1.5} />
+                  )}
+                </motion.div>
               </AnimatePresence>
             </button>
           </div>
@@ -135,7 +139,7 @@ export function Navbar() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="relative flex flex-col justify-center min-h-screen px-8"
             >
-              <nav className="flex flex-col gap-1">
+              <nav className="flex flex-col">
                 {NAVIGATION.map((item, index) => (
                   <motion.div
                     key={item.label}
@@ -151,9 +155,9 @@ export function Navbar() {
                     <Link
                       href={item.href}
                       onClick={closeMobileMenu}
-                      className="group flex items-center py-4 border-b border-border-soft"
+                      className="group flex items-center py-5"
                     >
-                      <span className="text-3xl font-semibold tracking-tight text-foreground group-hover:text-accent transition-colors duration-300">
+                      <span className="text-4xl font-semibold tracking-tight text-foreground group-hover:text-accent transition-colors duration-300">
                         {item.label}
                       </span>
                     </Link>
@@ -170,12 +174,12 @@ export function Navbar() {
                   ease: [0.22, 1, 0.36, 1],
                   delay: 0.1 + NAVIGATION.length * 0.06,
                 }}
-                className="mt-10"
+                className="mt-12"
               >
                 <Link
                   href="#shop"
                   onClick={closeMobileMenu}
-                  className="button-primary w-full justify-center min-h-[56px] text-sm font-bold uppercase tracking-[0.15em]"
+                  className="button-primary w-full justify-center min-h-[56px] text-xs font-semibold uppercase tracking-[0.15em]"
                 >
                   Get HON
                 </Link>
