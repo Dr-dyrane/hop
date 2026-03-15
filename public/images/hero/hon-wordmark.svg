@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120">
+  <style>
+    .brand {
+      font-family: inherit;
+      font-weight: 900;
+      letter-spacing: 2px;
+      fill: currentColor;
+    }
+  </style>
+  <text x="50%" y="45%" text-anchor="middle" class="brand" font-size="40">
+    HOUSE OF
+  </text>
+  <text x="50%" y="85%" text-anchor="middle" class="brand" font-size="44">
+    NUTRITION
+  </text>
+</svg>
