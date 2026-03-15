@@ -74,7 +74,7 @@
 }
 
 /* Manual dark theme */
-[data-theme="dark"] {
+.dark {
   color-scheme: dark;
 
   --background: #0d0f0d;
@@ -99,7 +99,7 @@
 
 /* Optional: if no explicit theme is set, follow system */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not(.light) {
     color-scheme: dark;
 
     --background: #0d0f0d;
@@ -326,7 +326,7 @@ canvas {
   mix-blend-mode: multiply;
 }
 
-[data-theme="dark"] .hero-product-image {
+.dark .hero-product-image {
   mix-blend-mode: screen;
 }
 
@@ -341,7 +341,7 @@ canvas {
   mix-blend-mode: multiply;
 }
 
-[data-theme="dark"] .product-shadow-wrap {
+.dark .product-shadow-wrap {
   mix-blend-mode: overlay;
   opacity: 0.6;
 }
@@ -369,7 +369,7 @@ canvas {
   pointer-events: none;
 }
 
-[data-theme="dark"] .product-frame::after {
+.dark .product-frame::after {
   background: radial-gradient(ellipse at center,
       rgba(0, 0, 0, 0.38) 0%,
       rgba(0, 0, 0, 0.18) 42%,
