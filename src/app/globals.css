@@ -289,10 +289,6 @@ canvas {
     color var(--duration-base) var(--ease-premium);
 }
 
-.button-primary:hover {
-  transform: translateY(-2px);
-}
-
 .button-secondary {
   display: inline-flex;
   align-items: center;

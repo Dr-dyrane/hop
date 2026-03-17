@@ -46,7 +46,7 @@ export function IngredientSection() {
               data-aos="zoom-in-up"
               data-aos-duration="600"
               data-aos-delay={400 + i * 100}
-              className="relative h-[350px] rounded-[2.5rem] overflow-hidden bg-white dark:bg-[#0d0f0d] shadow-soft hover:shadow-float transition-all duration-700"
+              className="relative h-[350px] rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-[#0d0f0d]/80 dark:to-[#1a1a1a]/80 shadow-soft hover:shadow-float transition-all duration-700"
             >
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -60,7 +60,7 @@ export function IngredientSection() {
                   fill
                   className="object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000 ease-out mask-white"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/70 to-transparent dark:from-[#0d0f0d] dark:via-[#0d0f0d]/70 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-white/30 to-transparent dark:from-[#0d0f0d]/60 dark:via-[#0d0f0d]/30 z-10" />
 
                 <div className="absolute inset-0 p-10 flex flex-col justify-end z-20 group-hover:pointer-events-auto">
                   <motion.span 
