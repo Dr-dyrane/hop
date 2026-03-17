@@ -9,13 +9,13 @@ interface LogoProps {
 
 export function Logo({ className, showWordmark = true }: LogoProps) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center", className)}>
       <Image
         src="/images/hero/hop-mark.svg"
         alt=""
         width={28}
         height={28}
-        className="h-7 w-auto dark:invert"
+        className="h-6 -mr-1 w-auto dark:invert"
         priority
       />
       {showWordmark && (
@@ -24,7 +24,7 @@ export function Logo({ className, showWordmark = true }: LogoProps) {
           alt="House of Prax"
           width={100}
           height={28}
-          className="h-6 w-auto dark:invert"
+          className="h-8 -ml-6 w-auto dark:invert"
           priority
         />
       )}
