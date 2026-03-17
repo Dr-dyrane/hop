@@ -30,7 +30,7 @@ export function ProblemSection() {
     <SectionContainer variant="alt" id="problem" className="overflow-hidden">
       <div className="flex flex-col lg:flex-row items-center gap-20 py-12">
         <div className="lg:w-1/2 flex flex-col gap-4">
-          <HeroEyebrow 
+          <HeroEyebrow
             position="left"
             animated
             className="bg-label text-system-background"
@@ -38,8 +38,8 @@ export function ProblemSection() {
             <AlertTriangle className="w-3.5 h-3.5 mr-3" />
             The Market Status
           </HeroEyebrow>
-          <h2 
-            data-aos="fade-right" 
+          <h2
+            data-aos="fade-right"
             data-aos-duration="800"
             data-aos-delay="200"
             className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-headline font-bold text-label leading-tight tracking-display"
@@ -47,8 +47,8 @@ export function ProblemSection() {
             Most Protein <br />
             <span className="text-secondary-label opacity-20 tracking-tight">Are Junk.</span>
           </h2>
-          <p 
-            data-aos="fade-up" 
+          <p
+            data-aos="fade-up"
             data-aos-duration="700"
             data-aos-delay="300"
             className="mt-12 text-xl text-secondary-label opacity-60 leading-normal tracking-body max-w-md italic"
@@ -56,7 +56,7 @@ export function ProblemSection() {
             The industry is built on compromises. We chose a different path—prioritizing gut health and biological performance over cheap manufacturing.
           </p>
 
-          <BadgeList 
+          <BadgeList
             items={PROBLEMS}
             className="mt-16"
             animated
@@ -92,7 +92,7 @@ export function ProblemSection() {
           data-aos="fade-up"
           data-aos-duration="1000"
           data-aos-delay="800"
-          className="p-24 md:p-48 squircle cta-inverse text-center relative overflow-hidden shadow-[0_50px_100px_-30px_rgba(0,0,0,0.3)] dark:shadow-none"
+          className="p-24 md:p-48 flex flex-col items-center justify-center squircle cta-inverse text-center relative overflow-hidden shadow-[0_50px_100px_-30px_rgba(0,0,0,0.3)] dark:shadow-none"
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#d7c5a3_0%,_transparent_70%)] opacity-10 pointer-events-none blur-3xl" />
 
@@ -105,7 +105,7 @@ export function ProblemSection() {
             Perspective
           </span>
 
-          <h3 
+          <h3
             data-aos="zoom-in"
             data-aos-duration="800"
             data-aos-delay="1200"
@@ -114,9 +114,9 @@ export function ProblemSection() {
             Your body deserves <br /> better fuel.
           </h3>
 
-          <div className="w-12 h-[2px] bg-accent/30 mx-auto mb-12" />
+          <div className="w-12 h-[4px] bg-accent/30 mx-auto mb-12 rounded-full" />
 
-          <p className="relative z-10 text-xl leading-normal tracking-body mx-auto italic opacity-70">
+          <p className="relative z-10 text-xl leading-normal tracking-body w-full italic opacity-70">
             "Don't build your foundation on sand. Choose a system <br className="hidden md:block" /> designed for longevity and power."
           </p>
         </div>
