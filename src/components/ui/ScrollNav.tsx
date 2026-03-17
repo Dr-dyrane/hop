@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useUI } from "@/components/providers/UIProvider";
-import { Home, AlertTriangle, Lightbulb, Sparkles, Leaf, Cog, Star, ShoppingBag, Rocket, TestTube } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Home, AlertTriangle, Lightbulb, Sparkles, Leaf, Cog, Star, ShoppingBag, Rocket, TestTube, Sun, Moon } from "lucide-react";
 import { LucideProps } from "lucide-react";
 
 interface ScrollNavProps {
@@ -20,6 +21,16 @@ export function ScrollNav({ className }: ScrollNavProps) {
   const [activeSection, setActiveSection] = useState<string>("hero");
   const [isVisible, setIsVisible] = useState(false);
   const { isMobileMenuOpen, isScrollNavCollapsed, setIsScrollNavCollapsed } = useUI();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   const sections: Section[] = [
     { id: "hero", label: "Home", icon: Home },
@@ -98,6 +109,31 @@ export function ScrollNav({ className }: ScrollNavProps) {
             <div className="w-3 h-0.5 bg-current rounded-full" />
           </div>
         </button>
+
+        {/* Theme toggle */}
+        {!isScrollNavCollapsed && (
+          <button
+            onClick={toggleTheme}
+            className={cn(
+              "flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-300 text-xs",
+              "bg-foreground/10 text-muted hover:bg-foreground/20 w-full"
+            )}
+            aria-label="Toggle theme"
+          >
+            {mounted && (
+              <div className="relative w-3 h-3">
+                <Sun className={cn(
+                  "absolute inset-0 w-3 h-3 transition-all duration-300",
+                  theme === "dark" ? "opacity-0 rotate-90 scale-0" : "opacity-100 rotate-0 scale-100"
+                )} />
+                <Moon className={cn(
+                  "absolute inset-0 w-3 h-3 transition-all duration-300",
+                  theme === "dark" ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-0"
+                )} />
+              </div>
+            )}
+          </button>
+        )}
 
         {/* Navigation items */}
         {!isScrollNavCollapsed && sections.map((section) => (
