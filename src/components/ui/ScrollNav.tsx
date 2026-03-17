@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useUI } from "@/components/providers/UIProvider";
 import { useTheme } from "next-themes";
-import { Home, AlertTriangle, Lightbulb, Sparkles, Leaf, Cog, Star, ShoppingBag, Rocket, TestTube, Sun, Moon } from "lucide-react";
+import { Home, AlertTriangle, Lightbulb, Sparkles, Leaf, Cog, Star, ShoppingBag, Rocket, TestTube, Sun, Moon, X, UnfoldVertical } from "lucide-react";
 import { LucideProps } from "lucide-react";
 
 interface ScrollNavProps {
@@ -87,27 +87,25 @@ export function ScrollNav({ className }: ScrollNavProps) {
       )}
     >
       <div className={cn(
-        "flex flex-col gap-3 bg-surface/40 backdrop-blur-lg rounded-2xl shadow-lg transition-all duration-300",
+        "flex flex-col gap-3 bg-surface/10 backdrop-blur-sm rounded-2xl shadow-lg transition-all duration-300",
         isScrollNavCollapsed ? "p-2" : "p-3"
       )}>
         {/* Collapse toggle */}
         <button
           onClick={() => setIsScrollNavCollapsed(!isScrollNavCollapsed)}
           className={cn(
-            "flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-300 text-xs",
+            "flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-300 text-xs cursor-pointer backdrop-blur-sm",
             isScrollNavCollapsed 
-              ? "bg-foreground/20 text-foreground" 
-              : "bg-foreground/10 text-muted hover:bg-foreground/20 w-full"
+              ? "bg-foreground/10 text-foreground hover:bg-foreground/20" 
+              : "text-muted hover:bg-foreground/10 w-full"
           )}
           aria-label={isScrollNavCollapsed ? "Expand navigation" : "Collapse navigation"}
         >
-          <div className={cn(
-            "flex flex-col gap-0.5 transition-transform duration-300",
-            isScrollNavCollapsed && "rotate-180"
-          )}>
-            <div className="w-3 h-0.5 bg-current rounded-full" />
-            <div className="w-3 h-0.5 bg-current rounded-full" />
-          </div>
+          {isScrollNavCollapsed ? (
+            <UnfoldVertical className="w-3 h-3" />
+          ) : (
+            <X className="w-3 h-3" />
+          )}
         </button>
 
         {/* Theme toggle */}
@@ -115,8 +113,8 @@ export function ScrollNav({ className }: ScrollNavProps) {
           <button
             onClick={toggleTheme}
             className={cn(
-              "flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-300 text-xs",
-              "bg-foreground/10 text-muted hover:bg-foreground/20 w-full"
+              "flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-300 text-xs cursor-pointer backdrop-blur-sm",
+              "text-muted hover:bg-foreground/10 w-full"
             )}
             aria-label="Toggle theme"
           >
@@ -141,9 +139,9 @@ export function ScrollNav({ className }: ScrollNavProps) {
             key={section.id}
             onClick={() => scrollToSection(section.id)}
             className={cn(
-              "group relative flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 text-sm",
+              "group relative flex items-center justify-center w-8 h-8 rounded-xl transition-all duration-300 text-sm cursor-pointer backdrop-blur-sm",
               activeSection === section.id
-                ? "bg-foreground text-background shadow-md scale-110"
+                ? "bg-foreground/10 text-foreground shadow-md scale-110" 
                 : "text-muted hover:bg-foreground/10 hover:text-foreground hover:scale-105"
             )}
             aria-label={`Scroll to ${section.label}`}
@@ -153,17 +151,10 @@ export function ScrollNav({ className }: ScrollNavProps) {
             
             {/* Tooltip */}
             <div className={cn(
-              "absolute right-full mr-2 px-3 py-1.5 text-xs text-foreground bg-surface rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap",
-              activeSection === section.id && "opacity-100 bg-foreground text-background border-foreground"
+              "absolute right-full mr-2 px-3 py-1.5 text-xs text-foreground bg-surface/10 backdrop-blur-sm rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap top-1/2 -translate-y-1/2",
+              activeSection === section.id && "opacity-100 bg-foreground/10 backdrop-blur-[16px] text-foreground"
             )}>
               <span className="font-medium">{section.label}</span>
-              {/* Arrow */}
-              <div className={cn(
-                "absolute top-1/2 -right-1 w-2 h-2 rotate-45",
-                activeSection === section.id 
-                  ? "bg-foreground" 
-                  : "bg-surface"
-              )} />
             </div>
           </button>
         ))}
