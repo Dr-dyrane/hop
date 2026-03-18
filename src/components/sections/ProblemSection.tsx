@@ -47,7 +47,7 @@
   
   REMOVED: cta-inverse class and basic styling on CTA section
   ADDED: LiquidGlassCard wrapper component for CTA section
-  ADDED: variant="default" intensity="medium" interactive={false} for CTA
+  ADDED: variant="default" intensity="subtle" interactive={false} for CTA
   ADDED: full liquid glass system with bubble oil effects to declaration
   
   MAINTAINED: All original AOS animations and delays across both sections
@@ -153,7 +153,7 @@ export function ProblemSection() {
 
         <LiquidGlassCard
           variant="default"
-          intensity="medium"
+          intensity="subtle"
           interactive={false}
           className="p-24 md:p-48 flex flex-col items-center justify-center squircle text-center relative overflow-hidden"
           data-aos="fade-up"
