@@ -274,6 +274,276 @@ canvas {
   transition: background-color var(--duration-base) var(--ease-premium);
 }
 
+.liquid-glass {
+  /* Base illumination layer */
+  background: 
+    linear-gradient(135deg, 
+      rgba(255,255,255,0.12) 0%, 
+      rgba(255,255,255,0.06) 40%,
+      rgba(255,255,255,0.02) 70%,
+      transparent 100%),
+    radial-gradient(circle at 30% 40%, 
+      rgba(255,255,255,0.15) 0%, 
+      transparent 50%),
+    radial-gradient(circle at 70% 60%, 
+      rgba(100,200,255,0.08) 0%, 
+      transparent 50%);
+  
+  /* Advanced lensing simulation */
+  backdrop-filter: 
+    blur(24px) 
+    saturate(200%) 
+    brightness(1.12) 
+    contrast(0.92)
+    url(#liquid-distortion);
+  -webkit-backdrop-filter: 
+    blur(24px) 
+    saturate(200%) 
+    brightness(1.12) 
+    contrast(0.92);
+  
+  /* Surface tension borders */
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 24px;
+  corner-shape: squircle;
+  /* Native Squircle Support */
+  
+  /* Material physics */
+  position: relative;
+  overflow: hidden;
+  /* Dynamic transitions */
+  transition:
+    background-color var(--duration-base) var(--ease-premium),
+    box-shadow var(--duration-base) var(--ease-premium),
+    transform var(--duration-fast) var(--ease-premium),
+    border-radius var(--duration-slow) var(--ease-premium);
+}
+
+/* Highlight layer - light casting */
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at var(--mouse-x, 30%) var(--mouse-y, 40%), 
+      rgba(255,255,255,0.4) 0%, 
+      rgba(255,255,255,0.1) 30%,
+      transparent 60%),
+    radial-gradient(circle at calc(100% - var(--mouse-x, 30%)) calc(100% - var(--mouse-y, 40%)), 
+      rgba(100,200,255,0.15) 0%, 
+      transparent 40%);
+  mix-blend-mode: screen;
+  animation: liquid-flow 12s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Shadow layer - depth separation */
+.liquid-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    inset 0 0 20px rgba(0,0,0,0.1),
+    inset 0 0 40px rgba(0,0,0,0.05);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soap bubble iridescence */
+.iridescent-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(45deg, 
+      transparent 30%,
+      rgba(255,0,255,0.03) 45%,
+      rgba(0,255,255,0.03) 55%,
+      transparent 70%),
+    linear-gradient(-45deg, 
+      transparent 40%,
+      rgba(255,255,0,0.02) 50%,
+      rgba(0,255,0,0.02) 60%,
+      transparent 80%);
+  mix-blend-mode: overlay;
+  animation: iridescent-shift 20s linear infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Liquid flow animation */
+@keyframes liquid-flow {
+  0%, 100% {
+    transform: translateX(0) translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  25% {
+    transform: translateX(5px) translateY(-3px) scale(1.02);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateX(-3px) translateY(2px) scale(0.98);
+    opacity: 0.85;
+  }
+  75% {
+    transform: translateX(2px) translateY(-1px) scale(1.01);
+    opacity: 0.88;
+  }
+}
+
+/* Iridescent color shift */
+@keyframes iridescent-shift {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 0.3;
+  }
+}
+
+/* Surface tension morphing */
+.liquid-glass:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 
+    0 20px 60px rgba(0,0,0,0.15),
+    0 40px 120px rgba(100,200,255,0.08),
+    inset 0 0 30px rgba(255,255,255,0.1);
+}
+
+/* Velocity-based blur intensity */
+.liquid-glass.scrolling-fast {
+  backdrop-filter: 
+    blur(32px) 
+    saturate(220%) 
+    brightness(1.15) 
+    contrast(0.88);
+}
+
+.liquid-glass.scrolling-slow {
+  backdrop-filter: 
+    blur(18px) 
+    saturate(180%) 
+    brightness(1.08) 
+    contrast(0.95);
+}
+
+/* Content layer positioning */
+.liquid-glass > * {
+  position: relative;
+  z-index: 4;
+}
+
+/* Dark mode adaptations */
+.dark .liquid-glass {
+  background: 
+    linear-gradient(135deg, 
+      rgba(255,255,255,0.08) 0%, 
+      rgba(255,255,255,0.04) 40%,
+      rgba(255,255,255,0.01) 70%,
+      transparent 100%);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.dark .liquid-glass::before {
+  background: 
+    radial-gradient(circle at var(--mouse-x, 30%) var(--mouse-y, 40%), 
+      rgba(255,255,255,0.3) 0%, 
+      rgba(255,255,255,0.08) 30%,
+      transparent 60%),
+    radial-gradient(circle at calc(100% - var(--mouse-x, 30%)) calc(100% - var(--mouse-y, 40%)), 
+      rgba(215,197,163,0.12) 0%, 
+      transparent 40%);
+}
+
+/* Liquid Glass Variants */
+.liquid-glass-clear {
+  background: 
+    linear-gradient(135deg, 
+      rgba(255,255,255,0.05) 0%, 
+      rgba(255,255,255,0.02) 40%,
+      transparent 70%);
+  backdrop-filter: 
+    blur(16px) 
+    saturate(150%) 
+    brightness(1.05) 
+    contrast(0.98);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.liquid-glass-tinted {
+  background: 
+    linear-gradient(135deg, 
+      rgba(15,61,46,0.12) 0%, 
+      rgba(15,61,46,0.06) 40%,
+      rgba(15,61,46,0.02) 70%,
+      transparent 100%);
+  border-color: rgba(15,61,46,0.25);
+}
+
+/* Intensity Variations */
+.liquid-glass-subtle {
+  backdrop-filter: 
+    blur(16px) 
+    saturate(160%) 
+    brightness(1.08) 
+    contrast(0.96);
+}
+
+.liquid-glass-medium {
+  backdrop-filter: 
+    blur(24px) 
+    saturate(200%) 
+    brightness(1.12) 
+    contrast(0.92);
+}
+
+.liquid-glass-strong {
+  backdrop-filter: 
+    blur(32px) 
+    saturate(240%) 
+    brightness(1.16) 
+    contrast(0.88);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .liquid-glass::before,
+  .iridescent-overlay {
+    animation: none;
+  }
+  
+  .liquid-glass:hover {
+    transform: none;
+    border-radius: 24px;
+  }
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur()) {
+  .liquid-glass {
+    background: 
+      linear-gradient(135deg, 
+        rgba(255,255,255,0.95) 0%, 
+        rgba(255,255,255,0.9) 100%);
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .dark .liquid-glass {
+    background: 
+      linear-gradient(135deg, 
+        rgba(20,20,20,0.95) 0%, 
+        rgba(30,30,30,0.9) 100%);
+    border-color: rgba(255,255,255,0.1);
+  }
+}
+
 .card-premium {
   border-radius: var(--radius-card);
   background: var(--surface);
