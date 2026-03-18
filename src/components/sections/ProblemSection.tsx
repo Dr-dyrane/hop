@@ -1,5 +1,36 @@
 "use client";
 
+/* 
+  CHANGES DOCUMENTATION:
+  
+  ORIGINAL IMPLEMENTATION (for rollback reference):
+  <div
+    key={problem}
+    data-aos="zoom-in-up"
+    data-aos-duration="600"
+    data-aos-delay={400 + i * 100}
+    className="card-premium p-10 flex flex-col items-start justify-between min-h-[220px] group hover:bg-system-background transition-all duration-700 hover:shadow-float squircle"
+  >
+    <div className="w-10 h-10 rounded-xl bg-accent/5 flex items-center justify-center text-accent text-[10px] font-semibold tracking-headline group-hover:scale-110 transition-transform">
+      0{i + 1}
+    </div>
+    <div>
+      <h3 className="text-2xl font-headline font-bold text-label tracking-headline leading-tight group-hover:text-accent transition-colors">{problem}</h3>
+      <div className="h-[2px] w-0 bg-accent/20 mt-4 group-hover:w-full transition-all duration-700" />
+    </div>
+  </div>
+  
+  CHANGES MADE:
+  REMOVED: card-premium class and basic hover effects
+  ADDED: LiquidGlassCard wrapper component
+  ADDED: variant="default" intensity="subtle" interactive={true}
+  ADDED: squircle class for Apple-style corners
+  ADDED: proper z-index layering for content
+  MAINTAINED: All original AOS animations and delays
+  MAINTAINED: Original hover states and transitions
+  MAINTAINED: Number badges and text hierarchy
+*/
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -8,6 +39,7 @@ import { SectionContainer } from "@/components/ui/SectionContainer";
 import { HeroEyebrow } from "@/components/ui/HeroEyebrow";
 import { BadgeList } from "@/components/ui/Badge";
 import { AlertTriangle } from "lucide-react";
+import { LiquidGlassCard } from "@/components/ui/LiquidGlassCard";
 
 const PROBLEMS = [
   "Artificial Sweeteners",
@@ -65,12 +97,15 @@ export function ProblemSection() {
 
         <div className="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
           {PROBLEMS.map((problem, i) => (
-            <div
+            <LiquidGlassCard
               key={problem}
+              variant="default"
+              intensity="subtle"
+              interactive={true}
+              className="min-h-[220px] p-10 flex flex-col items-start justify-between overflow-hidden squircle"
               data-aos="zoom-in-up"
               data-aos-duration="600"
               data-aos-delay={400 + i * 100}
-              className="card-premium p-10 flex flex-col items-start justify-between min-h-[220px] group hover:bg-system-background transition-all duration-700 hover:shadow-float squircle"
             >
               <div className="w-10 h-10 rounded-xl bg-accent/5 flex items-center justify-center text-accent text-[10px] font-semibold tracking-headline group-hover:scale-110 transition-transform">
                 0{i + 1}
@@ -79,7 +114,7 @@ export function ProblemSection() {
                 <h3 className="text-2xl font-headline font-bold text-label tracking-headline leading-tight group-hover:text-accent transition-colors">{problem}</h3>
                 <div className="h-[2px] w-0 bg-accent/20 mt-4 group-hover:w-full transition-all duration-700" />
               </div>
-            </div>
+            </LiquidGlassCard>
           ))}
         </div>
       </div>

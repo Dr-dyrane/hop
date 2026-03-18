@@ -79,7 +79,7 @@ export function BenefitsGrid() {
         REMOVED: hover:shadow-float and transition-all duration-700
         REMOVED: mb-6 spacing on h3 title
         ADDED: LiquidGlassCard wrapper component
-        ADDED: variant="default" intensity="medium" interactive={true}
+        ADDED: variant="default" intensity="subtle" interactive={true}
         ADDED: flex flex-col gap-2 wrapper for title/description
         MAINTAINED: All original hover states and group interactions
       */}
@@ -90,7 +90,7 @@ export function BenefitsGrid() {
             <LiquidGlassCard
               key={benefit.title}
               variant="default"
-              intensity="medium"
+              intensity="subtle"
               interactive={true}
               className="min-h-[300px] p-10 flex flex-col justify-between overflow-hidden squircle"
             >
