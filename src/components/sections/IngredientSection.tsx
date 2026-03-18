@@ -58,6 +58,7 @@ export function IngredientSection() {
                   src={ing.image}
                   alt={ing.name}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000 ease-out mask-white"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-white/60 via-white/30 to-transparent dark:from-[#0d0f0d]/60 dark:via-[#0d0f0d]/30 z-10" />
