@@ -94,10 +94,10 @@ export function ScrollNav({ className }: ScrollNavProps) {
         <button
           onClick={() => setIsScrollNavCollapsed(!isScrollNavCollapsed)}
           className={cn(
-            "flex items-center justify-center w-6 h-6 rounded-full transition-all duration-300 text-xs cursor-pointer backdrop-blur-sm",
+            "flex items-center justify-center w-6 h-6 rounded-lg transition-all duration-300 text-xs cursor-pointer backdrop-blur-sm",
             isScrollNavCollapsed 
               ? "bg-foreground/10 text-foreground hover:bg-foreground/20" 
-              : "text-muted bg-accent/20 hover:bg-foreground/10 w-full"
+              : "text-muted bg-foreground/10 hover:bg-foreground/20 w-full"
           )}
           aria-label={isScrollNavCollapsed ? "Expand navigation" : "Collapse navigation"}
         >
@@ -165,9 +165,9 @@ export function ScrollNav({ className }: ScrollNavProps) {
             <div className="text-xs text-muted font-medium uppercase tracking-wider">
               {Math.round((sections.findIndex(s => s.id === activeSection) + 1) / sections.length * 100)}%
             </div>
-            <div className="w-8 h-1 bg-border-soft rounded-full overflow-hidden bg-accent/20">
+            <div className="w-8 h-1 bg-border-soft rounded-full overflow-hidden">
               <div 
-                className="h-full bg-foreground transition-all duration-500 ease-out bg-accent/40"
+                className="h-full bg-foreground transition-all duration-500 ease-out"
                 style={{ 
                   width: `${((sections.findIndex(s => s.id === activeSection) + 1) / sections.length) * 100}%` 
                 }}
