@@ -5,6 +5,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { PRODUCTS } from "@/lib/data";
+import { ProductFallback } from "./ProductFallback";
+import { cn } from "@/lib/utils";
 
 interface Product3DCarouselProps {
   activeId: keyof typeof PRODUCTS;
@@ -196,6 +198,7 @@ export function Product3DCarousel({
   const touchStartYRef = useRef<number | null>(null);
   const [shouldRender, setShouldRender] = useState(false);
   const [hasWebGLError, setHasWebGLError] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   // Delay rendering to prevent WebGL context conflicts
   useEffect(() => {
@@ -296,9 +299,21 @@ export function Product3DCarousel({
   return (
     <div
       ref={interactionRef}
-      className="relative h-full w-full overflow-hidden touch-pan-y"
+      className="relative w-full h-full"
     >
-      {shouldRender && !hasWebGLError ? (
+      {/* Fallback Layer: Always show product image as background */}
+      <div className={cn(
+        "absolute inset-0 transition-all duration-1000",
+        isReady ? "opacity-0 scale-95" : "opacity-100 scale-100"
+      )}>
+        <ProductFallback
+          imagePath={PRODUCTS[activeId].model.replace("/models/products/", "/images/products/").replace(".glb", ".png")}
+          className="w-full h-full"
+        />
+      </div>
+
+      {/* 3D Canvas Layer: Only render when ready */}
+      {shouldRender && !hasWebGLError && (
         <Canvas
           dpr={[1, 1.5]}
           camera={{ position: [0, 0.15, 6], fov: 24 }}
@@ -310,6 +325,11 @@ export function Product3DCarousel({
             outputColorSpace: THREE.SRGBColorSpace,
           }}
           onError={handleWebGLError}
+          onCreated={() => {
+            setTimeout(() => {
+              setIsReady(true);
+            }, 200);
+          }}
         >
           <ResponsiveCamera />
 
@@ -373,21 +393,6 @@ export function Product3DCarousel({
             />
           </Suspense>
         </Canvas>
-      ) : hasWebGLError ? (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="text-foreground/60 text-sm">
-              3D showcase unavailable
-            </div>
-            <div className="text-foreground/40 text-xs mt-2">
-              {PRODUCTS[activeId].name}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-pulse text-foreground/40">Loading...</div>
-        </div>
       )}
     </div>
   );
