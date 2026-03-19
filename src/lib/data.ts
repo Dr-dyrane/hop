@@ -73,6 +73,16 @@ export const PRODUCTS = {
   }
 };
 
+export type ProductId = keyof typeof PRODUCTS;
+
+export interface IngredientProfile {
+  id: string;
+  name: string;
+  detail: string;
+  image: string;
+  aliases: string[];
+}
+
 export const BENEFITS = [
   {
     title: "100% Organic",
@@ -96,14 +106,63 @@ export const BENEFITS = [
   },
 ];
 
-export const INGREDIENTS = [
-  { name: "Soy Bean Protein", detail: "Complete amino acid profile for muscle synthesis.", image: "/images/ingredients/soy.png" },
-  { name: "Flaxseed", detail: "Rich in omega-3 fatty acids and fiber for heart health.", image: "/images/ingredients/flaxseed.png" },
-  { name: "Peanut", detail: "Natural protein source with healthy fats and sustained energy.", image: "/images/ingredients/peanut.png" },
-  { name: "Sunflower Protein", detail: "Plant-based protein rich in B vitamins and minerals.", image: "/images/ingredients/sunflower.png" },
-  { name: "Oat Protein", detail: "Slow-digesting carbs for sustained energy release.", image: "/images/ingredients/oat.png" },
-  { name: "Pumpkin Seed", detail: "Magnesium-rich protein for muscle recovery.", image: "/images/ingredients/pumpkin.png" },
-  { name: "Chia Seeds", detail: "Omega-3 fatty acids and sustained hydration.", image: "/images/ingredients/chia.png" },
+export const INGREDIENTS: IngredientProfile[] = [
+  {
+    id: "soy",
+    name: "Soy Bean Protein",
+    detail: "Complete amino acid profile for muscle synthesis.",
+    image: "/images/ingredients/soy.png",
+    aliases: ["Soy Protein", "100% Organic Soybeans"],
+  },
+  {
+    id: "flaxseed",
+    name: "Flaxseed",
+    detail: "Rich in omega-3 fatty acids and fiber for heart health.",
+    image: "/images/ingredients/flaxseed.png",
+    aliases: ["Flaxseed"],
+  },
+  {
+    id: "peanut",
+    name: "Peanut",
+    detail: "Natural protein source with healthy fats and sustained energy.",
+    image: "/images/ingredients/peanut.png",
+    aliases: ["Peanut"],
+  },
+  {
+    id: "sunflower-protein",
+    name: "Sunflower Protein",
+    detail: "Plant-based protein rich in B vitamins and minerals.",
+    image: "/images/ingredients/sunflower.png",
+    aliases: ["Sunflower Protein"],
+  },
+  {
+    id: "oat-protein",
+    name: "Oat Protein",
+    detail: "Slow-digesting carbs for sustained energy release.",
+    image: "/images/ingredients/oat.png",
+    aliases: ["Oat Protein"],
+  },
+  {
+    id: "pumpkin-seed",
+    name: "Pumpkin Seed",
+    detail: "Magnesium-rich protein for muscle recovery.",
+    image: "/images/ingredients/pumpkin.png",
+    aliases: ["Pumpkin Seed"],
+  },
+  {
+    id: "chia-seeds",
+    name: "Chia Seeds",
+    detail: "Omega-3 fatty acids and sustained hydration.",
+    image: "/images/ingredients/chia.png",
+    aliases: ["Chia Seed", "Chia Seeds"],
+  },
+  {
+    id: "turmeric",
+    name: "Turmeric",
+    detail: "Used in Glow and Immunity for immune-focused and anti-inflammatory blends.",
+    image: "/images/ingredients/tumeric.png",
+    aliases: ["Turmeric"],
+  },
 ];
 
 export const SOCIAL_PROOF = {

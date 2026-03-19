@@ -642,6 +642,11 @@ canvas {
     transform var(--duration-fast) var(--ease-premium);
 }
 
+.card-soft:hover,
+.card-soft:focus-visible {
+  corner-shape: squircle;
+}
+
 .button-primary {
   display: inline-flex;
   align-items: center;
@@ -965,6 +970,12 @@ canvas {
   border-radius: var(--radius-card);
   /* Fallback */
 }
+
+/* .squircle:hover,
+.squircle:focus-visible,
+.squircle:active {
+  corner-shape: squircle;
+} */
 
 .vibrancy-label {
   mix-blend-mode: multiply;
