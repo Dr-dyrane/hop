@@ -2,14 +2,14 @@
 
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, PresentationControls, useGLTF } from "@react-three/drei";
+import { PresentationControls, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { ProductFallback } from "./ProductFallback";
+import { SceneEnvironment } from "./SceneEnvironment";
 import { cn } from "@/lib/utils";
 
 // Global WebGL context tracking
 let activeWebGLContexts: Set<string> = new Set();
-let globalCleanupTimer: NodeJS.Timeout | null = null;
 let globalSectionLock: string | null = null;
 
 interface Product3DViewerProps {
@@ -68,12 +68,6 @@ function Model({ url, isReady, scrollActive }: { url: string; isReady: boolean; 
   );
 }
 
-useGLTF.preload("/models/products/protein_chocolate.glb");
-useGLTF.preload("/models/products/soy_powder.glb");
-useGLTF.preload("/models/products/shot_glow.glb");
-useGLTF.preload("/models/products/shot_immunity.glb");
-useGLTF.preload("/models/products/shot_metabolism.glb");
-
 export function Product3DViewer({
   modelPath,
   theme,
@@ -91,45 +85,28 @@ export function Product3DViewer({
   useEffect(() => {
     if (scrollActive) {
       const safeSectionId = sectionId || 'unknown';
-      console.log(` [Product3DViewer] Section ${safeSectionId} becoming active, scheduling WebGL context creation`);
-      
-      // Clear any existing global cleanup timer
-      if (globalCleanupTimer) {
-        clearTimeout(globalCleanupTimer);
-        globalCleanupTimer = null;
-      }
-      
-      // BLOCK: If any other section is active, prevent WebGL context creation
+
       if (globalSectionLock && globalSectionLock !== safeSectionId) {
-        console.log(` [Product3DViewer] BLOCKED: Section ${globalSectionLock} is active, preventing WebGL context for ${safeSectionId}`);
-        return; // Don't create WebGL context
+        return;
       }
-      
-      // Set global lock and proceed with cleanup
-      console.log(` [Product3DViewer] Force cleaning all other WebGL contexts before creating ${safeSectionId}`);
+
       activeWebGLContexts.clear();
       globalSectionLock = safeSectionId;
-      
-      // Small delay to prevent WebGL context conflicts during transitions
+
       const timer = setTimeout(() => {
-        // Check if this context is still needed and still has lock
         if (scrollActive && !activeWebGLContexts.has(safeSectionId) && globalSectionLock === safeSectionId) {
-          console.log(` [Product3DViewer] Creating WebGL context for section ${safeSectionId}`);
           activeWebGLContexts.add(safeSectionId);
           setIsReady(true);
         }
-      }, 300); // Increased delay for better cleanup
+      }, 300);
       return () => clearTimeout(timer);
     } else {
-      // Clean up when section becomes inactive
       const safeSectionId = sectionId || 'unknown';
-      console.log(` [Product3DViewer] Section ${safeSectionId} becoming inactive, cleaning up WebGL context`);
-      
-      // Release global lock if this section had it
+
       if (globalSectionLock === safeSectionId) {
         globalSectionLock = null;
       }
-      
+
       activeWebGLContexts.delete(safeSectionId);
       setIsReady(false);
     }
@@ -138,7 +115,6 @@ export function Product3DViewer({
   // Enhanced cleanup on unmount
   useEffect(() => {
     return () => {
-      // Force cleanup when component unmounts
       setIsReady(false);
       setHasError(false);
     };
@@ -158,13 +134,11 @@ export function Product3DViewer({
           ambient: 0.5,
           directional: 0.95,
           directionalPosition: [4, 5, 4] as [number, number, number],
-          environment: "city" as const,
         }
       : {
           ambient: 0.7,
           directional: 1.2,
           directionalPosition: [-4, 5, 4] as [number, number, number],
-          environment: "studio" as const,
         };
 
   if (!isWebGLSupported || hasError) {
@@ -209,16 +183,15 @@ export function Product3DViewer({
             toneMapping: THREE.ACESFilmicToneMapping,
             outputColorSpace: THREE.SRGBColorSpace,
             powerPreference: "high-performance",
-            preserveDrawingBuffer: true,
             failIfMajorPerformanceCaveat: false,
           }}
-          dpr={[1, 1.5]} // Reduced DPR for performance
+          dpr={[1, 1.5]}
           onCreated={() => {
             setTimeout(() => {
               setIsReady(true);
             }, 200);
           }}
-          onError={(error) => {
+          onError={() => {
             setHasError(true);
           }}
         >
@@ -230,7 +203,7 @@ export function Product3DViewer({
           />
 
           <Suspense fallback={null}>
-            <Environment preset={lightingConfig.environment} />
+            <SceneEnvironment isDark={theme === "dark"} />
 
             <PresentationControls
               global

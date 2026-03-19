@@ -1,223 +1,185 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
-/**
- * Global state for liquid glass effects across all components
- * Centralized for performance - single event listeners instead of per-card
- */
-interface GlobalLiquidGlassState {
+interface LiquidGlassState {
   mousePosition: { x: number; y: number };
   scrollVelocity: number;
   isScrolling: boolean;
-  visibleCards: Set<string>;
-  performanceMode: boolean;
 }
 
-/**
- * Main UI context interface combining navigation and liquid glass management
- */
-interface UIContextType {
+interface NavUIContextType {
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
   isScrollNavCollapsed: boolean;
   setIsScrollNavCollapsed: (collapsed: boolean) => void;
-  /**
-   * Registers a liquid glass card for global performance management
-   * @param cardId - Unique identifier for the card
-   * @param interactive - Whether the card responds to mouse movement
-   * @returns Card management functions and state
-   */
-  registerLiquidGlassCard: (cardId: string, interactive: boolean) => {
-    cardRef: React.RefObject<HTMLDivElement | null>;
-    getCSSVariables: () => Record<string, string>;
-    getBlurClass: () => string;
-    isVisible: boolean;
-  };
-  liquidGlassState: GlobalLiquidGlassState;
 }
 
-const UIContext = createContext<UIContextType | undefined>(undefined);
+interface LiquidGlassContextType {
+  liquidGlassState: LiquidGlassState;
+}
 
-/**
- * Global liquid glass state singleton
- * Shared across all components for performance optimization
- * Prevents duplicate event listeners and state management
- */
-let globalLiquidGlassState: GlobalLiquidGlassState = {
+const NavUIContext = createContext<NavUIContextType | undefined>(undefined);
+const LiquidGlassContext = createContext<LiquidGlassContextType | undefined>(undefined);
+
+const defaultLiquidGlassState: LiquidGlassState = {
   mousePosition: { x: 50, y: 50 },
   scrollVelocity: 0,
   isScrolling: false,
-  visibleCards: new Set(),
-  performanceMode: false
 };
-
-/**
- * Performance optimization: single set of listeners for all liquid glass cards
- * Reduces memory usage and improves performance on mobile/iOS
- */
-let liquidGlassListeners: Set<(state: GlobalLiquidGlassState) => void> = new Set();
-let liquidGlassRafId: number | null = null;
-let lastScrollY = 0;
-let scrollTimeout: NodeJS.Timeout | null = null;
 
 export function UIProvider({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrollNavCollapsed, setIsScrollNavCollapsed] = useState(true);
-  const [liquidGlassState, setLiquidGlassState] = useState(globalLiquidGlassState);
-  const cardRefs = useRef<Map<string, React.RefObject<HTMLDivElement | null>>>(new Map());
+  const [liquidGlassState, setLiquidGlassState] = useState(defaultLiquidGlassState);
+  const stateRef = useRef(defaultLiquidGlassState);
 
-  /**
-   * Performance-optimized global liquid glass manager
-   * Uses single event listeners and RAF throttling for 60fps performance
-   * Centralized card visibility tracking to prevent duplicate IntersectionObservers
-   */
-  const registerLiquidGlassCard = useCallback((cardId: string, interactive: boolean = true) => {
-    // Create or get existing ref for this card instance
-    if (!cardRefs.current.has(cardId)) {
-      cardRefs.current.set(cardId, React.createRef<HTMLDivElement | null>());
-    }
-    const cardRef = cardRefs.current.get(cardId)!;
-
-    /**
-     * Throttled update function (60fps)
-     * Prevents excessive re-renders during rapid mouse/scroll events
-     */
-    const throttledUpdate = useCallback(() => {
-      setLiquidGlassState({ ...globalLiquidGlassState });
-    }, []);
-
-    // Register card for visibility tracking
-    const registerCard = useCallback(() => {
-      if (!cardRef.current) return;
-      
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              globalLiquidGlassState.visibleCards.add(cardId);
-            } else {
-              globalLiquidGlassState.visibleCards.delete(cardId);
-            }
-          });
-          throttledUpdate();
-        },
-        { threshold: 0.1 }
-      );
-
-      observer.observe(cardRef.current);
-      return () => observer.disconnect();
-    }, [cardId, throttledUpdate]);
-
-    // Register for visibility tracking
-    useEffect(() => {
-      const cleanup = registerCard();
-      return cleanup;
-    }, [registerCard]);
-
-    // Get CSS variables for this card
-    const getCSSVariables = useCallback(() => {
-      if (!interactive || !globalLiquidGlassState.visibleCards.has(cardId)) {
-        return {
-          '--mouse-x': '50%',
-          '--mouse-y': '50%'
-        } as Record<string, string>;
-      }
-      return {
-        '--mouse-x': `${globalLiquidGlassState.mousePosition.x}%`,
-        '--mouse-y': `${globalLiquidGlassState.mousePosition.y}%`
-      } as Record<string, string>;
-    }, [cardId, interactive]);
-
-    // Get blur class based on scroll velocity
-    const getBlurClass = useCallback(() => {
-      if (!globalLiquidGlassState.visibleCards.has(cardId)) return '';
-      if (globalLiquidGlassState.scrollVelocity > 20) return 'scrolling-fast';
-      if (globalLiquidGlassState.scrollVelocity > 5) return 'scrolling-slow';
-      return '';
-    }, [cardId]);
-
-    const isVisible = globalLiquidGlassState.visibleCards.has(cardId);
-
-    return {
-      cardRef,
-      getCSSVariables,
-      getBlurClass,
-      isVisible
-    };
-  }, []);
-
-  // Global event listeners for liquid glass
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      globalLiquidGlassState.mousePosition = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
+    const canTrackPointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    let rafId: number | null = null;
+    let lastScrollY = window.scrollY;
+    let scrollTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const flush = () => {
+      rafId = null;
+      setLiquidGlassState({ ...stateRef.current });
+    };
+
+    const scheduleFlush = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(flush);
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!canTrackPointer) return;
+
+      stateRef.current = {
+        ...stateRef.current,
+        mousePosition: {
+          x: (event.clientX / window.innerWidth) * 100,
+          y: (event.clientY / window.innerHeight) * 100,
+        },
       };
-      
-      if (!liquidGlassRafId) {
-        liquidGlassRafId = requestAnimationFrame(() => {
-          setLiquidGlassState({ ...globalLiquidGlassState });
-          liquidGlassRafId = null;
-        });
-      }
+
+      scheduleFlush();
     };
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      globalLiquidGlassState.scrollVelocity = Math.abs(currentScrollY - lastScrollY);
-      globalLiquidGlassState.isScrolling = true;
+
+      stateRef.current = {
+        ...stateRef.current,
+        scrollVelocity: Math.abs(currentScrollY - lastScrollY),
+        isScrolling: true,
+      };
       lastScrollY = currentScrollY;
+      scheduleFlush();
 
-      if (!liquidGlassRafId) {
-        liquidGlassRafId = requestAnimationFrame(() => {
-          setLiquidGlassState({ ...globalLiquidGlassState });
-          liquidGlassRafId = null;
-        });
-      }
-
-      // Clear existing timeout
       if (scrollTimeout) clearTimeout(scrollTimeout);
-      
-      // Set new timeout to detect when scrolling stops
       scrollTimeout = setTimeout(() => {
-        globalLiquidGlassState.scrollVelocity = 0;
-        globalLiquidGlassState.isScrolling = false;
-        setLiquidGlassState({ ...globalLiquidGlassState });
-        liquidGlassRafId = null;
-      }, 150);
+        stateRef.current = {
+          ...stateRef.current,
+          scrollVelocity: 0,
+          isScrolling: false,
+        };
+        scheduleFlush();
+      }, 140);
     };
 
-    // Single global event listeners
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    if (canTrackPointer) {
+      window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
-      if (liquidGlassRafId) cancelAnimationFrame(liquidGlassRafId);
+      if (canTrackPointer) {
+        window.removeEventListener("mousemove", handleMouseMove);
+      }
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
   }, []);
 
-  return (
-    <UIContext.Provider value={{
+  const navValue = useMemo(
+    () => ({
       isMobileMenuOpen,
       setIsMobileMenuOpen,
       isScrollNavCollapsed,
       setIsScrollNavCollapsed,
-      registerLiquidGlassCard,
-      liquidGlassState
-    }}>
-      {children}
-    </UIContext.Provider>
+    }),
+    [isMobileMenuOpen, isScrollNavCollapsed]
+  );
+
+  const liquidGlassValue = useMemo(
+    () => ({ liquidGlassState }),
+    [liquidGlassState]
+  );
+
+  return (
+    <NavUIContext.Provider value={navValue}>
+      <LiquidGlassContext.Provider value={liquidGlassValue}>
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}
+        >
+          <filter id="liquid-distortion">
+            <feTurbulence
+              baseFrequency="0.02"
+              numOctaves="3"
+              result="turbulence"
+              seed={0}
+            >
+              <animate
+                attributeName="baseFrequency"
+                values="0.02;0.025;0.02"
+                dur="8s"
+                repeatCount="indefinite"
+              />
+            </feTurbulence>
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="turbulence"
+              scale="3"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+            <feGaussianBlur stdDeviation="0.5" />
+            <feColorMatrix
+              values="1 0 0 0 0
+                      0 1 0 0 0
+                      0 0 1 0 0
+                      0 0 0 0.95 0"
+            />
+          </filter>
+        </svg>
+        {children}
+      </LiquidGlassContext.Provider>
+    </NavUIContext.Provider>
   );
 }
 
 export function useUI() {
-  const context = useContext(UIContext);
+  const context = useContext(NavUIContext);
   if (context === undefined) {
-    throw new Error('useUI must be used within a UIProvider');
+    throw new Error("useUI must be used within a UIProvider");
+  }
+  return context;
+}
+
+export function useLiquidGlass() {
+  const context = useContext(LiquidGlassContext);
+  if (context === undefined) {
+    throw new Error("useLiquidGlass must be used within a UIProvider");
   }
   return context;
 }

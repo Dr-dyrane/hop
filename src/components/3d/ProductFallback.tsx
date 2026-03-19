@@ -7,9 +7,14 @@ import { motion } from "framer-motion";
 interface ProductFallbackProps {
   imagePath: string;
   className?: string;
+  priority?: boolean;
 }
 
-export function ProductFallback({ imagePath, className }: ProductFallbackProps) {
+export function ProductFallback({
+  imagePath,
+  className,
+  priority = false,
+}: ProductFallbackProps) {
   return (
     <motion.div
       animate={{ y: [0, -8, 0] }}
@@ -21,7 +26,7 @@ export function ProductFallback({ imagePath, className }: ProductFallbackProps) 
         alt="Product"
         width={800}
         height={1000}
-        priority
+        priority={priority}
         className="w-full h-auto drop-shadow-2xl mask-radial"
       />
     </motion.div>

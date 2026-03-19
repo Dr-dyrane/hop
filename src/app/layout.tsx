@@ -93,7 +93,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${sfPro.variable} font-sans antialiased`}>
-        <ThreeJSSuppressor />
+        {process.env.NODE_ENV === "development" ? <ThreeJSSuppressor /> : null}
         <AOSProvider>
           <ThemeProvider
             attribute="class"
@@ -106,7 +106,7 @@ export default function RootLayout({
             </UIProvider>
           </ThemeProvider>
         </AOSProvider>
-        <Analytics />
+        {process.env.NODE_ENV === "production" ? <Analytics /> : null}
       </body>
     </html>
   );

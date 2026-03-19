@@ -813,7 +813,15 @@ canvas {
 .hero-grain-layer {
   position: absolute;
   inset: 0;
-  background-image: url("/images/hero/hero-grain.png");
+  background-image: url("/images/hero/hero-grain.webp");
+  background-image: -webkit-image-set(
+    url("/images/hero/hero-grain.avif") type("image/avif"),
+    url("/images/hero/hero-grain.webp") type("image/webp")
+  );
+  background-image: image-set(
+    url("/images/hero/hero-grain.avif") type("image/avif"),
+    url("/images/hero/hero-grain.webp") type("image/webp")
+  );
   background-repeat: repeat;
   opacity: 0.03;
   mix-blend-mode: overlay;

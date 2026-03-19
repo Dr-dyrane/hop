@@ -2,10 +2,11 @@
 
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, useGLTF } from "@react-three/drei";
+import { ContactShadows, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { PRODUCTS } from "@/lib/data";
 import { ProductFallback } from "./ProductFallback";
+import { SceneEnvironment } from "./SceneEnvironment";
 import { cn } from "@/lib/utils";
 
 interface Product3DCarouselProps {
@@ -209,7 +210,6 @@ export function Product3DCarousel({
   }, []);
 
   const handleWebGLError = useCallback(() => {
-    console.warn('WebGL context lost in Product3DCarousel, falling back');
     setHasWebGLError(true);
   }, []);
 
@@ -309,6 +309,7 @@ export function Product3DCarousel({
         <ProductFallback
           imagePath={PRODUCTS[activeId].model.replace("/models/products/", "/images/products/").replace(".glb", ".png")}
           className="w-full h-full"
+          priority
         />
       </div>
 
@@ -353,7 +354,7 @@ export function Product3DCarousel({
           <pointLight position={[0, -0.4, 2.4]} intensity={0.22} />
 
           <Suspense fallback={null}>
-            <Environment preset={isDark ? "city" : "studio"} />
+            <SceneEnvironment isDark={isDark} />
 
             {/* Only render active model and immediate neighbors to prevent WebGL context overload */}
             <group position={[0, -0.02, 0]}>
@@ -397,7 +398,3 @@ export function Product3DCarousel({
     </div>
   );
 }
-
-PRODUCT_KEYS.forEach((key) => {
-  useGLTF.preload(PRODUCTS[key].model);
-});

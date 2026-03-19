@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { useUI } from '@/components/providers/UIProvider'
+import { useLiquidGlass } from '@/components/providers/UIProvider'
 
 /**
  * Props for the LiquidGlassCard component
@@ -40,26 +40,25 @@ export const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
   intensity = 'medium',
   interactive = true
 }) => {
-  /**
-   * Generate unique ID for this card instance
-   * Used for global state management and visibility tracking
-   */
-  const cardId = useRef(`liquid-glass-${Math.random().toString(36).substr(2, 9)}`)
-  
-  /**
-   * Connect to global performance manager from UI provider
-   * This ensures single event listeners for all liquid glass cards
-   */
-  const { 
-    registerLiquidGlassCard 
-  } = useUI()
-  
-  const { 
-    cardRef, 
-    getCSSVariables, 
-    getBlurClass, 
-    isVisible 
-  } = registerLiquidGlassCard(cardId.current, interactive)
+  const cardRef = useRef<HTMLDivElement | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const { liquidGlassState } = useLiquidGlass()
+
+  useEffect(() => {
+    const node = cardRef.current
+    if (!node) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry?.isIntersecting ?? false)
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(node)
+
+    return () => observer.disconnect()
+  }, [])
 
   const variantStyles = {
     default: 'liquid-glass',
@@ -73,53 +72,39 @@ export const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
     strong: 'liquid-glass-strong'
   }
 
+  const cssVariables = useMemo(() => {
+    if (!interactive || !isVisible) {
+      return {
+        '--mouse-x': '50%',
+        '--mouse-y': '50%'
+      } as Record<string, string>
+    }
+
+    return {
+      '--mouse-x': `${liquidGlassState.mousePosition.x}%`,
+      '--mouse-y': `${liquidGlassState.mousePosition.y}%`
+    } as Record<string, string>
+  }, [interactive, isVisible, liquidGlassState.mousePosition.x, liquidGlassState.mousePosition.y])
+
+  const blurClass = useMemo(() => {
+    if (!isVisible) return ''
+    if (liquidGlassState.scrollVelocity > 20) return 'scrolling-fast'
+    if (liquidGlassState.scrollVelocity > 5) return 'scrolling-slow'
+    return ''
+  }, [isVisible, liquidGlassState.scrollVelocity])
+
   return (
     <>
-      {/* SVG Filter for Liquid Distortion - only render if visible */}
-      {isVisible && (
-        <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-          <filter id="liquid-distortion">
-            <feTurbulence 
-              baseFrequency="0.02" 
-              numOctaves="3" 
-              result="turbulence"
-              seed={interactive ? 0 : 0}
-            >
-              <animate 
-                attributeName="baseFrequency" 
-                values="0.02;0.025;0.02" 
-                dur="8s" 
-                repeatCount="indefinite" 
-              />
-            </feTurbulence>
-            <feDisplacementMap 
-              in="SourceGraphic" 
-              in2="turbulence" 
-              scale="3" 
-              xChannelSelector="R" 
-              yChannelSelector="G"
-            />
-            <feGaussianBlur stdDeviation="0.5" />
-            <feColorMatrix 
-              values="1 0 0 0 0
-                      0 1 0 0 0  
-                      0 0 1 0 0
-                      0 0 0 0.95 0" 
-            />
-          </filter>
-        </svg>
-      )}
-
       <motion.div
         ref={cardRef}
         className={cn(
           variantStyles[variant],
           intensityStyles[intensity],
-          getBlurClass(),
+          blurClass,
           'group relative overflow-hidden',
           className
         )}
-        style={getCSSVariables() as any}
+        style={cssVariables as React.CSSProperties}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { BadgeList } from "@/components/ui/Badge";
@@ -8,13 +9,18 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { PRODUCTS } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Product3DCarousel } from "@/components/3d/Product3DCarousel";
-import AOS from "aos";
+import { ProductFallback } from "@/components/3d/ProductFallback";
+
+const Product3DCarousel = dynamic(
+  () =>
+    import("@/components/3d/Product3DCarousel").then((mod) => mod.Product3DCarousel),
+  { ssr: false }
+);
 
 export function HeroSection({
   activeSection,
   isScrollingIntoSection,
-  isScrollingOutOfSection
+  isScrollingOutOfSection,
 }: {
   activeSection: string | null;
   isScrollingIntoSection: (sectionId: string) => boolean;
@@ -22,17 +28,35 @@ export function HeroSection({
 }) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState<keyof typeof PRODUCTS>("protein_chocolate");
+  const [enableHero3D, setEnableHero3D] = useState(false);
+  const [currentProduct, setCurrentProduct] =
+    useState<keyof typeof PRODUCTS>("protein_chocolate");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Refresh AOS to calculate correct scroll positions for the 3D viewer
   useEffect(() => {
-    console.log(`🔄 [Hero] Product changed to: ${currentProduct}, refreshing AOS`);
-    AOS.refresh();
-  }, [currentProduct]);
+    if (!mounted) return;
+
+    const enable = () => setEnableHero3D(true);
+    const idleCallback =
+      typeof globalThis.requestIdleCallback === "function"
+        ? globalThis.requestIdleCallback.bind(globalThis)
+        : null;
+    const cancelIdleCallback =
+      typeof globalThis.cancelIdleCallback === "function"
+        ? globalThis.cancelIdleCallback.bind(globalThis)
+        : null;
+
+    if (idleCallback && cancelIdleCallback) {
+      const idleId = idleCallback(enable, { timeout: 1500 });
+      return () => cancelIdleCallback(idleId);
+    }
+
+    const timer = globalThis.setTimeout(enable, 900);
+    return () => globalThis.clearTimeout(timer);
+  }, [mounted]);
 
   const isDark = mounted && resolvedTheme === "dark";
 
@@ -50,11 +74,13 @@ export function HeroSection({
   };
 
   return (
-    <section id="hero" className="hero-shell relative flex flex-col items-center justify-center overflow-hidden bg-background">
+    <section
+      id="hero"
+      className="hero-shell relative flex flex-col items-center justify-center overflow-hidden bg-background"
+    >
       <div className="absolute inset-x-0 bottom-0 h-full pointer-events-none">
         <div className="hero-grain-layer" />
 
-        {/* High-Fidelity Stage Lighting */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentProduct + (isDark ? "-dark" : "-light")}
@@ -87,7 +113,6 @@ export function HeroSection({
       </motion.div>
 
       <div className="container-shell relative z-10 grid items-center gap-12 lg:grid-cols-2 min-h-[calc(100svh-120px)] py-0">
-        {/* Copy Layer */}
         <div className="max-w-xl text-center lg:text-left pt-6 lg:pt-0 mx-auto lg:mx-0">
           <motion.h1
             custom={1}
@@ -154,27 +179,37 @@ export function HeroSection({
           />
         </div>
 
-        {/* Product Layer */}
         <div className="relative flex w-full items-center justify-center min-h-[420px] sm:min-h-[480px] lg:min-h-[560px] xl:min-h-[620px]">
           <div className="relative w-full min-w-0 max-w-[440px] sm:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] aspect-[5/4] lg:aspect-[4/3] flex items-center justify-center">
-            {/* Ambient Shadow */}
             <div className="product-shadow-wrap absolute bottom-0 md:bottom-[-5%] w-full">
-              <div className={cn(
-                "w-full h-8 bg-black/10 blur-[40px] rounded-full scale-x-75 transition-opacity duration-1000",
-                isDark ? "opacity-30" : "opacity-20"
-              )} />
+              <div
+                className={cn(
+                  "w-full h-8 bg-black/10 blur-[40px] rounded-full scale-x-75 transition-opacity duration-1000",
+                  isDark ? "opacity-30" : "opacity-20"
+                )}
+              />
             </div>
 
-            <Product3DCarousel
-              activeId={currentProduct}
-              onChange={(id) => setCurrentProduct(id as keyof typeof PRODUCTS)}
-              isDark={isDark}
-            />
+            {!enableHero3D && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ProductFallback
+                  imagePath={PRODUCTS[currentProduct].image}
+                  className="w-[78%] h-auto max-w-[360px] sm:max-w-[420px] lg:max-w-[460px]"
+                  priority
+                />
+              </div>
+            )}
+
+            {enableHero3D && (
+              <Product3DCarousel
+                activeId={currentProduct}
+                onChange={(id) => setCurrentProduct(id as keyof typeof PRODUCTS)}
+                isDark={isDark}
+              />
+            )}
           </div>
         </div>
       </div>
     </section>
   );
 }
-
-
