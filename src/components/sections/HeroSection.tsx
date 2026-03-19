@@ -160,7 +160,7 @@ export function HeroSection({
             <Button
               size="lg"
               variant="secondary"
-              className="px-10 liquid-glass !border-none text-label font-bold shadow-soft"
+              className="px-10 liquid-glass !border-none text-label font-bold shadow-soft overflow-hidden"
               onClick={() => {
                 const el = document.getElementById("ingredients");
                 if (el) {
