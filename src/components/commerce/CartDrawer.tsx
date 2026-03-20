@@ -26,6 +26,7 @@ export function CartDrawer() {
     checkoutError,
     checkoutForm,
     isCartReady,
+    isRefreshingCart,
     isSubmittingCheckout,
     submitCheckout,
     clearCart,
@@ -34,12 +35,18 @@ export function CartDrawer() {
     isCartOpen,
     itemCount,
     removeItem,
+    refreshCart,
     setQuantity,
     shotBundleCount,
     subtotalNgn,
     totalNgn,
     updateCheckoutField,
   } = useCommerce();
+
+  const showLoadingState = !isCartReady && cartLines.length === 0;
+  const showEmptyState = isCartReady && cartLines.length === 0;
+  const canRefreshCart =
+    checkoutError === "Cart refreshed." || checkoutError === "Cart is empty.";
 
   useEffect(() => {
     if (!isCartOpen) {
@@ -111,7 +118,22 @@ export function CartDrawer() {
             </button>
           </div>
 
-          {cartLines.length === 0 ? (
+          {showLoadingState ? (
+            <div className="flex flex-1 flex-col gap-4 px-1 pt-2">
+              <div className="card-soft squircle animate-pulse p-5">
+                <div className="h-3 w-16 rounded-full bg-system-fill" />
+                <div className="mt-4 h-8 w-32 rounded-full bg-system-fill" />
+              </div>
+              <div className="card-soft squircle animate-pulse p-5">
+                <div className="h-3 w-20 rounded-full bg-system-fill" />
+                <div className="mt-4 h-16 rounded-[24px] bg-system-fill" />
+              </div>
+              <div className="card-soft squircle animate-pulse p-5">
+                <div className="h-3 w-24 rounded-full bg-system-fill" />
+                <div className="mt-4 h-48 rounded-[28px] bg-system-fill" />
+              </div>
+            </div>
+          ) : showEmptyState ? (
             <div className="flex flex-1 flex-col items-center justify-center px-3 text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-system-fill/80 text-accent shadow-soft">
                 <ShoppingBag className="h-9 w-9" strokeWidth={1.7} />
@@ -119,9 +141,11 @@ export function CartDrawer() {
               <h3 className="mt-8 text-2xl font-headline font-semibold tracking-title text-label">
                 Cart is empty.
               </h3>
-              <p className="mt-3 max-w-sm text-sm leading-relaxed tracking-body text-secondary-label">
-                Add products to start.
-              </p>
+              {checkoutError ? (
+                <p className="mt-3 text-sm tracking-body text-secondary-label">
+                  {checkoutError}
+                </p>
+              ) : null}
               <div className="mt-8 flex w-full flex-col gap-3">
                 <Link
                   href="/#shop"
@@ -130,6 +154,16 @@ export function CartDrawer() {
                 >
                   Browse Products
                 </Link>
+                {canRefreshCart ? (
+                  <button
+                    type="button"
+                    onClick={() => void refreshCart()}
+                    disabled={isRefreshingCart}
+                    className="button-secondary min-h-[48px] w-full justify-center text-xs font-semibold uppercase tracking-headline disabled:translate-y-0 disabled:shadow-none"
+                  >
+                    {isRefreshingCart ? "Refreshing" : "Refresh"}
+                  </button>
+                ) : null}
               </div>
             </div>
           ) : (
@@ -252,14 +286,9 @@ export function CartDrawer() {
 
                 <div className="card-soft squircle mt-5 p-5">
                   <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
-                        Details
-                      </p>
-                      <h3 className="mt-2 text-xl font-headline font-semibold tracking-title text-label">
-                        Checkout
-                      </h3>
-                    </div>
+                    <h3 className="text-xl font-headline font-semibold tracking-title text-label">
+                      Checkout
+                    </h3>
                     <div className="rounded-full bg-system-fill px-3 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
                       Transfer
                     </div>
@@ -277,7 +306,7 @@ export function CartDrawer() {
                           updateCheckoutField("fullName", event.target.value)
                         }
                         className={fieldClassName}
-                        placeholder="Your full name"
+                        placeholder="Full name"
                       />
                     </label>
 
@@ -307,7 +336,7 @@ export function CartDrawer() {
                           updateCheckoutField("phoneNumber", event.target.value)
                         }
                         className={fieldClassName}
-                        placeholder="e.g. 080..."
+                        placeholder="Phone number"
                       />
                     </label>
 
@@ -325,7 +354,7 @@ export function CartDrawer() {
                           )
                         }
                         className={fieldClassName}
-                        placeholder="City, area, or pickup point"
+                        placeholder="Delivery area"
                       />
                     </label>
 
@@ -340,13 +369,27 @@ export function CartDrawer() {
                           updateCheckoutField("notes", event.target.value)
                         }
                         className={fieldClassName}
-                        placeholder="Flavor preference, delivery timing, or extra instructions"
+                        placeholder="Notes"
                       />
                     </label>
                   </div>
 
-                  {checkoutError ? (
-                    <p className="mt-4 text-xs text-secondary-label">{checkoutError}</p>
+                {checkoutError ? (
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <p className="rounded-full bg-system-fill px-3 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+                        {checkoutError}
+                      </p>
+                      {canRefreshCart ? (
+                        <button
+                          type="button"
+                          onClick={() => void refreshCart()}
+                          disabled={isRefreshingCart}
+                          className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label disabled:text-secondary-label"
+                        >
+                          {isRefreshingCart ? "Refreshing" : "Refresh"}
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
               </div>

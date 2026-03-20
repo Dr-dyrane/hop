@@ -26,7 +26,7 @@ export default async function GuestCheckoutOrderPage({
               href="/"
               className="text-xs font-semibold uppercase tracking-headline text-secondary-label underline-offset-4 hover:text-label"
             >
-              Back to site
+              Back
             </Link>
           </div>
         </div>
@@ -42,16 +42,19 @@ export default async function GuestCheckoutOrderPage({
 
   return (
     <main className="mx-auto min-h-[100svh] w-full max-w-[840px] px-4 pb-16 pt-24 sm:px-6">
-      <div className="mb-6 flex items-center justify-between gap-4">
+      <div className="glass-morphism mb-6 flex items-center justify-between gap-4 rounded-[28px] bg-system-background/80 px-4 py-3 shadow-soft">
         <Link
           href="/"
-          className="text-xs font-semibold uppercase tracking-headline text-secondary-label underline-offset-4 hover:text-label"
+          className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
         >
-          Back to site
+          Back
         </Link>
+        <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+          Checkout
+        </div>
         <Link
           href="/auth/sign-in?returnTo=/account/orders"
-          className="text-xs font-semibold uppercase tracking-headline text-secondary-label underline-offset-4 hover:text-label"
+          className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
         >
           Sign in
         </Link>

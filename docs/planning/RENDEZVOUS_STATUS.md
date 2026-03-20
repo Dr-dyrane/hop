@@ -47,6 +47,8 @@ Current state:
 - guest checkout resolves to a tokenized confirmation route
 - payment proof upload uses browser-direct signed S3 uploads
 - guest carts now merge safely into signed-in carts
+- checkout and confirmation surfaces are tightened toward the marketing visual bar
+- admin delivery board now supports rider roster, assignment, and delivery-state actions from Aurora
 
 This means the system has crossed into operational platform work.
 
@@ -115,7 +117,7 @@ Deliverables:
 
 Status:
 
-- `in progress`
+- `complete`
 
 Deliverables:
 
@@ -129,7 +131,7 @@ Deliverables:
 
 Status:
 
-- `not started`
+- `in progress`
 
 Deliverables:
 
@@ -205,10 +207,12 @@ Completed:
 - [x] checkout order creation from the live cart
 - [x] guest-safe checkout order access token path
 - [x] browser-direct signed upload flow for payment proofs
+- [x] converted-cart checkout recovery path
+- [x] checkout cart refresh path for expired or replaced carts
+- [x] delivery assignment schema and repository path
 
 Open:
 
-- [ ] delivery assignment schema and repository path
 - [ ] rider tracking ingestion path
 - [ ] RLS policies for ownership and admin scopes
 - [ ] audit coverage review for write-heavy flows
@@ -236,7 +240,8 @@ Open:
 
 - [x] customer directory
 - [x] settings surface
-- [ ] delivery board
+- [x] delivery board
+- [x] assignment-aware delivery operations
 - [ ] review moderation
 - [ ] catalog creation and editing flows
 - [ ] availability and featured management actions
@@ -261,6 +266,7 @@ Completed:
 - [x] payment proof submission from order detail
 - [x] live checkout-to-account handoff for signed-in checkout
 - [x] guest confirmation route for checkout-created orders
+- [x] quieter order history and confirmation surfaces
 
 Open:
 
@@ -380,19 +386,20 @@ Important operational note:
 
 ## 11. Active Next Pass
 
-The active build block is Pass 4: checkout cutover.
+The active build block is Pass 5: admin console expansion.
 
 Implement in this order:
 
-1. Tighten the checkout UI and confirmation surfaces toward the marketing visual standard.
-2. Finish any remaining checkout-specific edge cases around empty, expired, and converted carts.
+1. Add review moderation.
+2. Add richer catalog mutation flows.
+3. Add layout authoring and publishing.
+4. Add delivery tracking ingestion.
 
 After that:
 
-1. expand admin operations
-2. expand the user portal
-3. build delivery and realtime
-4. harden uploads, RLS, and quality
+1. expand the user portal
+2. build delivery and realtime
+3. harden uploads, RLS, and quality
 
 ---
 

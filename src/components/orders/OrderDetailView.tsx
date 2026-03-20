@@ -21,6 +21,10 @@ function formatTimestamp(value?: string | null) {
   }).format(new Date(value));
 }
 
+function formatStatusLabel(value: string) {
+  return value.replace(/_/g, " ");
+}
+
 function getTrackingCoords(snapshot: Record<string, unknown>) {
   const latCandidates = ["latitude", "lat"];
   const lngCandidates = ["longitude", "lng"];
@@ -68,7 +72,7 @@ function getDeliveryLine(snapshot: Record<string, unknown>) {
 function StatusChip({ value }: { value: string }) {
   return (
     <span className="rounded-full bg-system-fill px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
-      {value.replace(/_/g, " ")}
+      {formatStatusLabel(value)}
     </span>
   );
 }
@@ -144,19 +148,21 @@ export function OrderDetailView({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
-              Pay
+              Transfer
             </p>
             <div className="text-lg font-semibold tracking-tight text-label">
               {formatNgn(order.payment?.expectedAmountNgn ?? order.totalNgn)}
             </div>
-            <div className="text-sm text-secondary-label">
-              {order.payment?.bankName ?? "Bank pending"}
-            </div>
-            <div className="text-sm text-label">
-              {order.payment?.accountName ?? "Account pending"}
-            </div>
-            <div className="text-xl font-semibold tracking-tight text-label">
-              {order.payment?.accountNumber ?? "Pending"}
+            <div className="grid gap-1 text-sm">
+              <div className="text-secondary-label">
+                {order.payment?.bankName ?? "Bank pending"}
+              </div>
+              <div className="text-label">
+                {order.payment?.accountName ?? "Account pending"}
+              </div>
+              <div className="text-xl font-semibold tracking-tight text-label">
+                {order.payment?.accountNumber ?? "Pending"}
+              </div>
             </div>
             {order.payment?.instructions ? (
               <div className="text-sm text-secondary-label">
@@ -167,7 +173,7 @@ export function OrderDetailView({
 
           <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
-              Deliver
+              Delivery
             </p>
             <div className="text-sm text-label">
               {getDeliveryLine(order.deliveryAddressSnapshot)}
@@ -210,7 +216,7 @@ export function OrderDetailView({
             Proof
           </p>
           <span className="text-xs text-secondary-label">
-            {order.payment?.status?.replace(/_/g, " ") ?? "Pending"}
+            {order.payment?.status ? formatStatusLabel(order.payment.status) : "Pending"}
           </span>
         </div>
 
@@ -242,15 +248,19 @@ export function OrderDetailView({
           Timeline
         </p>
         <div className="mt-4 grid gap-2 text-sm text-secondary-label">
-          {timeline.map((event) => (
-            <div
-              key={event.eventId}
-              className="flex items-center justify-between gap-4"
-            >
-              <span>{event.toStatus.replace(/_/g, " ")}</span>
-              <span>{formatTimestamp(event.createdAt)}</span>
-            </div>
-          ))}
+          {timeline.length === 0 ? (
+            <div>No updates.</div>
+          ) : (
+            timeline.map((event) => (
+              <div
+                key={event.eventId}
+                className="flex items-center justify-between gap-4"
+              >
+                <span>{formatStatusLabel(event.toStatus)}</span>
+                <span>{formatTimestamp(event.createdAt)}</span>
+              </div>
+            ))
+          )}
         </div>
       </section>
 

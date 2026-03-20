@@ -78,6 +78,7 @@ type CommerceContextType = {
   itemCount: number;
   isCartOpen: boolean;
   isCartReady: boolean;
+  isRefreshingCart: boolean;
   isSubmittingCheckout: boolean;
   checkoutError: string | null;
   checkoutForm: CheckoutFormState;
@@ -95,6 +96,7 @@ type CommerceContextType = {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
+  refreshCart: () => Promise<void>;
   updateCheckoutField: (field: CheckoutField, value: string) => void;
   canCheckout: boolean;
   submitCheckout: () => Promise<void>;
@@ -175,8 +177,26 @@ function clearLegacyCartSnapshot() {
   window.localStorage.removeItem(CART_STORAGE_KEY);
 }
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Something went wrong.";
+const RECOVERABLE_CART_MESSAGES = new Set([
+  "Cart is empty.",
+  "Cart is no longer active.",
+  "Cart expired.",
+  "Cart is unavailable.",
+]);
+
+function formatCommerceError(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : "Something went wrong.";
+
+  if (message === "Cart expired." || message === "Cart is unavailable.") {
+    return "Cart refreshed.";
+  }
+
+  return message;
+}
+
+function isRecoverableCartMessage(message: string) {
+  return RECOVERABLE_CART_MESSAGES.has(message);
 }
 
 export function CommerceProvider({ children }: { children: ReactNode }) {
@@ -186,6 +206,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>(emptyCartSnapshot);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCartReady, setIsCartReady] = useState(false);
+  const [isRefreshingCart, setIsRefreshingCart] = useState(false);
   const [isSubmittingCheckout, setIsSubmittingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [checkoutForm, setCheckoutForm] = useState(emptyCheckoutForm);
@@ -234,6 +255,23 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     setCartItems(items);
     clearLegacyCartSnapshot();
   }, []);
+
+  const refreshCart = useCallback(async () => {
+    setIsRefreshingCart(true);
+
+    try {
+      const snapshot = await fetchCartSnapshot();
+      applyRemoteSnapshot(snapshot.items as CartItem[]);
+      setCheckoutError(null);
+    } catch (error) {
+      setCartItems(emptyCartSnapshot);
+      setCheckoutError(formatCommerceError(error));
+      throw error;
+    } finally {
+      setIsCartReady(true);
+      setIsRefreshingCart(false);
+    }
+  }, [applyRemoteSnapshot]);
 
   const cartLines = useMemo(() => {
     return cartItems.map((item) => {
@@ -326,7 +364,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         })
         .catch((error) => {
           setCartItems(cartItems);
-          setCheckoutError(getErrorMessage(error));
+          setCheckoutError(formatCommerceError(error));
         });
     },
     [applyRemoteSnapshot, cartItems]
@@ -353,7 +391,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         })
         .catch((error) => {
           setCartItems(cartItems);
-          setCheckoutError(getErrorMessage(error));
+          setCheckoutError(formatCommerceError(error));
         });
     },
     [applyRemoteSnapshot, cartItems]
@@ -372,7 +410,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         })
         .catch((error) => {
           setCartItems(cartItems);
-          setCheckoutError(getErrorMessage(error));
+          setCheckoutError(formatCommerceError(error));
         });
     },
     [applyRemoteSnapshot, cartItems]
@@ -390,7 +428,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       })
       .catch((error) => {
         setCartItems(previousItems);
-        setCheckoutError(getErrorMessage(error));
+        setCheckoutError(formatCommerceError(error));
       });
   }, [applyRemoteSnapshot, cartItems]);
 
@@ -447,26 +485,27 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         router.push(result.redirectTo);
       });
     } catch (error) {
-      const message = getErrorMessage(error);
-      setCheckoutError(message);
+      const message =
+        error instanceof Error ? error.message : "Something went wrong.";
 
-      if (
-        message === "Cart is empty." ||
-        message === "Cart is no longer active." ||
-        message === "Cart expired." ||
-        message === "Cart is unavailable."
-      ) {
+      if (isRecoverableCartMessage(message)) {
         try {
-          const snapshot = await fetchCartSnapshot();
-          applyRemoteSnapshot(snapshot.items as CartItem[]);
+          await refreshCart();
+          setCheckoutError(
+            message === "Cart is empty." ? "Cart is empty." : "Cart refreshed."
+          );
         } catch {
           setCartItems(emptyCartSnapshot);
         }
+
+        return;
       }
+
+      setCheckoutError(formatCommerceError(error));
     } finally {
       setIsSubmittingCheckout(false);
     }
-  }, [applyRemoteSnapshot, canCheckout, checkoutForm, router]);
+  }, [canCheckout, checkoutForm, refreshCart, router]);
 
   const value = useMemo<CommerceContextType>(
     () => ({
@@ -475,6 +514,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       itemCount,
       isCartOpen,
       isCartReady,
+      isRefreshingCart,
       isSubmittingCheckout,
       checkoutError,
       checkoutForm,
@@ -492,6 +532,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       openCart,
       closeCart,
       toggleCart,
+      refreshCart,
       updateCheckoutField,
       canCheckout,
       submitCheckout,
@@ -509,9 +550,11 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       discountUsd,
       isCartOpen,
       isCartReady,
+      isRefreshingCart,
       isSubmittingCheckout,
       itemCount,
       openCart,
+      refreshCart,
       removeItem,
       setQuantity,
       shotBundleCount,

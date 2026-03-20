@@ -41,6 +41,12 @@ type CreatedOrder = {
   orderNumber: string;
 };
 
+type LockedCart = {
+  status: string;
+  expiresAt: string | null;
+  convertedOrderId: string | null;
+};
+
 const CART_IDLE_TTL_DAYS = 14;
 
 function generateOrderNumber() {
@@ -83,6 +89,22 @@ async function expireCartIfNeeded(cartId: string) {
     `,
     [cartId]
   );
+}
+
+async function findOrderSummaryById(orderId: string) {
+  const result = await query<CreatedOrder>(
+    `
+      select
+        id as "orderId",
+        public_order_number as "orderNumber"
+      from app.orders
+      where id = $1
+      limit 1
+    `,
+    [orderId]
+  );
+
+  return result.rows[0] ?? null;
 }
 
 async function resolveProductVariant(productId: string) {
@@ -555,14 +577,12 @@ export async function createOrderFromCart(input: CheckoutInput) {
   const normalizedEmail = normalizeOptionalText(input.customerEmail)?.toLowerCase() ?? null;
 
   return withTransaction(async (queryFn) => {
-    const cartResult = await queryFn<{
-      status: string;
-      expiresAt: string | null;
-    }>(
+    const cartResult = await queryFn<LockedCart>(
       `
         select
           status,
-          expires_at as "expiresAt"
+          expires_at as "expiresAt",
+          converted_order_id as "convertedOrderId"
         from app.carts
         where id = $1
         for update
@@ -574,6 +594,14 @@ export async function createOrderFromCart(input: CheckoutInput) {
 
     if (!cart) {
       throw new Error("Cart is unavailable.");
+    }
+
+    if (cart.status === "converted" && cart.convertedOrderId) {
+      const existingOrder = await findOrderSummaryById(cart.convertedOrderId);
+
+      if (existingOrder) {
+        return existingOrder;
+      }
     }
 
     if (cart.status !== "active") {

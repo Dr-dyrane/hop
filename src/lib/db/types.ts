@@ -73,6 +73,39 @@ export type AdminCustomerSummary = {
   latestOrderAt: string | null;
 };
 
+export type AdminDeliveryOrder = {
+  orderId: string;
+  orderNumber: string;
+  customerName: string;
+  customerPhone: string;
+  status: string;
+  fulfillmentStatus: string;
+  deliveryStage: "preparing" | "ready_for_dispatch" | "out_for_delivery";
+  totalNgn: number;
+  placedAt: string;
+  transferReference: string;
+  itemCount: number;
+  deliveryAddressSnapshot: Record<string, unknown>;
+  assignmentId: string | null;
+  assignmentStatus: string | null;
+  riderId: string | null;
+  riderName: string | null;
+  riderPhone: string | null;
+  riderVehicleType: string | null;
+  latestDeliveryEventType: string | null;
+  latestDeliveryEventAt: string | null;
+};
+
+export type AdminDeliveryRider = {
+  riderId: string;
+  name: string;
+  phone: string;
+  vehicleType: string | null;
+  isActive: boolean;
+  activeAssignmentCount: number;
+  activeOrderNumber: string | null;
+};
+
 export type SiteSettingRow = {
   key: string;
   value: unknown;
