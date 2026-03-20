@@ -3,9 +3,12 @@ import "server-only";
 import { isDatabaseConfigured, query } from "@/lib/db/client";
 import type {
   AdminCatalogProduct,
+  AdminCustomerSummary,
   AdminLayoutSection,
   AdminLayoutSummary,
   AdminOverviewMetrics,
+  BankAccountRow,
+  SiteSettingRow,
 } from "@/lib/db/types";
 
 export async function getAdminOverviewMetrics() {
@@ -211,4 +214,125 @@ export async function listAdminHomeLayoutSections() {
   );
 
   return result.rows;
+}
+
+export async function listAdminCustomerSummaries(limit = 40) {
+  if (!isDatabaseConfigured()) {
+    return [] satisfies AdminCustomerSummary[];
+  }
+
+  const result = await query<AdminCustomerSummary>(
+    `
+      with order_people as (
+        select
+          coalesce(o.user_id::text, lower(o.customer_email), o.customer_phone_e164) as customer_key,
+          o.user_id,
+          lower(o.customer_email) as normalized_email,
+          o.customer_name,
+          o.customer_phone_e164,
+          o.status,
+          o.public_order_number,
+          o.placed_at,
+          o.created_at
+        from app.orders o
+        where coalesce(o.user_id::text, lower(o.customer_email), o.customer_phone_e164) is not null
+      ),
+      rollup as (
+        select
+          op.customer_key,
+          max(op.user_id) as user_id,
+          max(op.normalized_email) as email,
+          max(op.customer_name) as customer_name,
+          max(op.customer_phone_e164) as phone,
+          count(*)::int as total_orders,
+          count(*) filter (
+            where op.status not in ('delivered', 'cancelled', 'expired')
+          )::int as active_orders,
+          max(op.placed_at) as latest_order_at
+        from order_people op
+        group by op.customer_key
+      ),
+      latest_order as (
+        select distinct on (op.customer_key)
+          op.customer_key,
+          op.public_order_number,
+          op.status,
+          op.placed_at
+        from order_people op
+        order by op.customer_key, op.placed_at desc, op.created_at desc
+      ),
+      address_counts as (
+        select
+          a.user_id,
+          count(*)::int as address_count
+        from app.addresses a
+        group by a.user_id
+      )
+      select
+        r.customer_key as "customerKey",
+        r.user_id as "userId",
+        r.email as email,
+        coalesce(p.full_name, r.customer_name) as "fullName",
+        coalesce(p.preferred_phone_e164, r.phone) as phone,
+        r.total_orders as "totalOrders",
+        r.active_orders as "activeOrders",
+        coalesce(ac.address_count, 0)::int as "addressCount",
+        lo.public_order_number as "latestOrderNumber",
+        lo.status as "latestOrderStatus",
+        lo.placed_at as "latestOrderAt"
+      from rollup r
+      left join app.profiles p
+        on p.user_id = r.user_id
+      left join address_counts ac
+        on ac.user_id = r.user_id
+      left join latest_order lo
+        on lo.customer_key = r.customer_key
+      order by r.latest_order_at desc nulls last
+      limit $1
+    `,
+    [limit]
+  );
+
+  return result.rows;
+}
+
+export async function getAdminSettingsSnapshot() {
+  if (!isDatabaseConfigured()) {
+    return {
+      bankAccount: null as BankAccountRow | null,
+      siteSettings: [] as SiteSettingRow[],
+    };
+  }
+
+  const [bankAccountResult, siteSettingsResult] = await Promise.all([
+    query<BankAccountRow>(
+      `
+        select
+          id as "bankAccountId",
+          bank_name as "bankName",
+          account_name as "accountName",
+          account_number as "accountNumber",
+          instructions,
+          is_default as "isDefault"
+        from app.bank_accounts
+        where is_active = true
+        order by is_default desc, created_at desc
+        limit 1
+      `
+    ),
+    query<SiteSettingRow>(
+      `
+        select key, value
+        from app.site_settings
+        where key = any($1::text[])
+        order by key asc
+      `,
+      [["bank_transfer_details", "delivery_defaults", "layout_preview"]]
+    ),
+  ]);
+
+  return {
+    bankAccount: bankAccountResult.rows[0] ?? null,
+    siteSettings: siteSettingsResult.rows,
+  };
 }

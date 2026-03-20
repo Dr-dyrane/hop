@@ -3,7 +3,6 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import {
-  MessageCircle,
   Minus,
   Plus,
   ShoppingBag,
@@ -24,8 +23,11 @@ export function CartDrawer() {
   const {
     canCheckout,
     cartLines,
+    checkoutError,
     checkoutForm,
-    checkoutToWhatsApp,
+    isCartReady,
+    isSubmittingCheckout,
+    submitCheckout,
     clearCart,
     closeCart,
     discountNgn,
@@ -258,8 +260,8 @@ export function CartDrawer() {
                         Checkout
                       </h3>
                     </div>
-                    <div className="rounded-full bg-accent/10 px-3 py-2 text-[10px] font-semibold uppercase tracking-headline text-accent dark:bg-accent/15">
-                      WhatsApp
+                    <div className="rounded-full bg-system-fill px-3 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+                      Transfer
                     </div>
                   </div>
 
@@ -276,6 +278,21 @@ export function CartDrawer() {
                         }
                         className={fieldClassName}
                         placeholder="Your full name"
+                      />
+                    </label>
+
+                    <label className="grid gap-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+                        Email
+                      </span>
+                      <input
+                        type="email"
+                        value={checkoutForm.email}
+                        onChange={(event) =>
+                          updateCheckoutField("email", event.target.value)
+                        }
+                        className={fieldClassName}
+                        placeholder="Optional"
                       />
                     </label>
 
@@ -327,18 +344,21 @@ export function CartDrawer() {
                       />
                     </label>
                   </div>
+
+                  {checkoutError ? (
+                    <p className="mt-4 text-xs text-secondary-label">{checkoutError}</p>
+                  ) : null}
                 </div>
               </div>
 
               <div className="pt-5">
                 <button
                   type="button"
-                  onClick={checkoutToWhatsApp}
-                  disabled={!canCheckout}
+                  onClick={() => void submitCheckout()}
+                  disabled={!canCheckout || !isCartReady}
                   className="button-primary min-h-[60px] w-full justify-center text-xs font-semibold uppercase tracking-headline disabled:translate-y-0 disabled:shadow-none"
                 >
-                  <MessageCircle className="h-[18px] w-[18px]" strokeWidth={1.7} />
-                  Send Order on WhatsApp
+                  {isSubmittingCheckout ? "Placing order" : "Place order"}
                 </button>
               </div>
             </>

@@ -2,17 +2,27 @@
 
 import React, {
   createContext,
+  startTransition,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
-  useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import { useMarketingContent } from "@/components/providers/MarketingContentProvider";
 import {
+  addRemoteCartItem,
+  clearRemoteCart,
+  fetchCartSnapshot,
+  removeRemoteCartItem,
+  replaceRemoteCartItems,
+  setRemoteCartItemQuantity,
+  submitCheckoutOrder,
+} from "@/lib/cart/api-client";
+import {
   SHOT_BUNDLE,
-  formatNgn,
   getProductDisplayName,
   getProductPriceSnapshot,
   getShotBundlePricing,
@@ -27,10 +37,16 @@ type CartItem = {
   quantity: number;
 };
 
-type CheckoutField = "fullName" | "phoneNumber" | "deliveryLocation" | "notes";
+type CheckoutField =
+  | "fullName"
+  | "email"
+  | "phoneNumber"
+  | "deliveryLocation"
+  | "notes";
 
 type CheckoutFormState = {
   fullName: string;
+  email: string;
   phoneNumber: string;
   deliveryLocation: string;
   notes: string;
@@ -61,6 +77,9 @@ type CommerceContextType = {
   cartLines: CartLine[];
   itemCount: number;
   isCartOpen: boolean;
+  isCartReady: boolean;
+  isSubmittingCheckout: boolean;
+  checkoutError: string | null;
   checkoutForm: CheckoutFormState;
   shotBundleCount: number;
   subtotalUsd: number;
@@ -78,20 +97,15 @@ type CommerceContextType = {
   toggleCart: () => void;
   updateCheckoutField: (field: CheckoutField, value: string) => void;
   canCheckout: boolean;
-  checkoutToWhatsApp: () => void;
+  submitCheckout: () => Promise<void>;
 };
 
 const CommerceContext = createContext<CommerceContextType | undefined>(undefined);
 
-const cartListeners = new Set<() => void>();
 const emptyCartSnapshot: CartItem[] = [];
-let cartSnapshotCache: { raw: string | null; parsed: CartItem[] } = {
-  raw: null,
-  parsed: emptyCartSnapshot,
-};
-
 const emptyCheckoutForm: CheckoutFormState = {
   fullName: "",
+  email: "",
   phoneNumber: "",
   deliveryLocation: "",
   notes: "",
@@ -135,106 +149,91 @@ function sanitizeCartItems(value: unknown, productIds: Set<string>): CartItem[] 
   return parsedItems.length > 0 ? parsedItems : emptyCartSnapshot;
 }
 
-function getServerCartSnapshot() {
-  return emptyCartSnapshot;
-}
-
-function readCartSnapshot(productIds: Set<string>) {
+function readLegacyCartSnapshot(productIds: Set<string>) {
   if (typeof window === "undefined") {
     return emptyCartSnapshot;
   }
 
   const rawValue = window.localStorage.getItem(CART_STORAGE_KEY);
 
-  if (rawValue === cartSnapshotCache.raw) {
-    return cartSnapshotCache.parsed;
-  }
-
   if (!rawValue) {
-    cartSnapshotCache = { raw: null, parsed: emptyCartSnapshot };
     return emptyCartSnapshot;
   }
 
   try {
-    const parsedItems = sanitizeCartItems(JSON.parse(rawValue), productIds);
-    cartSnapshotCache = { raw: rawValue, parsed: parsedItems };
-
-    return parsedItems;
+    return sanitizeCartItems(JSON.parse(rawValue), productIds);
   } catch {
-    cartSnapshotCache = { raw: rawValue, parsed: emptyCartSnapshot };
     return emptyCartSnapshot;
   }
 }
 
-function emitCartStoreChange() {
-  cartListeners.forEach((listener) => listener());
-}
-
-function writeCartSnapshot(items: CartItem[], productIds: Set<string>) {
+function clearLegacyCartSnapshot() {
   if (typeof window === "undefined") {
     return;
   }
 
-  const sanitizedItems = sanitizeCartItems(items, productIds);
-
-  if (sanitizedItems.length === 0) {
-    cartSnapshotCache = { raw: null, parsed: emptyCartSnapshot };
-    window.localStorage.removeItem(CART_STORAGE_KEY);
-    emitCartStoreChange();
-    return;
-  }
-
-  const serializedItems = JSON.stringify(sanitizedItems);
-  cartSnapshotCache = { raw: serializedItems, parsed: sanitizedItems };
-  window.localStorage.setItem(CART_STORAGE_KEY, serializedItems);
-  emitCartStoreChange();
+  window.localStorage.removeItem(CART_STORAGE_KEY);
 }
 
-function subscribeToCartStore(listener: () => void) {
-  if (typeof window === "undefined") {
-    return () => undefined;
-  }
-
-  const handleStorage = (event: StorageEvent) => {
-    if (event.key === CART_STORAGE_KEY) {
-      listener();
-    }
-  };
-
-  cartListeners.add(listener);
-  window.addEventListener("storage", handleStorage);
-
-  return () => {
-    cartListeners.delete(listener);
-    window.removeEventListener("storage", handleStorage);
-  };
-}
-
-function formatWhatsAppPhoneNumber(rawValue: string) {
-  const primaryNumber = rawValue ?? "";
-  const digits = primaryNumber.replace(/\D/g, "");
-
-  if (digits.startsWith("0")) {
-    return `234${digits.slice(1)}`;
-  }
-
-  return digits;
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Something went wrong.";
 }
 
 export function CommerceProvider({ children }: { children: ReactNode }) {
-  const { brand, productIds, productsById } = useMarketingContent();
+  const router = useRouter();
+  const { productIds, productsById } = useMarketingContent();
   const validProductIds = useMemo(() => new Set(productIds), [productIds]);
-  const getClientCartSnapshot = useCallback(
-    () => readCartSnapshot(validProductIds),
-    [validProductIds]
-  );
-  const cartItems = useSyncExternalStore(
-    subscribeToCartStore,
-    getClientCartSnapshot,
-    getServerCartSnapshot
-  );
+  const [cartItems, setCartItems] = useState<CartItem[]>(emptyCartSnapshot);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCartReady, setIsCartReady] = useState(false);
+  const [isSubmittingCheckout, setIsSubmittingCheckout] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [checkoutForm, setCheckoutForm] = useState(emptyCheckoutForm);
+
+  useEffect(() => {
+    let active = true;
+
+    async function hydrateCart() {
+      const legacyItems = readLegacyCartSnapshot(validProductIds);
+
+      try {
+        let snapshot = await fetchCartSnapshot();
+
+        if (snapshot.items.length === 0 && legacyItems.length > 0) {
+          snapshot = await replaceRemoteCartItems(legacyItems);
+        }
+
+        if (!active) {
+          return;
+        }
+
+        setCartItems(snapshot.items as CartItem[]);
+        setCheckoutError(null);
+        clearLegacyCartSnapshot();
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setCartItems(legacyItems);
+      } finally {
+        if (active) {
+          setIsCartReady(true);
+        }
+      }
+    }
+
+    void hydrateCart();
+
+    return () => {
+      active = false;
+    };
+  }, [validProductIds]);
+
+  const applyRemoteSnapshot = useCallback((items: CartItem[]) => {
+    setCartItems(items);
+    clearLegacyCartSnapshot();
+  }, []);
 
   const cartLines = useMemo(() => {
     return cartItems.map((item) => {
@@ -305,60 +304,95 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     [discountNgn, subtotalNgn]
   );
 
-  const addItem = useCallback((productId: ProductId, quantity = 1) => {
-    const normalizedQuantity = Math.max(1, Math.floor(quantity));
-    const existingItem = cartItems.find((item) => item.productId === productId);
+  const addItem = useCallback(
+    (productId: ProductId, quantity = 1) => {
+      const normalizedQuantity = Math.max(1, Math.floor(quantity));
+      const existingItem = cartItems.find((item) => item.productId === productId);
+      const optimisticItems = existingItem
+        ? cartItems.map((item) =>
+            item.productId === productId
+              ? { ...item, quantity: item.quantity + normalizedQuantity }
+              : item
+          )
+        : [...cartItems, { productId, quantity: normalizedQuantity }];
 
-    if (existingItem) {
-      writeCartSnapshot(
-        cartItems.map((item) =>
-          item.productId === productId
-            ? { ...item, quantity: item.quantity + normalizedQuantity }
-            : item
-        ),
-        validProductIds
-      );
-    } else {
-      writeCartSnapshot(
-        [...cartItems, { productId, quantity: normalizedQuantity }],
-        validProductIds
-      );
-    }
+      setCartItems(optimisticItems);
+      setIsCartOpen(true);
+      setCheckoutError(null);
 
-    setIsCartOpen(true);
-  }, [cartItems, validProductIds]);
+      void addRemoteCartItem(productId, normalizedQuantity)
+        .then((snapshot) => {
+          applyRemoteSnapshot(snapshot.items as CartItem[]);
+        })
+        .catch((error) => {
+          setCartItems(cartItems);
+          setCheckoutError(getErrorMessage(error));
+        });
+    },
+    [applyRemoteSnapshot, cartItems]
+  );
 
-  const setQuantity = useCallback((productId: ProductId, quantity: number) => {
-    const normalizedQuantity = Math.floor(quantity);
+  const setQuantity = useCallback(
+    (productId: ProductId, quantity: number) => {
+      const normalizedQuantity = Math.floor(quantity);
+      const optimisticItems =
+        normalizedQuantity <= 0
+          ? cartItems.filter((item) => item.productId !== productId)
+          : cartItems.map((item) =>
+              item.productId === productId
+                ? { ...item, quantity: normalizedQuantity }
+                : item
+            );
 
-    if (normalizedQuantity <= 0) {
-      writeCartSnapshot(
-        cartItems.filter((item) => item.productId !== productId),
-        validProductIds
-      );
-      return;
-    }
+      setCartItems(optimisticItems);
+      setCheckoutError(null);
 
-    writeCartSnapshot(
-      cartItems.map((item) =>
-        item.productId === productId
-          ? { ...item, quantity: normalizedQuantity }
-          : item
-      ),
-      validProductIds
-    );
-  }, [cartItems, validProductIds]);
+      void setRemoteCartItemQuantity(productId, normalizedQuantity)
+        .then((snapshot) => {
+          applyRemoteSnapshot(snapshot.items as CartItem[]);
+        })
+        .catch((error) => {
+          setCartItems(cartItems);
+          setCheckoutError(getErrorMessage(error));
+        });
+    },
+    [applyRemoteSnapshot, cartItems]
+  );
 
-  const removeItem = useCallback((productId: ProductId) => {
-    writeCartSnapshot(
-      cartItems.filter((item) => item.productId !== productId),
-      validProductIds
-    );
-  }, [cartItems, validProductIds]);
+  const removeItem = useCallback(
+    (productId: ProductId) => {
+      const optimisticItems = cartItems.filter((item) => item.productId !== productId);
+
+      setCartItems(optimisticItems);
+      setCheckoutError(null);
+
+      void removeRemoteCartItem(productId)
+        .then((snapshot) => {
+          applyRemoteSnapshot(snapshot.items as CartItem[]);
+        })
+        .catch((error) => {
+          setCartItems(cartItems);
+          setCheckoutError(getErrorMessage(error));
+        });
+    },
+    [applyRemoteSnapshot, cartItems]
+  );
 
   const clearCart = useCallback(() => {
-    writeCartSnapshot([], validProductIds);
-  }, [validProductIds]);
+    const previousItems = cartItems;
+
+    setCartItems(emptyCartSnapshot);
+    setCheckoutError(null);
+
+    void clearRemoteCart()
+      .then((snapshot) => {
+        applyRemoteSnapshot(snapshot.items as CartItem[]);
+      })
+      .catch((error) => {
+        setCartItems(previousItems);
+        setCheckoutError(getErrorMessage(error));
+      });
+  }, [applyRemoteSnapshot, cartItems]);
 
   const openCart = useCallback(() => {
     setIsCartOpen(true);
@@ -377,85 +411,62 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       ...current,
       [field]: value,
     }));
+    setCheckoutError(null);
   }, []);
 
   const canCheckout =
     cartItems.length > 0 &&
     checkoutForm.fullName.trim().length > 1 &&
     checkoutForm.phoneNumber.trim().length > 6 &&
-    checkoutForm.deliveryLocation.trim().length > 2;
+    checkoutForm.deliveryLocation.trim().length > 2 &&
+    !isSubmittingCheckout;
 
-  const checkoutToWhatsApp = useCallback(() => {
+  const submitCheckout = useCallback(async () => {
     if (!canCheckout) {
       return;
     }
 
-    const lines = cartLines
-      .map((line, index) => {
-        return [
-          `${index + 1}. ${line.displayName} x${line.quantity}`,
-          `   ${formatNgn(line.currentUnitNgn)} each`,
-          `   Line total: ${formatNgn(line.lineCurrentNgn)}`,
-        ].join("\n");
-      })
-      .join("\n");
+    setIsSubmittingCheckout(true);
+    setCheckoutError(null);
 
-    const message = [
-      "Hello House of Prax, I want to place this order.",
-      "",
-      "Customer Details",
-      `- Name: ${checkoutForm.fullName.trim()}`,
-      `- Phone: ${checkoutForm.phoneNumber.trim()}`,
-      `- Delivery Area: ${checkoutForm.deliveryLocation.trim()}`,
-      checkoutForm.notes.trim()
-        ? `- Notes: ${checkoutForm.notes.trim()}`
-        : "- Notes: None",
-      "",
-      "Order Summary",
-      lines,
-      "",
-      "Pricing",
-      `- Subtotal: ${formatNgn(subtotalNgn)}`,
-      ...(shotBundleCount > 0
-        ? [
-            `- ${SHOT_BUNDLE.label} (${shotBundleCount} x ${SHOT_BUNDLE.unitCount} shots): -${formatNgn(discountNgn)}`,
-          ]
-        : []),
-      `- Total: ${formatNgn(totalNgn)}`,
-      "",
-      "Please confirm availability, delivery timeline, and payment instructions.",
-    ].join("\n");
+    try {
+      const result = await submitCheckoutOrder({
+        customerName: checkoutForm.fullName,
+        customerEmail: checkoutForm.email,
+        customerPhone: checkoutForm.phoneNumber,
+        deliveryLocation: checkoutForm.deliveryLocation,
+        notes: checkoutForm.notes,
+      });
 
-    const phoneNumber = formatWhatsAppPhoneNumber(brand.contact.whatsapp[0] ?? "");
-    const checkoutUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    const checkoutWindow = window.open(
-      checkoutUrl,
-      "_blank",
-      "noopener,noreferrer"
-    );
+      setCheckoutForm(emptyCheckoutForm);
+      setCartItems(emptyCartSnapshot);
+      clearLegacyCartSnapshot();
+      setIsCartOpen(false);
 
-    if (!checkoutWindow) {
-      return;
+      startTransition(() => {
+        router.push(result.redirectTo);
+      });
+    } catch (error) {
+      const message = getErrorMessage(error);
+      setCheckoutError(message);
+
+      if (
+        message === "Cart is empty." ||
+        message === "Cart is no longer active." ||
+        message === "Cart expired." ||
+        message === "Cart is unavailable."
+      ) {
+        try {
+          const snapshot = await fetchCartSnapshot();
+          applyRemoteSnapshot(snapshot.items as CartItem[]);
+        } catch {
+          setCartItems(emptyCartSnapshot);
+        }
+      }
+    } finally {
+      setIsSubmittingCheckout(false);
     }
-
-    checkoutWindow.focus();
-    writeCartSnapshot([], validProductIds);
-    setCheckoutForm(emptyCheckoutForm);
-    setIsCartOpen(false);
-  }, [
-    canCheckout,
-    cartLines,
-    checkoutForm.deliveryLocation,
-    checkoutForm.fullName,
-    checkoutForm.notes,
-    checkoutForm.phoneNumber,
-    discountNgn,
-    brand.contact.whatsapp,
-    shotBundleCount,
-    subtotalNgn,
-    totalNgn,
-    validProductIds,
-  ]);
+  }, [applyRemoteSnapshot, canCheckout, checkoutForm, router]);
 
   const value = useMemo<CommerceContextType>(
     () => ({
@@ -463,6 +474,9 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       cartLines,
       itemCount,
       isCartOpen,
+      isCartReady,
+      isSubmittingCheckout,
+      checkoutError,
       checkoutForm,
       shotBundleCount,
       subtotalUsd,
@@ -480,19 +494,22 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       toggleCart,
       updateCheckoutField,
       canCheckout,
-      checkoutToWhatsApp,
+      submitCheckout,
     }),
     [
       addItem,
       canCheckout,
       cartItems,
       cartLines,
+      checkoutError,
       checkoutForm,
       clearCart,
       closeCart,
       discountNgn,
       discountUsd,
       isCartOpen,
+      isCartReady,
+      isSubmittingCheckout,
       itemCount,
       openCart,
       removeItem,
@@ -500,11 +517,11 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       shotBundleCount,
       subtotalNgn,
       subtotalUsd,
+      submitCheckout,
       toggleCart,
       totalNgn,
       totalUsd,
       updateCheckoutField,
-      checkoutToWhatsApp,
     ]
   );
 

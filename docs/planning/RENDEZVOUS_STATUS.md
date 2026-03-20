@@ -39,9 +39,14 @@ Current state:
 - marketing reads from the database-backed content path
 - auth, admin, and portal route-group shells exist
 - order and payment tables are live
+- persistent carts are live
 - admin order and payment surfaces read from Aurora
+- admin customer and settings surfaces read from Aurora
 - portal order list and order detail read from Aurora
-- payment proof upload is wired to S3
+- checkout creates real orders from the cart
+- guest checkout resolves to a tokenized confirmation route
+- payment proof upload uses browser-direct signed S3 uploads
+- guest carts now merge safely into signed-in carts
 
 This means the system has crossed into operational platform work.
 
@@ -110,7 +115,7 @@ Deliverables:
 
 Status:
 
-- `not started`
+- `in progress`
 
 Deliverables:
 
@@ -189,19 +194,20 @@ Completed:
 
 - [x] Aurora IAM-backed database runtime
 - [x] Vercel-compatible DB scripts
-- [x] migrations through `0006__orders_and_payments.sql`
+- [x] migrations through `0007__carts.sql`
 - [x] marketing seed path
 - [x] bank-account seed path
 - [x] repository layer for marketing, admin, account, orders, and payments
 - [x] order status event writes
 - [x] payment review event writes
 - [x] S3-backed proof upload path
+- [x] persistent cart schema and repository path
+- [x] checkout order creation from the live cart
+- [x] guest-safe checkout order access token path
+- [x] browser-direct signed upload flow for payment proofs
 
 Open:
 
-- [ ] persistent cart schema and repository path
-- [ ] checkout order creation from the live cart
-- [ ] browser-direct signed upload flow for payment proofs
 - [ ] delivery assignment schema and repository path
 - [ ] rider tracking ingestion path
 - [ ] RLS policies for ownership and admin scopes
@@ -228,8 +234,8 @@ Completed:
 
 Open:
 
-- [ ] customer directory
-- [ ] settings surface
+- [x] customer directory
+- [x] settings surface
 - [ ] delivery board
 - [ ] review moderation
 - [ ] catalog creation and editing flows
@@ -253,10 +259,11 @@ Completed:
 - [x] orders list
 - [x] order detail
 - [x] payment proof submission from order detail
+- [x] live checkout-to-account handoff for signed-in checkout
+- [x] guest confirmation route for checkout-created orders
 
 Open:
 
-- [ ] live checkout-to-account handoff
 - [ ] addresses
 - [ ] profile
 - [ ] reorder
@@ -286,6 +293,7 @@ Open:
 - [ ] ensure selected navigation states remain legible in every shell
 - [ ] finish no-border, Apple-HIG-consistent surface treatment review
 - [ ] resolve legacy lint failures in older 3D and marketing files
+- [ ] tighten the checkout drawer and confirmation route further toward the marketing-page visual bar
 
 ---
 
@@ -293,17 +301,18 @@ Open:
 
 These are the important truths to keep visible.
 
-### Upload path deviation
+### Checkout shell deviation
 
 Locked plan:
 
-- direct S3 signed uploads
+- dedicated checkout route
 
 Current implementation:
 
-- server action receives the file and writes to S3 through the AWS SDK
+- the cart drawer is now backed by a persistent cart and real order creation
+- guest confirmation resolves on `/checkout/orders/[orderId]`
 
-This is temporary and should be corrected in Pass 8 or earlier if checkout cutover requires it.
+This is acceptable for the current pass, but a fuller focused checkout shell may still be introduced later if the flow needs more space.
 
 ### Delivery is still snapshot-only
 
@@ -347,8 +356,9 @@ These are pre-existing issues outside the new platform work.
 Current checkpoint verification:
 
 - `npm run db:migrate` passes
-- `npm run db:seed` passes, but bank-account seed safely skips if bank env vars are missing
 - `npx tsc --noEmit` passes
+- `npm run build` passes
+- `npm run db:seed` passes, but bank-account seed safely skips if bank env vars are missing
 - `npm run lint` does not pass repo-wide because of the legacy issues listed above
 
 ---
@@ -370,15 +380,12 @@ Important operational note:
 
 ## 11. Active Next Pass
 
-The next build block is Pass 4: checkout cutover.
+The active build block is Pass 4: checkout cutover.
 
 Implement in this order:
 
-1. Replace the local cart path with a persistent cart path.
-2. Create real checkout-to-order creation from the live cart.
-3. Put bank-transfer instructions on the final checkout path.
-4. Remove WhatsApp as the primary order path.
-5. Keep the UI restrained while the flow becomes operational.
+1. Tighten the checkout UI and confirmation surfaces toward the marketing visual standard.
+2. Finish any remaining checkout-specific edge cases around empty, expired, and converted carts.
 
 After that:
 

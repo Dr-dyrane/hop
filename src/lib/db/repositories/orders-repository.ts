@@ -164,14 +164,101 @@ export async function listOrdersForPortal(email: string) {
   return result.rows;
 }
 
-export async function getPortalOrderDetail(email: string, orderId: string) {
-  const normalizedEmail = email.trim().toLowerCase();
+async function getOrderPaymentSummary(orderId: string) {
+  const paymentResult = await query<{
+    status: string;
+    expected_amount_ngn: number;
+    submitted_amount_ngn: number | null;
+    reviewed_by_email: string | null;
+    expires_at: string | null;
+    bank_name: string | null;
+    account_name: string | null;
+    account_number: string | null;
+    instructions: string | null;
+  }>(
+    `
+      select
+        p.status,
+        p.expected_amount_ngn,
+        p.submitted_amount_ngn,
+        p.reviewed_by_email,
+        p.expires_at,
+        ba.bank_name,
+        ba.account_name,
+        ba.account_number,
+        ba.instructions
+      from app.payments p
+      left join app.bank_accounts ba on ba.id = p.bank_account_id
+      where p.order_id = $1
+      limit 1
+    `,
+    [orderId]
+  );
 
-  if (!normalizedEmail || !orderId) {
+  const payment = paymentResult.rows[0];
+
+  if (!payment) {
     return null;
   }
 
-  if (!isDatabaseConfigured()) {
+  return {
+    status: payment.status,
+    expectedAmountNgn: payment.expected_amount_ngn,
+    submittedAmountNgn: payment.submitted_amount_ngn,
+    reviewedByEmail: payment.reviewed_by_email,
+    expiresAt: payment.expires_at,
+    bankName: payment.bank_name,
+    accountName: payment.account_name,
+    accountNumber: payment.account_number,
+    instructions: payment.instructions,
+  };
+}
+
+async function listOrderItems(orderId: string) {
+  const itemsResult = await query<PortalOrderLine>(
+    `
+      select
+        title,
+        sku,
+        unit_price_ngn as "unitPriceNgn",
+        quantity,
+        line_total_ngn as "lineTotalNgn"
+      from app.order_items
+      where order_id = $1
+      order by created_at asc
+    `,
+    [orderId]
+  );
+
+  return itemsResult.rows;
+}
+
+async function buildOrderDetail(
+  detail: (PortalOrderDetail & {
+    deliveryAddressSnapshot: Record<string, unknown>;
+  }) | null
+) {
+  if (!detail) {
+    return null;
+  }
+
+  const [payment, items] = await Promise.all([
+    getOrderPaymentSummary(detail.orderId),
+    listOrderItems(detail.orderId),
+  ]);
+
+  return {
+    ...detail,
+    payment,
+    deliveryAddressSnapshot: detail.deliveryAddressSnapshot ?? {},
+    items,
+  } satisfies PortalOrderDetail;
+}
+
+export async function getPortalOrderDetail(email: string, orderId: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (!normalizedEmail || !orderId || !isDatabaseConfigured()) {
     return null;
   }
 
@@ -197,19 +284,19 @@ export async function getPortalOrderDetail(email: string, orderId: string) {
         o.subtotal_ngn as "subtotalNgn",
         o.discount_ngn as "discountNgn",
         o.delivery_fee_ngn as "deliveryFeeNgn",
-      o.total_ngn as "totalNgn",
-      o.notes,
-      o.transfer_reference as "transferReference",
-      o.transfer_deadline_at as "transferDeadlineAt",
-      o.placed_at as "placedAt",
-      o.confirmed_at as "confirmedAt",
-      o.cancelled_at as "cancelledAt",
-      o.delivered_at as "deliveredAt",
-      o.delivery_address_snapshot as "deliveryAddressSnapshot",
-      p.id as "paymentId"
-    from app.orders o
-    left join matched_user mu on mu.id = o.user_id
-    left join app.payments p on p.order_id = o.id
+        o.total_ngn as "totalNgn",
+        o.notes,
+        o.transfer_reference as "transferReference",
+        o.transfer_deadline_at as "transferDeadlineAt",
+        o.placed_at as "placedAt",
+        o.confirmed_at as "confirmedAt",
+        o.cancelled_at as "cancelledAt",
+        o.delivered_at as "deliveredAt",
+        o.delivery_address_snapshot as "deliveryAddressSnapshot",
+        p.id as "paymentId"
+      from app.orders o
+      left join matched_user mu on mu.id = o.user_id
+      left join app.payments p on p.order_id = o.id
       where o.id = $2
         and (mu.id is not null or lower(o.customer_email) = $1)
       limit 1
@@ -217,61 +304,49 @@ export async function getPortalOrderDetail(email: string, orderId: string) {
     [normalizedEmail, orderId]
   );
 
-  if (!detailResult.rowCount) {
+  return buildOrderDetail(detailResult.rows[0] ?? null);
+}
+
+export async function getGuestOrderDetail(orderId: string) {
+  if (!orderId || !isDatabaseConfigured()) {
     return null;
   }
 
-  const detail = detailResult.rows[0];
-  const paymentResult = await query<{
-    status: string;
-    expected_amount_ngn: number;
-    submitted_amount_ngn: number | null;
-    reviewed_by_email: string | null;
-    expires_at: string | null;
-  }>(
+  const result = await query<
+    PortalOrderDetail & { deliveryAddressSnapshot: Record<string, unknown> }
+  >(
     `
       select
-        status,
-        expected_amount_ngn,
-        submitted_amount_ngn,
-        reviewed_by_email,
-        expires_at
-      from app.payments
-      where order_id = $1
+        o.id as "orderId",
+        o.public_order_number as "orderNumber",
+        o.customer_name as "customerName",
+        o.customer_email as "customerEmail",
+        o.customer_phone_e164 as "customerPhone",
+        o.status,
+        o.payment_status as "paymentStatus",
+        o.fulfillment_status as "fulfillmentStatus",
+        o.subtotal_ngn as "subtotalNgn",
+        o.discount_ngn as "discountNgn",
+        o.delivery_fee_ngn as "deliveryFeeNgn",
+        o.total_ngn as "totalNgn",
+        o.notes,
+        o.transfer_reference as "transferReference",
+        o.transfer_deadline_at as "transferDeadlineAt",
+        o.placed_at as "placedAt",
+        o.confirmed_at as "confirmedAt",
+        o.cancelled_at as "cancelledAt",
+        o.delivered_at as "deliveredAt",
+        o.delivery_address_snapshot as "deliveryAddressSnapshot",
+        p.id as "paymentId"
+      from app.orders o
+      left join app.payments p on p.order_id = o.id
+      where o.id = $1
       limit 1
     `,
     [orderId]
   );
 
-  const itemsResult = await query<PortalOrderLine>(
-    `
-      select
-        title,
-        sku,
-        unit_price_ngn as "unitPriceNgn",
-        quantity,
-        line_total_ngn as "lineTotalNgn"
-      from app.order_items
-      where order_id = $1
-      order by created_at asc
-    `,
-    [orderId]
-  );
-
-  return {
-    ...detail,
-    payment: paymentResult.rows[0]
-      ? {
-          status: paymentResult.rows[0].status,
-          expectedAmountNgn: paymentResult.rows[0].expected_amount_ngn,
-          submittedAmountNgn: paymentResult.rows[0].submitted_amount_ngn,
-          reviewedByEmail: paymentResult.rows[0].reviewed_by_email,
-          expiresAt: paymentResult.rows[0].expires_at,
-        }
-      : null,
-    deliveryAddressSnapshot: detail.deliveryAddressSnapshot ?? {},
-    items: itemsResult.rows,
-  };
+  return buildOrderDetail(result.rows[0] ?? null);
 }
 
 export async function getAdminOrderDetail(orderId: string) {
@@ -313,61 +388,7 @@ export async function getAdminOrderDetail(orderId: string) {
     [orderId]
   );
 
-  if (!result.rowCount) {
-    return null;
-  }
-
-  const detail = result.rows[0];
-  const itemsResult = await query<PortalOrderLine>(
-    `
-      select
-        title,
-        sku,
-        unit_price_ngn as "unitPriceNgn",
-        quantity,
-        line_total_ngn as "lineTotalNgn"
-      from app.order_items
-      where order_id = $1
-      order by created_at asc
-    `,
-    [orderId]
-  );
-
-  const paymentResult = await query<{
-    status: string;
-    expected_amount_ngn: number;
-    submitted_amount_ngn: number | null;
-    reviewed_by_email: string | null;
-    expires_at: string | null;
-  }>(
-    `
-      select
-        status,
-        expected_amount_ngn,
-        submitted_amount_ngn,
-        reviewed_by_email,
-        expires_at
-      from app.payments
-      where order_id = $1
-      limit 1
-    `,
-    [orderId]
-  );
-
-  return {
-    ...detail,
-    payment: paymentResult.rows[0]
-      ? {
-          status: paymentResult.rows[0].status,
-          expectedAmountNgn: paymentResult.rows[0].expected_amount_ngn,
-          submittedAmountNgn: paymentResult.rows[0].submitted_amount_ngn,
-          reviewedByEmail: paymentResult.rows[0].reviewed_by_email,
-          expiresAt: paymentResult.rows[0].expires_at,
-        }
-      : null,
-    deliveryAddressSnapshot: detail.deliveryAddressSnapshot ?? {},
-    items: itemsResult.rows,
-  };
+  return buildOrderDetail(result.rows[0] ?? null);
 }
 
 export async function listOrderStatusEvents(orderId: string) {

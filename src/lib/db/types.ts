@@ -59,6 +59,25 @@ export type AdminLayoutSection = {
   bindingCount: number;
 };
 
+export type AdminCustomerSummary = {
+  customerKey: string;
+  userId: string | null;
+  email: string | null;
+  fullName: string | null;
+  phone: string | null;
+  totalOrders: number;
+  activeOrders: number;
+  addressCount: number;
+  latestOrderNumber: string | null;
+  latestOrderStatus: string | null;
+  latestOrderAt: string | null;
+};
+
+export type SiteSettingRow = {
+  key: string;
+  value: unknown;
+};
+
 export type PublishedPageSection = {
   pageKey: string;
   versionId: string;
@@ -179,8 +198,23 @@ export type PortalOrderDetail = {
     submittedAmountNgn: number | null;
     reviewedByEmail: string | null;
     expiresAt: string | null;
+    bankName: string | null;
+    accountName: string | null;
+    accountNumber: string | null;
+    instructions: string | null;
   } | null;
   items: PortalOrderLine[];
+};
+
+export type CartSnapshotItem = {
+  productId: string;
+  quantity: number;
+};
+
+export type CartSnapshot = {
+  cartId: string;
+  itemCount: number;
+  items: CartSnapshotItem[];
 };
 
 export type BankAccountRow = {

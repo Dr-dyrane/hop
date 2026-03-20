@@ -5,6 +5,7 @@ import { clearCurrentSession, clearPendingAuthChallenge, getPendingAuthChallenge
 import { resolvePostSignInRedirect, sanitizeReturnTo } from "@/lib/auth/navigation";
 import type { AuthActionState } from "@/lib/auth/types";
 import { hasEmailDeliveryConfig, serverEnv } from "@/lib/config/server";
+import { ensureUserByEmail } from "@/lib/db/repositories/user-repository";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const OTP_PATTERN = /^\d{6}$/;
@@ -87,6 +88,7 @@ export async function verifyEmailOtpAction(
     };
   }
 
+  await ensureUserByEmail(challenge.email, { markSignedIn: true });
   const session = await setCurrentSession(challenge.email);
 
   await clearPendingAuthChallenge();
