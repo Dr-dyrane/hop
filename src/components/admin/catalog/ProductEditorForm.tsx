@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Archive, Save, Trash2 } from "lucide-react";
 import { ProductMediaManager } from "@/components/admin/catalog/ProductMediaManager";
+import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
+import { formatNgn } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 import type {
   AdminCatalogCategory,
@@ -100,7 +102,16 @@ export function ProductEditorForm({
 
       <div className="grid gap-6 min-[1500px]:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-6">
-          <EditorSection title="Identity">
+          <EditorSection
+            step="01"
+            title="Identity"
+            summary={
+              [product.productName, product.productMarketingName || product.productTagline]
+                .filter(Boolean)
+                .join(" / ") || product.variantName
+            }
+            defaultOpen
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <SelectGroup
                 label="Category"
@@ -150,7 +161,11 @@ export function ProductEditorForm({
             </div>
           </EditorSection>
 
-          <EditorSection title="Sellable">
+          <EditorSection
+            step="02"
+            title="Sellable"
+            summary={[formatNgn(product.priceNgn), product.variantName].join(" / ")}
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <InputGroup
                 label="Variant"
@@ -197,7 +212,11 @@ export function ProductEditorForm({
             variantTarget={variantTarget}
           />
 
-          <EditorSection title="State">
+          <EditorSection
+            step="03"
+            title="State"
+            summary={[product.status, product.isAvailable ? "live" : "off"].join(" / ")}
+          >
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <SelectGroup
                 label="Product"
@@ -351,17 +370,29 @@ export function ProductEditorForm({
 }
 
 function EditorSection({
+  step,
   title,
+  summary,
+  defaultOpen = false,
   children,
 }: {
+  step: string;
   title: string;
+  summary?: string;
+  defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <section className="glass-morphism rounded-[28px] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
-      <h2 className="text-lg font-semibold tracking-tight text-label">{title}</h2>
-      <div className="mt-4">{children}</div>
-    </section>
+    <ProgressiveFormSection
+      step={step}
+      title={title}
+      summary={summary}
+      defaultOpen={defaultOpen}
+      className="glass-morphism"
+      bodyClassName="pt-0"
+    >
+      {children}
+    </ProgressiveFormSection>
   );
 }
 

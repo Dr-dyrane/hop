@@ -1,4 +1,4 @@
-import { publicEnv } from "@/lib/config/public";
+import { buildStaticMapUrl } from "@/lib/mapbox";
 
 export function getTrackingCoords(snapshot: Record<string, unknown>) {
   const latitudeCandidates = [snapshot.latitude, snapshot.lat];
@@ -22,17 +22,7 @@ export function buildTrackingMapUrl(input: {
   height?: number;
   zoom?: number;
 }) {
-  if (!publicEnv.mapboxAccessToken) {
-    return null;
-  }
-
-  const width = input.width ?? 960;
-  const height = input.height ?? 540;
-  const zoom = input.zoom ?? 13;
-  const style = "mapbox/light-v10";
-  const pin = `pin-s+0f0(${input.longitude},${input.latitude})`;
-
-  return `https://api.mapbox.com/styles/v1/${style}/static/${pin}/${input.longitude},${input.latitude},${zoom}/${width}x${height}@2x?access_token=${publicEnv.mapboxAccessToken}`;
+  return buildStaticMapUrl(input);
 }
 
 export function getTrackingFreshness(recordedAt: string | null) {

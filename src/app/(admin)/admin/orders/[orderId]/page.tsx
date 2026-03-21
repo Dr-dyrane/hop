@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { WorkspaceContextPanel } from "@/components/shell/WorkspaceContextPanel";
 import { QuietValueStrip } from "@/components/ui/QuietValueStrip";
+import { AdminOrderActions } from "@/components/admin/orders/AdminOrderActions";
 import { formatNgn } from "@/lib/commerce";
 import { requireAdminSession } from "@/lib/auth/guards";
 import {
@@ -15,17 +16,17 @@ import {
   listOrderReturnEvents,
 } from "@/lib/db/repositories/order-returns-repository";
 import {
+  getOrderReview,
+  getOrderReviewRequest,
+} from "@/lib/db/repositories/review-repository";
+import {
   formatFlowStatusLabel,
   formatPaymentReviewActionLabel,
   getOrderStagePresentation,
-  getPaymentReviewActionLabel,
   getPaymentStatusPresentation,
 } from "@/lib/orders/presentation";
 import {
-  acceptOrderRequestAction,
   advanceReturnCaseAction,
-  cancelOrderAction,
-  reviewPaymentAction,
 } from "./actions";
 
 const returnStatusLabelMap: Record<string, string> = {
@@ -90,10 +91,11 @@ function availablePaymentActions(status: string | null | undefined) {
 export default async function AdminOrderDetailPage({
   params,
 }: {
-  params: { orderId: string };
+  params: Promise<{ orderId: string }>;
 }) {
-  const session = await requireAdminSession(`/admin/orders/${params.orderId}`);
-  const order = await getAdminOrderDetail(params.orderId, session.email);
+  const { orderId } = await params;
+  const session = await requireAdminSession(`/admin/orders/${orderId}`);
+  const order = await getAdminOrderDetail(orderId, session.email);
 
   if (!order) {
     return (
@@ -115,12 +117,14 @@ export default async function AdminOrderDetailPage({
     email: session.email,
     role: "admin" as const,
   };
-  const [orderEvents, paymentReviews, paymentProofs, returnCase, returnEvents] = await Promise.all([
-    listOrderStatusEvents(params.orderId, adminActor),
+  const [orderEvents, paymentReviews, paymentProofs, reviewRequest, customerReview, returnCase, returnEvents] = await Promise.all([
+    listOrderStatusEvents(orderId, adminActor),
     order.paymentId ? listPaymentReviewEvents(order.paymentId, session.email) : [],
     order.paymentId ? listPaymentProofs(order.paymentId, adminActor) : [],
-    getLatestOrderReturnCase(params.orderId, adminActor),
-    listOrderReturnEvents(params.orderId, adminActor),
+    getOrderReviewRequest(orderId, adminActor),
+    getOrderReview(orderId, adminActor),
+    getLatestOrderReturnCase(orderId, adminActor),
+    listOrderReturnEvents(orderId, adminActor),
   ]);
   const stage = getOrderStagePresentation(order);
   const paymentState = getPaymentStatusPresentation(order.payment?.status ?? order.paymentStatus);
@@ -191,9 +195,14 @@ export default async function AdminOrderDetailPage({
                 : "Waiting",
           },
           {
-            label: "Reviews",
+            label: "Checks",
             value: `${paymentReviews.length}`,
             detail: paymentReviews.length > 0 ? "Logged" : "Quiet",
+          },
+          {
+            label: "Rating",
+            value: customerReview ? `${customerReview.rating}/5` : reviewRequest ? "Pending" : "Quiet",
+            detail: customerReview ? "Customer" : reviewRequest ? "Waiting" : "None",
           },
           {
             label: "Timeline",
@@ -250,64 +259,13 @@ export default async function AdminOrderDetailPage({
           </DetailSurface>
 
           <DetailSurface title="Actions">
-            <div className="grid gap-3 sm:grid-cols-4">
-              {isRequestPending ? (
-                <>
-                  <form action={acceptOrderRequestAction} className="flex">
-                    <input type="hidden" name="orderId" value={order.orderId} />
-                    <input type="hidden" name="note" value="Request accepted from order detail." />
-                    <button
-                      type="submit"
-                      className="button-secondary min-h-[44px] w-full text-xs font-semibold uppercase tracking-headline"
-                    >
-                      Accept
-                    </button>
-                  </form>
-                  <form action={cancelOrderAction} className="flex">
-                    <input type="hidden" name="orderId" value={order.orderId} />
-                    <input type="hidden" name="note" value="Request declined from order detail." />
-                    <button
-                      type="submit"
-                      className="min-h-[44px] w-full rounded-full bg-system-fill/56 px-4 text-xs font-semibold uppercase tracking-headline text-red-500 transition-colors duration-200 hover:bg-system-fill/76"
-                    >
-                      Decline
-                    </button>
-                  </form>
-                </>
-              ) : order.paymentId && paymentActions.length > 0 ? (
-                paymentActions.map((action) => (
-                  <form key={action} action={reviewPaymentAction} className="flex">
-                    <input type="hidden" name="orderId" value={order.orderId} />
-                    <input type="hidden" name="paymentId" value={order.paymentId ?? ""} />
-                    <button
-                      type="submit"
-                      name="action"
-                      value={action}
-                      className="button-secondary min-h-[44px] w-full text-xs font-semibold uppercase tracking-headline"
-                    >
-                      {getPaymentReviewActionLabel(action)}
-                    </button>
-                  </form>
-                ))
-              ) : (
-                <div className="rounded-[24px] bg-system-fill/42 px-4 py-4 text-sm text-secondary-label sm:col-span-3">
-                  {order.paymentId ? "No payment action needed." : "Waiting for payment."}
-                </div>
-              )}
-
-              {!isRequestPending && canCancelOrder(order) ? (
-                <form action={cancelOrderAction} className="flex">
-                  <input type="hidden" name="orderId" value={order.orderId} />
-                  <input type="hidden" name="note" value="Cancelled from order detail." />
-                  <button
-                    type="submit"
-                    className="min-h-[44px] w-full rounded-full bg-system-fill/56 px-4 text-xs font-semibold uppercase tracking-headline text-red-500 transition-colors duration-200 hover:bg-system-fill/76"
-                  >
-                    Cancel
-                  </button>
-                </form>
-              ) : null}
-            </div>
+            <AdminOrderActions
+              orderId={order.orderId}
+              paymentId={order.paymentId}
+              isRequestPending={isRequestPending}
+              paymentActions={paymentActions}
+              canCancel={canCancelOrder(order)}
+            />
           </DetailSurface>
 
           <DetailSurface title="Timeline">
@@ -330,7 +288,7 @@ export default async function AdminOrderDetailPage({
         </div>
 
         <div className="space-y-4">
-          <DetailSurface title="Reviews">
+          <DetailSurface title="Payment checks">
             <div className="grid gap-2 text-sm text-secondary-label">
               {paymentReviews.length === 0 ? (
                 <div className="rounded-[22px] bg-system-fill/36 px-4 py-3">Quiet.</div>
@@ -351,6 +309,37 @@ export default async function AdminOrderDetailPage({
                 ))
               )}
             </div>
+          </DetailSurface>
+
+          <DetailSurface title="Customer rating">
+            {customerReview ? (
+              <div className="space-y-3">
+                <div className="rounded-[22px] bg-system-fill/36 px-4 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="text-2xl font-semibold tracking-tight text-label">
+                      {customerReview.rating}/5
+                    </div>
+                    <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+                      {customerReview.status}
+                    </div>
+                  </div>
+                  {customerReview.title ? (
+                    <div className="mt-3 text-sm font-medium text-label">
+                      {customerReview.title}
+                    </div>
+                  ) : null}
+                  {customerReview.body ? (
+                    <div className="mt-2 text-sm text-secondary-label">
+                      {customerReview.body}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-[22px] bg-system-fill/36 px-4 py-3 text-sm text-secondary-label">
+                {reviewRequest ? "Waiting for customer rating." : "No rating yet."}
+              </div>
+            )}
           </DetailSurface>
 
           <DetailSurface title="Proofs">

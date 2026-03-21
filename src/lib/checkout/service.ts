@@ -14,7 +14,26 @@ export type CheckoutPayload = {
   customerPhone: string;
   deliveryLocation: string;
   notes: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
+
+function normalizeCoordinate(
+  value: number | null,
+  min: number,
+  max: number,
+  label: string
+) {
+  if (value == null) {
+    return null;
+  }
+
+  if (!Number.isFinite(value) || value < min || value > max) {
+    throw new Error(`Invalid ${label}.`);
+  }
+
+  return Number(value.toFixed(6));
+}
 
 export function validateCheckoutPayload(payload: Omit<CheckoutPayload, "customerPhone"> & {
   customerPhone: string;
@@ -24,6 +43,8 @@ export function validateCheckoutPayload(payload: Omit<CheckoutPayload, "customer
   const customerEmail = payload.customerEmail?.trim().toLowerCase() || null;
   const notes = payload.notes?.trim() || null;
   const customerPhoneE164 = normalizePhoneToE164(payload.customerPhone);
+  const latitude = normalizeCoordinate(payload.latitude, -90, 90, "latitude");
+  const longitude = normalizeCoordinate(payload.longitude, -180, 180, "longitude");
 
   if (customerName.length < 2) {
     throw new Error("Enter a name.");
@@ -45,6 +66,8 @@ export function validateCheckoutPayload(payload: Omit<CheckoutPayload, "customer
     customerPhoneE164,
     deliveryLocation,
     notes,
+    latitude,
+    longitude,
   };
 }
 

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
 import { type AdminLayoutSection } from "@/lib/db/types";
 import { updateSectionAction } from "@/app/(admin)/admin/layout/actions";
 
@@ -16,7 +17,13 @@ export function SectionEditorForm({
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
+  const [activeStep, setActiveStep] = useState<"content" | "state">("content");
   const [isEnabled, setIsEnabled] = useState(section.isEnabled);
+  const [draft, setDraft] = useState({
+    eyebrow: section.eyebrow || "",
+    heading: section.heading || "",
+    body: section.body || "",
+  });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,31 +53,70 @@ export function SectionEditorForm({
       <input type="hidden" name="sectionId" value={section.sectionId} />
 
       <div className="grid gap-6 min-[1500px]:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="space-y-6">
-          <EditorSection title="Content">
+        <div className="space-y-4">
+          <ProgressiveFormSection
+            step="01"
+            title="Content"
+            summary={[draft.eyebrow, draft.heading].filter(Boolean).join(" / ") || section.sectionType}
+            open={activeStep === "content"}
+            onOpenChange={(open) => setActiveStep(open ? "content" : "state")}
+            actions={
+              <button
+                type="button"
+                onClick={() => setActiveStep("state")}
+                className="button-secondary min-h-[40px] px-4 text-[10px] font-semibold uppercase tracking-[0.16em]"
+              >
+                Continue
+              </button>
+            }
+          >
             <div className="space-y-4">
               <InputGroup
                 label="Eyebrow"
                 name="eyebrow"
-                defaultValue={section.eyebrow || ""}
+                value={draft.eyebrow}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, eyebrow: event.target.value }))
+                }
               />
               <InputGroup
                 label="Heading"
                 name="heading"
-                defaultValue={section.heading || ""}
+                value={draft.heading}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, heading: event.target.value }))
+                }
               />
               <TextAreaGroup
                 label="Body"
                 name="body"
-                defaultValue={section.body || ""}
+                value={draft.body}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, body: event.target.value }))
+                }
                 rows={5}
               />
             </div>
-          </EditorSection>
+          </ProgressiveFormSection>
         </div>
 
         <aside className="space-y-4">
-          <EditorSection title="State">
+          <ProgressiveFormSection
+            step="02"
+            title="State"
+            summary={isEnabled ? "Shown" : "Hidden"}
+            open={activeStep === "state"}
+            onOpenChange={(open) => setActiveStep(open ? "state" : "state")}
+            actions={
+              <button
+                type="button"
+                onClick={() => setActiveStep("content")}
+                className="rounded-full bg-system-fill/42 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label"
+              >
+                Back
+              </button>
+            }
+          >
             <div className="space-y-3">
               <button
                 type="button"
@@ -100,7 +146,7 @@ export function SectionEditorForm({
               <SignalCard label="Type" value={section.sectionType} />
               <SignalCard label="Sort" value={`${section.sortOrder}`} />
             </div>
-          </EditorSection>
+          </ProgressiveFormSection>
         </aside>
       </div>
 
@@ -130,21 +176,6 @@ export function SectionEditorForm({
         </div>
       </div>
     </form>
-  );
-}
-
-function EditorSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-[28px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
-      <h2 className="text-lg font-semibold tracking-tight text-label">{title}</h2>
-      <div className="mt-4">{children}</div>
-    </section>
   );
 }
 

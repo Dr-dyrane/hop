@@ -74,7 +74,7 @@ export default async function OrdersPage() {
             No orders yet.
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid gap-4 min-[1460px]:grid-cols-2">
             {orders.map((order) => {
               const stage = getOrderStagePresentation(order);
 

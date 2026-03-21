@@ -7,6 +7,32 @@ import {
   getOrderNotificationSnapshot,
   type OrderNotificationSnapshot,
 } from "@/lib/db/repositories/order-notification-repository";
+import { createGuestOrderAccessToken } from "@/lib/orders/access";
+
+function buildBrandLockup() {
+  const baseUrl = serverEnv.public.appUrl.replace(/\/$/, "");
+  const markUrl = `${baseUrl}/images/hero/hop-mark.svg`;
+  const wordmarkUrl = `${baseUrl}/images/hero/hop-wordmark.svg`;
+
+  return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
+      <img
+        src="${markUrl}"
+        alt="House of Prax"
+        width="28"
+        height="28"
+        style="display:block;width:28px;height:28px;"
+      />
+      <img
+        src="${wordmarkUrl}"
+        alt="House of Prax"
+        width="110"
+        height="30"
+        style="display:block;width:110px;height:30px;"
+      />
+    </div>
+  `;
+}
 
 function buildShell(input: {
   eyebrow: string;
@@ -18,6 +44,7 @@ function buildShell(input: {
   return `
     <div style="background:#f7f4ec;padding:32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#161616;">
       <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:30px;padding:32px;box-shadow:0 18px 50px rgba(15,23,42,0.08);">
+        ${buildBrandLockup()}
         <div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#6b7280;font-weight:600;">${input.eyebrow}</div>
         <h1 style="margin:16px 0 10px;font-size:32px;line-height:1.05;color:#111827;">${input.title}</h1>
         <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#4b5563;">${input.intro}</p>
@@ -61,6 +88,12 @@ function buildActionLink(label: string, href: string) {
       </a>
     </div>
   `;
+}
+
+function buildGuestOrderLink(orderId: string) {
+  const token = createGuestOrderAccessToken(orderId);
+
+  return `${serverEnv.public.appUrl}/checkout/orders/${orderId}?access=${encodeURIComponent(token)}`;
 }
 
 async function sendSafe(input: {
@@ -173,6 +206,7 @@ export async function sendOrderPlacedNotifications(input: {
 export async function sendPaymentProofSubmittedNotifications(input: {
   orderId: string;
   customerLink?: string | null;
+  proofIncluded?: boolean;
 }) {
   const order = await loadOrder(input.orderId);
 
@@ -180,15 +214,23 @@ export async function sendPaymentProofSubmittedNotifications(input: {
     return;
   }
 
+  const proofIncluded = input.proofIncluded ?? true;
+
   if (order.customerEmail) {
     await sendSafe({
       to: order.customerEmail,
-      subject: `Proof received for ${order.orderNumber}`,
-      text: `Payment proof for order ${order.orderNumber} has been received and is waiting for review.`,
+      subject: proofIncluded
+        ? `Proof received for ${order.orderNumber}`
+        : `Payment submitted for ${order.orderNumber}`,
+      text: proofIncluded
+        ? `Payment proof for order ${order.orderNumber} has been received and is waiting for review.`
+        : `Payment for order ${order.orderNumber} has been marked as sent and is waiting for review.`,
       html: buildShell({
         eyebrow: "House of Prax",
-        title: "Proof received",
-        intro: "Your payment proof is in. Praxy will review it shortly.",
+        title: proofIncluded ? "Proof received" : "Payment submitted",
+        intro: proofIncluded
+          ? "Your payment proof is in. Praxy will review it shortly."
+          : "Your payment is marked as sent. Praxy will review it shortly.",
         bodyHtml: `${buildOrderFacts(order)}${input.customerLink ? buildActionLink("Open order", input.customerLink) : ""}`,
       }),
     });
@@ -198,12 +240,18 @@ export async function sendPaymentProofSubmittedNotifications(input: {
     const adminHref = `${serverEnv.public.appUrl}/admin/payments`;
     await sendSafe({
       to: serverEnv.auth.adminEmails,
-      subject: `Payment proof waiting for ${order.orderNumber}`,
-      text: `Payment proof for order ${order.orderNumber} is ready for review.`,
+      subject: proofIncluded
+        ? `Payment proof waiting for ${order.orderNumber}`
+        : `Payment waiting for ${order.orderNumber}`,
+      text: proofIncluded
+        ? `Payment proof for order ${order.orderNumber} is ready for review.`
+        : `Payment for order ${order.orderNumber} is ready for review.`,
       html: buildShell({
         eyebrow: "Operations console",
-        title: "Proof waiting",
-        intro: `${order.customerName} added payment proof for order ${order.orderNumber}.`,
+        title: proofIncluded ? "Proof waiting" : "Payment waiting",
+        intro: proofIncluded
+          ? `${order.customerName} added payment proof for order ${order.orderNumber}.`
+          : `${order.customerName} marked payment as sent for order ${order.orderNumber}.`,
         bodyHtml: `${buildOrderFacts(order)}${buildActionLink("Open payments", adminHref)}`,
       }),
     });
@@ -272,13 +320,14 @@ export async function sendDeliveryStatusNotification(input: {
       ? {
           subject: `Delivered: ${order.orderNumber}`,
           title: "Delivered",
-          intro: "Your House of Prax order has been delivered.",
+          intro: "Your House of Prax order has been delivered. Open it once more to rate it.",
         }
       : {
           subject: `Out for delivery: ${order.orderNumber}`,
           title: "On the way",
           intro: "Your House of Prax order is now on the road.",
         };
+  const orderHref = buildGuestOrderLink(order.orderId);
 
   await sendSafe({
     to: order.customerEmail,
@@ -292,8 +341,12 @@ export async function sendDeliveryStatusNotification(input: {
         <div style="margin-top:18px;border-radius:24px;background:#f4f2ea;padding:18px;">
           <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Drop</div>
           <div style="margin-top:8px;font-size:15px;color:#111827;">${order.deliveryAddress}</div>
-        </div>`,
-      footer: input.status === "delivered" ? "You can rate the order from your portal history." : undefined,
+        </div>
+        ${buildActionLink(input.status === "delivered" ? "Rate order" : "Open order", orderHref)}`,
+      footer:
+        input.status === "delivered"
+          ? "A quick rating helps Praxy close the loop."
+          : undefined,
     }),
   });
 }

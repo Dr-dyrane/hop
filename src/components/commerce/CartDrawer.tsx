@@ -15,6 +15,8 @@ import {
   formatNgn,
 } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
+import { MapboxAddressAutocomplete } from "@/components/maps/MapboxAddressAutocomplete";
+import { MapboxLocationPicker } from "@/components/maps/MapboxLocationPicker";
 
 const fieldClassName =
   "w-full rounded-[28px] bg-system-fill/80 px-4 py-3 text-sm text-label placeholder:text-secondary-label transition-colors duration-300 focus:bg-system-fill dark:bg-white/[0.05] dark:focus:bg-white/[0.08]";
@@ -359,23 +361,64 @@ export function CartDrawer() {
                       </span>
                     </label>
 
-                    <label className="grid gap-2">
+                    <div className="grid gap-2">
                       <span className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
                         Delivery Address
                       </span>
-                      <input
-                        type="text"
+                      <MapboxAddressAutocomplete
                         value={checkoutForm.deliveryLocation}
-                        onChange={(event) =>
-                          updateCheckoutField(
-                            "deliveryLocation",
-                            event.target.value
-                          )
-                        }
-                        className={fieldClassName}
+                        onChange={(value) => {
+                          updateCheckoutField("deliveryLocation", value);
+                          updateCheckoutField("latitude", "");
+                          updateCheckoutField("longitude", "");
+                        }}
+                        onSelect={(suggestion) => {
+                          updateCheckoutField("deliveryLocation", suggestion.label);
+                          updateCheckoutField("latitude", String(suggestion.latitude));
+                          updateCheckoutField("longitude", String(suggestion.longitude));
+                        }}
+                        inputClassName={fieldClassName}
                         placeholder="House, street, area, landmark"
+                        proximity={
+                          checkoutForm.latitude && checkoutForm.longitude
+                            ? {
+                                latitude: Number(checkoutForm.latitude),
+                                longitude: Number(checkoutForm.longitude),
+                              }
+                            : null
+                        }
                       />
-                    </label>
+                    </div>
+
+                    <MapboxLocationPicker
+                      latitude={
+                        checkoutForm.latitude
+                          ? Number(checkoutForm.latitude)
+                          : null
+                      }
+                      longitude={
+                        checkoutForm.longitude
+                          ? Number(checkoutForm.longitude)
+                          : null
+                      }
+                      onChange={({ latitude, longitude }) => {
+                        updateCheckoutField(
+                          "latitude",
+                          latitude == null ? "" : String(latitude)
+                        );
+                        updateCheckoutField(
+                          "longitude",
+                          longitude == null ? "" : String(longitude)
+                        );
+                      }}
+                      onResolveAddress={(suggestion) => {
+                        updateCheckoutField("deliveryLocation", suggestion.label);
+                        updateCheckoutField("latitude", String(suggestion.latitude));
+                        updateCheckoutField("longitude", String(suggestion.longitude));
+                      }}
+                      className="h-[152px] sm:h-[170px]"
+                      isVisible={isCartOpen}
+                    />
 
                     <label className="grid gap-2">
                       <span className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">

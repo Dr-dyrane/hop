@@ -385,7 +385,7 @@ function RiderRoster({ riders }: { riders: AdminDeliveryRider[] }) {
         </span>
       </div>
 
-      <form action={createRiderAction} className="mt-4 grid gap-3">
+      <form id="admin-delivery-rider-form" action={createRiderAction} className="mt-4 grid gap-3">
         <input
           type="text"
           name="name"

@@ -99,6 +99,8 @@ export async function submitCheckoutOrder(payload: {
   customerPhone: string;
   deliveryLocation: string;
   notes: string;
+  latitude: number | null;
+  longitude: number | null;
 }) {
   const response = await fetch("/api/cart/checkout", {
     method: "POST",

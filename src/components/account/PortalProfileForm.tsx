@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { PortalProfile } from "@/lib/db/types";
+import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
 import { updateProfileAction } from "@/app/(portal)/account/profile/actions";
 import { cn } from "@/lib/utils";
 
@@ -9,7 +10,14 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
+  const [activeStep, setActiveStep] = useState<"identity" | "updates">("identity");
   const [marketingOptIn, setMarketingOptIn] = useState(profile.marketingOptIn);
+  const [draft, setDraft] = useState({
+    fullName: profile.fullName,
+    preferredPhone: profile.preferredPhoneE164,
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+  });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,13 +42,58 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
   }
 
   return (
-    <form id="account-profile-form" onSubmit={handleSubmit} className="space-y-6 pb-24">
-      <section className="rounded-[28px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
+    <form id="account-profile-form" onSubmit={handleSubmit} className="space-y-4 pb-24">
+      <ProgressiveFormSection
+        step="01"
+        title="Identity"
+        summary={[draft.fullName, draft.preferredPhone].filter(Boolean).join(" / ") || profile.email}
+        open={activeStep === "identity"}
+        onOpenChange={(open) => setActiveStep(open ? "identity" : "updates")}
+        actions={
+          <button
+            type="button"
+            onClick={() => setActiveStep("updates")}
+            className="button-secondary min-h-[40px] px-4 text-[10px] font-semibold uppercase tracking-[0.16em]"
+          >
+            Continue
+          </button>
+        }
+      >
         <div className="grid gap-4 md:grid-cols-2">
-          <InputGroup label="Name" name="fullName" defaultValue={profile.fullName} required />
-          <InputGroup label="Phone" name="preferredPhone" defaultValue={profile.preferredPhoneE164} required />
-          <InputGroup label="First" name="firstName" defaultValue={profile.firstName} />
-          <InputGroup label="Last" name="lastName" defaultValue={profile.lastName} />
+          <InputGroup
+            label="Name"
+            name="fullName"
+            value={draft.fullName}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, fullName: event.target.value }))
+            }
+            required
+          />
+          <InputGroup
+            label="Phone"
+            name="preferredPhone"
+            value={draft.preferredPhone}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, preferredPhone: event.target.value }))
+            }
+            required
+          />
+          <InputGroup
+            label="First"
+            name="firstName"
+            value={draft.firstName}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, firstName: event.target.value }))
+            }
+          />
+          <InputGroup
+            label="Last"
+            name="lastName"
+            value={draft.lastName}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, lastName: event.target.value }))
+            }
+          />
           <InputGroup
             label="Email"
             value={profile.email}
@@ -48,9 +101,24 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
             className="md:col-span-2 opacity-60"
           />
         </div>
-      </section>
+      </ProgressiveFormSection>
 
-      <section className="rounded-[28px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
+      <ProgressiveFormSection
+        step="02"
+        title="Updates"
+        summary={marketingOptIn ? "On" : "Off"}
+        open={activeStep === "updates"}
+        onOpenChange={(open) => setActiveStep(open ? "updates" : "updates")}
+        actions={
+          <button
+            type="button"
+            onClick={() => setActiveStep("identity")}
+            className="rounded-full bg-system-fill/42 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label"
+          >
+            Back
+          </button>
+        }
+      >
         <button
           type="button"
           onClick={() => setMarketingOptIn((current) => !current)}
@@ -60,9 +128,7 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
               Updates
             </p>
-            <p className="mt-1 text-sm text-label">
-              {marketingOptIn ? "On" : "Off"}
-            </p>
+            <p className="mt-1 text-sm text-label">{marketingOptIn ? "On" : "Off"}</p>
           </div>
           <span
             className={cn(
@@ -75,7 +141,7 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
             {marketingOptIn ? "On" : "Off"}
           </span>
         </button>
-      </section>
+      </ProgressiveFormSection>
 
       <div className="sticky bottom-6 z-30">
         <div className="flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/56 px-4 py-3 shadow-[0_12px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl">

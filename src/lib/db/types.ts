@@ -540,6 +540,27 @@ export type PortalPendingReview = {
   customerName: string;
 };
 
+export type OrderReviewRequestRow = {
+  requestId: string;
+  orderId: string;
+  status: string;
+  createdAt: string;
+  completedAt: string | null;
+  expiresAt: string | null;
+};
+
+export type OrderReviewRow = {
+  reviewId: string;
+  orderId: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  status: string;
+  isFeatured: boolean;
+  createdAt: string;
+  moderatedAt: string | null;
+};
+
 export type PortalReviewRow = {
   reviewId: string;
   orderId: string;

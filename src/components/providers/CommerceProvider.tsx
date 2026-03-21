@@ -42,7 +42,9 @@ type CheckoutField =
   | "email"
   | "phoneNumber"
   | "deliveryLocation"
-  | "notes";
+  | "notes"
+  | "latitude"
+  | "longitude";
 
 type CheckoutFormState = {
   fullName: string;
@@ -50,6 +52,8 @@ type CheckoutFormState = {
   phoneNumber: string;
   deliveryLocation: string;
   notes: string;
+  latitude: string;
+  longitude: string;
 };
 
 type CartLine = {
@@ -111,6 +115,8 @@ const emptyCheckoutForm: CheckoutFormState = {
   phoneNumber: "",
   deliveryLocation: "",
   notes: "",
+  latitude: "",
+  longitude: "",
 };
 
 function sanitizeCartItems(value: unknown, productIds: Set<string>): CartItem[] {
@@ -486,6 +492,8 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         customerPhone: checkoutForm.phoneNumber,
         deliveryLocation: checkoutForm.deliveryLocation,
         notes: checkoutForm.notes,
+        latitude: checkoutForm.latitude ? Number(checkoutForm.latitude) : null,
+        longitude: checkoutForm.longitude ? Number(checkoutForm.longitude) : null,
       });
 
       setCheckoutForm(emptyCheckoutForm);

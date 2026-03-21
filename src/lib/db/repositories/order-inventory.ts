@@ -85,13 +85,17 @@ async function applyInventoryDelta(
       const inventory = inventoryByVariant.get(line.variantId);
 
       if (!inventory) {
-        throw new Error(`${line.title} is unavailable.`);
+        throw new Error(`${line.title} cannot be accepted yet. No stock record is available.`);
       }
 
       const available = inventory.onHand - inventory.reserved;
 
       if (available < line.quantity) {
-        throw new Error(`${line.title} is unavailable.`);
+        throw new Error(
+          available <= 0
+            ? `${line.title} cannot be accepted yet. It is out of stock.`
+            : `${line.title} cannot be accepted yet. Only ${available} left.`
+        );
       }
     }
   }

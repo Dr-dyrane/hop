@@ -41,6 +41,8 @@ export async function POST(request: Request) {
       customerPhone?: string;
       deliveryLocation?: string;
       notes?: string;
+      latitude?: number | null;
+      longitude?: number | null;
     };
 
     const created = await createCheckoutOrder({
@@ -51,6 +53,8 @@ export async function POST(request: Request) {
       customerPhone: body.customerPhone ?? "",
       deliveryLocation: body.deliveryLocation ?? "",
       notes: body.notes ?? null,
+      latitude: body.latitude ?? null,
+      longitude: body.longitude ?? null,
     });
 
     const redirectTo = created.guestAccessToken

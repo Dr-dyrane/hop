@@ -103,7 +103,7 @@ export function WorkspaceShell({
             </div>
           </header>
 
-          <main className="container-shell px-1 pb-28 pt-6 md:px-0 md:pb-12 md:pt-8">
+          <main className="w-full px-4 pb-28 pt-6 md:px-6 md:pb-12 md:pt-8">
             {children}
           </main>
         </div>

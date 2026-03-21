@@ -2,12 +2,16 @@
 
 import { useState, useTransition } from "react";
 import type { PortalAddress } from "@/lib/db/types";
+import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
 import {
   deleteAddressAction,
   saveAddressAction,
   setDefaultAddressAction,
 } from "@/app/(portal)/account/addresses/actions";
 import { cn } from "@/lib/utils";
+import { MapboxLocationPicker } from "@/components/maps/MapboxLocationPicker";
+import { MapboxAddressAutocomplete } from "@/components/maps/MapboxAddressAutocomplete";
+import type { MapboxAddressSuggestion } from "@/lib/mapbox-search";
 
 const emptyDraft = {
   addressId: "",
@@ -30,6 +34,7 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
+  const [activeStep, setActiveStep] = useState<"who" | "where" | "finish">("who");
   const [draft, setDraft] = useState(() =>
     addresses[0]
       ? {
@@ -52,10 +57,23 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
   );
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  function applyResolvedAddress(suggestion: MapboxAddressSuggestion) {
+    setDraft((current) => ({
+      ...current,
+      line1: suggestion.line1,
+      city: suggestion.city || current.city,
+      state: suggestion.state || current.state,
+      postalCode: suggestion.postalCode || current.postalCode,
+      latitude: String(suggestion.latitude),
+      longitude: String(suggestion.longitude),
+    }));
+  }
+
   function loadDraft(address?: PortalAddress) {
     if (!address) {
       setEditingId(null);
       setDraft(emptyDraft);
+      setActiveStep("who");
       return;
     }
 
@@ -76,6 +94,7 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
       longitude: address.longitude?.toString() ?? "",
       isDefault: address.isDefault,
     });
+    setActiveStep("who");
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -100,6 +119,7 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
       setMessageTone("success");
       setEditingId(null);
       setDraft(emptyDraft);
+      setActiveStep("who");
     });
   }
 
@@ -124,71 +144,250 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
       if (editingId) {
         setEditingId(null);
         setDraft(emptyDraft);
+        setActiveStep("who");
       }
     });
   }
 
   return (
     <div className="space-y-6 pb-24">
-      <form
-        id="account-address-form"
-        onSubmit={handleSubmit}
-        className="rounded-[28px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6"
-      >
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold tracking-tight text-label">
-            {editingId ? "Edit" : "New"}
-          </h2>
-          {editingId ? (
+      <form id="account-address-form" onSubmit={handleSubmit} className="space-y-4">
+        <ProgressiveFormSection
+          step="01"
+          title={editingId ? "Edit" : "New"}
+          summary={[draft.label, draft.recipientName].filter(Boolean).join(" / ") || "Place"}
+          open={activeStep === "who"}
+          onOpenChange={(open) => setActiveStep(open ? "who" : "where")}
+          actions={
+            <>
+              {editingId ? (
+                <button
+                  type="button"
+                  onClick={() => loadDraft()}
+                  className="rounded-full bg-system-fill/42 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label"
+                >
+                  Clear
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setActiveStep("where")}
+                className="button-secondary min-h-[40px] px-4 text-[10px] font-semibold uppercase tracking-[0.16em]"
+              >
+                Continue
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <InputGroup
+              label="Label"
+              name="label"
+              value={draft.label}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, label: event.target.value }))
+              }
+              required
+            />
+            <InputGroup
+              label="Recipient"
+              name="recipientName"
+              value={draft.recipientName}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, recipientName: event.target.value }))
+              }
+              required
+            />
+            <InputGroup
+              label="Phone"
+              name="phone"
+              value={draft.phone}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, phone: event.target.value }))
+              }
+              required
+              className="md:col-span-2"
+            />
+          </div>
+        </ProgressiveFormSection>
+
+        <ProgressiveFormSection
+          step="02"
+          title="Address"
+          summary={
+            [draft.line1, [draft.city, draft.state].filter(Boolean).join(", ")]
+              .filter(Boolean)
+              .join(" / ") || "Pin"
+          }
+          open={activeStep === "where"}
+          onOpenChange={(open) => setActiveStep(open ? "where" : "finish")}
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveStep("who")}
+                className="rounded-full bg-system-fill/42 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveStep("finish")}
+                className="button-secondary min-h-[40px] px-4 text-[10px] font-semibold uppercase tracking-[0.16em]"
+              >
+                Continue
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2 md:col-span-2">
+              <label className="ml-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
+                Line 1
+              </label>
+              <MapboxAddressAutocomplete
+                name="line1"
+                required
+                value={draft.line1}
+                onChange={(value) =>
+                  setDraft((current) => ({
+                    ...current,
+                    line1: value,
+                    latitude: "",
+                    longitude: "",
+                  }))
+                }
+                onSelect={applyResolvedAddress}
+                placeholder="House, street, landmark"
+                proximity={
+                  draft.latitude && draft.longitude
+                    ? {
+                        latitude: Number(draft.latitude),
+                        longitude: Number(draft.longitude),
+                      }
+                    : null
+                }
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <MapboxLocationPicker
+                latitude={draft.latitude ? Number(draft.latitude) : null}
+                longitude={draft.longitude ? Number(draft.longitude) : null}
+                onChange={({ latitude, longitude }) =>
+                  setDraft((current) => ({
+                    ...current,
+                    latitude: latitude == null ? "" : String(latitude),
+                    longitude: longitude == null ? "" : String(longitude),
+                  }))
+                }
+                onResolveAddress={applyResolvedAddress}
+                className="h-[180px] sm:h-[200px] xl:h-[216px]"
+                isVisible={activeStep === "where"}
+              />
+            </div>
+
+            <InputGroup
+              label="Line 2"
+              name="line2"
+              value={draft.line2}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, line2: event.target.value }))
+              }
+            />
+            <InputGroup
+              label="Landmark"
+              name="landmark"
+              value={draft.landmark}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, landmark: event.target.value }))
+              }
+            />
+            <InputGroup
+              label="City"
+              name="city"
+              value={draft.city}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, city: event.target.value }))
+              }
+              required
+            />
+            <InputGroup
+              label="State"
+              name="state"
+              value={draft.state}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, state: event.target.value }))
+              }
+              required
+            />
+            <InputGroup
+              label="Postal"
+              name="postalCode"
+              value={draft.postalCode}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, postalCode: event.target.value }))
+              }
+              className="md:col-span-2"
+            />
+          </div>
+        </ProgressiveFormSection>
+
+        <ProgressiveFormSection
+          step="03"
+          title="Finish"
+          summary={draft.isDefault ? "Default" : draft.deliveryNotes ? "Notes" : "Ready"}
+          open={activeStep === "finish"}
+          onOpenChange={(open) => setActiveStep(open ? "finish" : "finish")}
+          actions={
             <button
               type="button"
-              onClick={() => loadDraft()}
-              className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label"
+              onClick={() => setActiveStep("where")}
+              className="rounded-full bg-system-fill/42 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label"
             >
-              Clear
+              Back
             </button>
-          ) : null}
-        </div>
-
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <InputGroup label="Label" name="label" value={draft.label} onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))} required />
-          <InputGroup label="Recipient" name="recipientName" value={draft.recipientName} onChange={(event) => setDraft((current) => ({ ...current, recipientName: event.target.value }))} required />
-          <InputGroup label="Phone" name="phone" value={draft.phone} onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))} required />
-          <InputGroup label="Line 1" name="line1" value={draft.line1} onChange={(event) => setDraft((current) => ({ ...current, line1: event.target.value }))} required />
-          <InputGroup label="Line 2" name="line2" value={draft.line2} onChange={(event) => setDraft((current) => ({ ...current, line2: event.target.value }))} />
-          <InputGroup label="Landmark" name="landmark" value={draft.landmark} onChange={(event) => setDraft((current) => ({ ...current, landmark: event.target.value }))} />
-          <InputGroup label="City" name="city" value={draft.city} onChange={(event) => setDraft((current) => ({ ...current, city: event.target.value }))} required />
-          <InputGroup label="State" name="state" value={draft.state} onChange={(event) => setDraft((current) => ({ ...current, state: event.target.value }))} required />
-          <InputGroup label="Postal" name="postalCode" value={draft.postalCode} onChange={(event) => setDraft((current) => ({ ...current, postalCode: event.target.value }))} />
-          <InputGroup label="Latitude" name="latitude" value={draft.latitude} onChange={(event) => setDraft((current) => ({ ...current, latitude: event.target.value }))} />
-          <InputGroup label="Longitude" name="longitude" value={draft.longitude} onChange={(event) => setDraft((current) => ({ ...current, longitude: event.target.value }))} />
-          <InputGroup label="Notes" name="deliveryNotes" value={draft.deliveryNotes} onChange={(event) => setDraft((current) => ({ ...current, deliveryNotes: event.target.value }))} className="md:col-span-2" />
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setDraft((current) => ({ ...current, isDefault: !current.isDefault }))}
-          className="mt-4 flex min-h-[48px] w-full items-center justify-between rounded-[20px] bg-system-fill/42 px-4"
+          }
         >
-          <div className="text-left">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
-              Default
-            </p>
-            <p className="mt-1 text-sm text-label">{draft.isDefault ? "Yes" : "No"}</p>
-          </div>
-          <span
-            className={cn(
-              "inline-flex min-w-[58px] justify-center rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]",
-              draft.isDefault
-                ? "bg-accent/10 text-accent"
-                : "bg-system-fill/52 text-secondary-label"
-            )}
-          >
-            {draft.isDefault ? "On" : "Off"}
-          </span>
-        </button>
+          <div className="grid gap-4">
+            <InputGroup
+              label="Notes"
+              name="deliveryNotes"
+              value={draft.deliveryNotes}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, deliveryNotes: event.target.value }))
+              }
+            />
 
-        <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setDraft((current) => ({ ...current, isDefault: !current.isDefault }))}
+              className="flex min-h-[48px] w-full items-center justify-between rounded-[20px] bg-system-fill/42 px-4"
+            >
+              <div className="text-left">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
+                  Default
+                </p>
+                <p className="mt-1 text-sm text-label">{draft.isDefault ? "Yes" : "No"}</p>
+              </div>
+              <span
+                className={cn(
+                  "inline-flex min-w-[58px] justify-center rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]",
+                  draft.isDefault
+                    ? "bg-accent/10 text-accent"
+                    : "bg-system-fill/52 text-secondary-label"
+                )}
+              >
+                {draft.isDefault ? "On" : "Off"}
+              </span>
+            </button>
+          </div>
+        </ProgressiveFormSection>
+
+        <input type="hidden" name="latitude" value={draft.latitude} />
+        <input type="hidden" name="longitude" value={draft.longitude} />
+
+        <div className="flex justify-end">
           <button
             type="submit"
             disabled={isPending}

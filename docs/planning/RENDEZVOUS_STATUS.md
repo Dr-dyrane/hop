@@ -78,6 +78,7 @@ Current state:
 - selected shell navigation states now use accent surfaces with legible contrast in both light and dark mode
 - auth, cart handoff, and guest confirmation wording is quieter and less technical on the live user path
 - mobile shell navigation now clears the development badge in local testing so the first rail item stays readable
+- workspace shell content now uses the full available console width instead of the older marketing-style container clamp
 - product edit now keeps image, video, and 3D asset preview inside the editor with a contained viewer instead of raw file links
 - product edit now has a safe archive path instead of relying on manual status edits alone
 - archived products can now be hard-deleted safely when no open orders still reference them
@@ -86,15 +87,19 @@ Current state:
 - portal order list now relies more on shell hierarchy instead of repeating route-level headings
 - admin orders and payments now use the same quiet root switcher pattern instead of lone cross-links
 - portal account home labels are shorter and less instructional on the main signed-in path
+- payments and portal orders now widen properly on large desktop instead of leaving dead space on the right
 - admin order detail now uses the same context-strip, value-strip, and compact surface rhythm as the stronger portal screens
 - profile, addresses, reorder, and tracking now use shorter customer-facing labels on the main portal flow
 - admin payments now supports direct review, confirm, and reject actions from the queue itself
 - proof-upload language is shorter on the customer order flow
 - admin catalog now supports product media CRUD for image, 3D, and video assets through direct S3 upload and audited media mutations
 - customer proof upload now advances payment and order state instead of only storing the file
+- customer payment confirmation now updates the payment row truthfully even without a receipt, including submitted amount and submitted state
 - stale awaiting-transfer orders now expire automatically on read-path access and release held stock
 - inventory now reserves on order creation, releases on expiry, and decrements on delivery
 - admin can now cancel pre-dispatch orders from the order detail flow, with stock release and assignment cleanup handled transactionally
+- delivered order detail now exposes direct rating submission for signed-in and guest order access, instead of relying only on the separate reviews page
+- delivered-order email now links straight back into the order surface so the review handoff is part of the post-delivery automation
 
 This means the system has crossed into operational platform work.
 
@@ -257,6 +262,7 @@ Completed:
 - [x] converted-cart checkout recovery path
 - [x] checkout cart refresh path for expired or replaced carts
 - [x] proof upload now advances payment/order state into `submitted`
+- [x] payment confirmation without receipt now still updates payment status and submitted amount
 - [x] stale awaiting-transfer orders now expire and release stock
 - [x] inventory reservation/release/delivery decrement now follows the order lifecycle
 - [x] delivery assignment schema and repository path

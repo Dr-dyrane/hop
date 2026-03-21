@@ -8,6 +8,24 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Try again.";
 }
 
+function isStorageUnavailableError(message: string) {
+  return message.toLowerCase().includes("storage bucket is not configured");
+}
+
+async function readJsonPayload<T>(response: Response): Promise<T | null> {
+  const text = await response.text();
+
+  if (!text.trim()) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+}
+
 function getPaymentStateMessage(paymentStatus: string) {
   switch (paymentStatus) {
     case "submitted":
@@ -55,55 +73,72 @@ export function PaymentProofUploadCard({
   async function handleUpload() {
     const file = inputRef.current?.files?.[0];
 
-    if (!file) {
-      setMessage("Choose a file.");
-      return;
-    }
-
     startTransition(async () => {
       try {
         setMessage(null);
 
-        const presignResponse = await fetch("/api/payment-proofs/presign", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            orderId,
-            paymentId,
-            accessToken,
-            fileName: file.name,
-            contentType: file.type || "application/octet-stream",
-          }),
-        });
+        let storagePayload:
+          | {
+              storageKey: string;
+              publicUrl: string;
+              contentType: string;
+            }
+          | null = null;
 
-        const presignPayload = (await presignResponse.json()) as {
-          ok: boolean;
-          error?: string;
-          data?: {
-            uploadUrl: string;
-            storageKey: string;
-            publicUrl: string;
-            contentType: string;
-          };
-        };
+        if (file) {
+          const presignResponse = await fetch("/api/payment-proofs/presign", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderId,
+              paymentId,
+              accessToken,
+              fileName: file.name,
+              contentType: file.type || "application/octet-stream",
+            }),
+          });
 
-        if (!presignResponse.ok || !presignPayload.ok || !presignPayload.data) {
-          throw new Error(presignPayload.error || "Try again.");
-        }
+          const presignPayload = await readJsonPayload<{
+            ok: boolean;
+            error?: string;
+            data?: {
+              uploadUrl: string;
+              storageKey: string;
+              publicUrl: string;
+              contentType: string;
+            };
+          }>(presignResponse);
 
-        const uploadResponse = await fetch(presignPayload.data.uploadUrl, {
-          method: "PUT",
-          headers: {
-            "Content-Type": presignPayload.data.contentType,
-          },
-          body: file,
-        });
+          if (!presignResponse.ok || !presignPayload?.ok || !presignPayload.data) {
+            const presignError = presignPayload?.error || "Try again.";
 
-        if (!uploadResponse.ok) {
-          throw new Error("Try again.");
+            if (!presignResponse.ok && isStorageUnavailableError(presignError)) {
+              storagePayload = null;
+            } else {
+              throw new Error(presignError);
+            }
+          } else {
+            const uploadResponse = await fetch(presignPayload.data.uploadUrl, {
+              method: "PUT",
+              headers: {
+                "Content-Type": presignPayload.data.contentType,
+              },
+              body: file,
+            });
+
+            if (!uploadResponse.ok) {
+              throw new Error("Try again.");
+            }
+
+            storagePayload = {
+              storageKey: presignPayload.data.storageKey,
+              publicUrl: presignPayload.data.publicUrl,
+              contentType: presignPayload.data.contentType,
+            };
+          }
         }
 
         const commitResponse = await fetch("/api/payment-proofs/commit", {
@@ -116,26 +151,28 @@ export function PaymentProofUploadCard({
             orderId,
             paymentId,
             accessToken,
-            storageKey: presignPayload.data.storageKey,
-            publicUrl: presignPayload.data.publicUrl,
-            mimeType: presignPayload.data.contentType,
+            storageKey: storagePayload?.storageKey,
+            publicUrl: storagePayload?.publicUrl,
+            mimeType: storagePayload?.contentType,
           }),
         });
 
-        const commitPayload = (await commitResponse.json()) as {
+        const commitPayload = await readJsonPayload<{
           ok: boolean;
           error?: string;
-        };
+        }>(commitResponse);
 
-        if (!commitResponse.ok || !commitPayload.ok) {
-          throw new Error(commitPayload.error || "Try again.");
+        if (!commitResponse.ok || !commitPayload?.ok) {
+          throw new Error(commitPayload?.error || "Try again.");
         }
 
         if (inputRef.current) {
           inputRef.current.value = "";
         }
 
-        setMessage("Money sent.");
+        setMessage(
+          file && !storagePayload ? "Money sent. Add proof later." : "Money sent."
+        );
         router.refresh();
       } catch (error) {
         setMessage(getErrorMessage(error));
@@ -149,8 +186,8 @@ export function PaymentProofUploadCard({
         <div className="flex items-start gap-3">
           <Landmark className="mt-0.5 h-4 w-4 shrink-0 text-label" strokeWidth={1.8} />
           <div className="space-y-1">
-            <div className="text-label">Send the transfer, then add your receipt or screenshot.</div>
-            <div>Tap once after payment so Praxy can confirm it.</div>
+            <div className="text-label">Send the transfer, then tap once for confirmation.</div>
+            <div>Receipt is optional.</div>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { AdminCatalogCategory } from "@/lib/db/types";
+import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
 import { createProductAction } from "@/app/(admin)/admin/catalog/products/[productId]/actions";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,14 @@ export function ProductComposerForm({
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"error" | "success" | null>(null);
+  const [activeStep, setActiveStep] = useState<"identity" | "sellable">("identity");
+  const [draft, setDraft] = useState({
+    productName: "",
+    marketingName: "",
+    categoryId: "",
+    variantName: "",
+    priceNgn: "",
+  });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,24 +51,50 @@ export function ProductComposerForm({
   }
 
   return (
-    <form id="admin-product-create-form" onSubmit={handleSubmit} className="space-y-6 pb-20">
-      <section className="glass-morphism rounded-[28px] p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
+    <form id="admin-product-create-form" onSubmit={handleSubmit} className="space-y-4 pb-20">
+      <ProgressiveFormSection
+        step="01"
+        title="Identity"
+        summary={[draft.productName, draft.marketingName].filter(Boolean).join(" / ") || "Product"}
+        open={activeStep === "identity"}
+        onOpenChange={(open) => setActiveStep(open ? "identity" : "sellable")}
+        actions={
+          <button
+            type="button"
+            onClick={() => setActiveStep("sellable")}
+            className="button-secondary min-h-[40px] px-4 text-[10px] font-semibold uppercase tracking-[0.16em]"
+          >
+            Continue
+          </button>
+        }
+      >
         <div className="grid gap-4 md:grid-cols-2">
           <InputGroup
             label="Product"
             name="productName"
             required
             placeholder="Natural Energy"
+            value={draft.productName}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, productName: event.target.value }))
+            }
           />
           <InputGroup
             label="Marketing"
             name="marketingName"
             placeholder="Natural Energy"
+            value={draft.marketingName}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, marketingName: event.target.value }))
+            }
           />
           <SelectGroup
             label="Category"
             name="categoryId"
-            defaultValue=""
+            value={draft.categoryId}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, categoryId: event.target.value }))
+            }
             options={[
               { label: "Unsorted", value: "" },
               ...categories.map((category) => ({
@@ -72,7 +107,31 @@ export function ProductComposerForm({
             label="Variant"
             name="variantName"
             placeholder="Default"
+            value={draft.variantName}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, variantName: event.target.value }))
+            }
           />
+        </div>
+      </ProgressiveFormSection>
+
+      <ProgressiveFormSection
+        step="02"
+        title="Sellable"
+        summary={draft.priceNgn ? `NGN ${draft.priceNgn}` : "Price"}
+        open={activeStep === "sellable"}
+        onOpenChange={(open) => setActiveStep(open ? "sellable" : "sellable")}
+        actions={
+          <button
+            type="button"
+            onClick={() => setActiveStep("identity")}
+            className="rounded-full bg-system-fill/42 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label"
+          >
+            Back
+          </button>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-2">
           <InputGroup
             label="Price"
             name="priceNgn"
@@ -80,9 +139,13 @@ export function ProductComposerForm({
             min={0}
             required
             placeholder="25000"
+            value={draft.priceNgn}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, priceNgn: event.target.value }))
+            }
           />
         </div>
-      </section>
+      </ProgressiveFormSection>
 
       <div className="sticky bottom-6 z-30">
         <div className="flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/56 px-4 py-3 shadow-[0_12px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl">

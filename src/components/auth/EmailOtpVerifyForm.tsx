@@ -24,7 +24,10 @@ export function EmailOtpVerifyForm({
   }, [router, state.redirectTo]);
 
   return (
-    <form action={formAction} className="grid gap-4 rounded-[32px] bg-system-fill/70 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+    <form
+      action={formAction}
+      className="grid max-w-full min-w-0 gap-4 overflow-hidden rounded-[32px] bg-system-fill/70 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+    >
       <label className="grid gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
           Verification Code
@@ -36,7 +39,7 @@ export function EmailOtpVerifyForm({
           autoComplete="one-time-code"
           maxLength={6}
           placeholder="000000"
-          className="rounded-[24px] bg-system-background px-4 py-4 text-center text-2xl font-semibold tracking-[0.55em] text-label placeholder:tracking-[0.18em] placeholder:text-secondary-label"
+          className="min-w-0 max-w-full rounded-[24px] bg-system-background px-4 py-4 text-center text-[clamp(1.55rem,7vw,2rem)] font-semibold tabular-nums tracking-[0.28em] text-label placeholder:tracking-[0.12em] placeholder:text-secondary-label sm:tracking-[0.42em]"
         />
       </label>
 
@@ -56,7 +59,7 @@ export function EmailOtpVerifyForm({
         <button
           type="submit"
           disabled={pending}
-          className="button-primary min-h-[52px] flex-1 justify-center text-[11px] font-semibold uppercase tracking-headline disabled:translate-y-0 disabled:opacity-70 disabled:shadow-none"
+          className="button-primary min-h-[52px] min-w-0 flex-1 justify-center text-[11px] font-semibold uppercase tracking-headline disabled:translate-y-0 disabled:opacity-70 disabled:shadow-none"
         >
           {pending ? "Checking" : "Continue"}
         </button>

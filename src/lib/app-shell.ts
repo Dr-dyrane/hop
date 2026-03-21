@@ -338,6 +338,12 @@ export const ADMIN_HEADER_ROUTES: ShellHeaderRoute[] = [
     pattern: "/admin/orders/[orderId]",
     title: "Order Detail",
     breadcrumbs: [{ href: "/admin/orders", label: "Orders" }],
+    mobileFab: {
+      label: "Primary action",
+      icon: "save",
+      kind: "submit",
+      formId: "admin-order-primary-form",
+    },
   },
   {
     pattern: "/admin/payments",
@@ -346,6 +352,12 @@ export const ADMIN_HEADER_ROUTES: ShellHeaderRoute[] = [
   {
     pattern: "/admin/delivery",
     title: "Delivery",
+    mobileFab: {
+      label: "Save rider",
+      icon: "add",
+      kind: "submit",
+      formId: "admin-delivery-rider-form",
+    },
   },
   {
     pattern: "/admin/catalog/products",

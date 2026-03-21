@@ -931,17 +931,69 @@ export async function createPaymentProof(
       [paymentId, storageKey, publicUrl, mimeType, submittedByEmail]
     );
 
+    await markPaymentSubmitted(queryFn, {
+      paymentId,
+      orderId: payment.orderId,
+      paymentStatus: payment.paymentStatus,
+      orderStatus: payment.orderStatus,
+      submittedByEmail,
+      source: "payment_proof_upload",
+    });
+  }, {
+    actor: buildCustomerActor({
+      email: submittedByEmail,
+      guestOrderId: options?.guestOrderId ?? null,
+    }),
+  });
+}
+
+async function markPaymentSubmitted(
+  queryFn: <TRow extends import("pg").QueryResultRow>(
+    text: string,
+    values?: unknown[]
+  ) => Promise<import("pg").QueryResult<TRow>>,
+  input: {
+    paymentId: string;
+    orderId: string;
+    paymentStatus: string;
+    orderStatus: string;
+    submittedByEmail: string | null;
+    source: "payment_proof_upload" | "payment_confirmation";
+  }
+) {
+  const shouldTransitionToSubmitted = ["awaiting_transfer", "rejected"].includes(
+    input.paymentStatus
+  );
+
+  if (!["submitted", "under_review"].includes(input.paymentStatus)) {
     await queryFn(
       `
         update app.payments
         set
-          status = 'submitted',
+          status = case
+            when status in ('awaiting_transfer', 'rejected') then 'submitted'
+            else status
+          end,
+          submitted_amount_ngn = coalesce(submitted_amount_ngn, expected_amount_ngn),
           submitted_at = coalesce(submitted_at, timezone('utc', now()))
         where id = $1
       `,
-      [paymentId]
+      [input.paymentId]
     );
+  } else {
+    await queryFn(
+      `
+        update app.payments
+        set
+          submitted_amount_ngn = coalesce(submitted_amount_ngn, expected_amount_ngn),
+          submitted_at = coalesce(submitted_at, timezone('utc', now()))
+        where id = $1
+      `,
+      [input.paymentId]
+    );
+  }
 
+  if (shouldTransitionToSubmitted) {
     await queryFn(
       `
         insert into app.payment_review_events (
@@ -953,7 +1005,7 @@ export async function createPaymentProof(
         )
         values ($1, null, $2, 'submitted', null)
       `,
-      [paymentId, submittedByEmail]
+      [input.paymentId, input.submittedByEmail]
     );
 
     await queryFn(
@@ -965,7 +1017,7 @@ export async function createPaymentProof(
           fulfillment_status = 'pending'
         where id = $1
       `,
-      [payment.orderId]
+      [input.orderId]
     );
 
     await queryFn(
@@ -983,18 +1035,68 @@ export async function createPaymentProof(
         values ($1, $2, 'payment_submitted', 'customer', null, $3, null, $4::jsonb)
       `,
       [
-        payment.orderId,
-        payment.orderStatus,
-        submittedByEmail,
-        JSON.stringify({ source: "payment_proof_upload" }),
+        input.orderId,
+        input.orderStatus,
+        input.submittedByEmail,
+        JSON.stringify({ source: input.source }),
       ]
     );
+  }
+}
+
+export async function submitPaymentForReview(
+  paymentId: string,
+  submittedByEmail: string | null,
+  options?: { guestOrderId?: string | null }
+) {
+  if (!isDatabaseConfigured()) {
+    return;
+  }
+
+  await withTransaction(async (queryFn) => {
+    const paymentResult = await queryFn<{
+      orderId: string;
+      paymentStatus: string;
+      orderStatus: string;
+    }>(
+      `
+        select
+          p.order_id as "orderId",
+          p.status as "paymentStatus",
+          o.status as "orderStatus"
+        from app.payments p
+        inner join app.orders o
+          on o.id = p.order_id
+        where p.id = $1
+        limit 1
+        for update
+      `,
+      [paymentId]
+    );
+
+    const payment = paymentResult.rows[0];
+
+    if (!payment) {
+      throw new Error("Payment not found.");
+    }
+
+    if (["confirmed", "expired"].includes(payment.paymentStatus) || payment.orderStatus === "expired") {
+      throw new Error("Payment is closed.");
+    }
+
+    await markPaymentSubmitted(queryFn, {
+      paymentId,
+      orderId: payment.orderId,
+      paymentStatus: payment.paymentStatus,
+      orderStatus: payment.orderStatus,
+      submittedByEmail,
+      source: "payment_confirmation",
+    });
   }, {
-    actor: {
+    actor: buildCustomerActor({
       email: submittedByEmail,
-      role: "admin",
       guestOrderId: options?.guestOrderId ?? null,
-    },
+    }),
   });
 }
 

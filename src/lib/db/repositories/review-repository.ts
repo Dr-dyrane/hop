@@ -8,6 +8,8 @@ import {
 } from "@/lib/db/client";
 import type {
   AdminReviewRow,
+  OrderReviewRequestRow,
+  OrderReviewRow,
   PortalPendingReview,
   PortalReviewRow,
 } from "@/lib/db/types";
@@ -109,6 +111,67 @@ export async function listPendingReviewsForPortal(email: string) {
   return result.rows;
 }
 
+export async function getOrderReviewRequest(
+  orderId: string,
+  actor?: DatabaseActorContext
+) {
+  if (!orderId || !isDatabaseConfigured()) {
+    return null;
+  }
+
+  const result = await query<OrderReviewRequestRow>(
+    `
+      select
+        id as "requestId",
+        order_id as "orderId",
+        status,
+        created_at as "createdAt",
+        completed_at as "completedAt",
+        expires_at as "expiresAt"
+      from app.review_requests
+      where order_id = $1
+      order by created_at desc
+      limit 1
+    `,
+    [orderId],
+    { actor }
+  );
+
+  return result.rows[0] ?? null;
+}
+
+export async function getOrderReview(
+  orderId: string,
+  actor?: DatabaseActorContext
+) {
+  if (!orderId || !isDatabaseConfigured()) {
+    return null;
+  }
+
+  const result = await query<OrderReviewRow>(
+    `
+      select
+        id as "reviewId",
+        order_id as "orderId",
+        rating,
+        title,
+        body,
+        status,
+        is_featured as "isFeatured",
+        created_at as "createdAt",
+        moderated_at as "moderatedAt"
+      from app.reviews
+      where order_id = $1
+      order by created_at desc
+      limit 1
+    `,
+    [orderId],
+    { actor }
+  );
+
+  return result.rows[0] ?? null;
+}
+
 export async function listReviewsForPortal(email: string) {
   const normalizedEmail = normalizeEmail(email);
 
@@ -151,19 +214,21 @@ export async function listReviewsForPortal(email: string) {
   return result.rows;
 }
 
-export async function submitPortalReview(input: {
-  email: string;
+export async function submitOrderReview(input: {
   orderId: string;
   rating: number;
   title: string | null;
   body: string | null;
+  actorEmail?: string | null;
+  actorUserId?: string | null;
+  guestOrderId?: string | null;
 }) {
-  const normalizedEmail = normalizeEmail(input.email);
+  const normalizedEmail = normalizeEmail(input.actorEmail ?? "");
   const rating = Math.floor(input.rating);
   const title = input.title?.trim() || null;
   const body = input.body?.trim() || null;
 
-  if (!normalizedEmail || !isDatabaseConfigured()) {
+  if (!isDatabaseConfigured()) {
     throw new Error("Review is unavailable.");
   }
 
@@ -172,7 +237,6 @@ export async function submitPortalReview(input: {
   }
 
   return withTransaction(async (queryFn) => {
-    const user = await getMatchedUser(normalizedEmail);
     const requestResult = await queryFn<{
       requestId: string;
       orderId: string;
@@ -207,14 +271,18 @@ export async function submitPortalReview(input: {
       throw new Error("Review is not available yet.");
     }
 
-    if (
-      request.userId &&
-      user?.userId !== request.userId
-    ) {
-      throw new Error("Review access denied.");
+    if (request.requestStatus !== "pending") {
+      throw new Error("Review already completed.");
     }
 
-    if (!request.userId && request.customerEmail?.toLowerCase() !== normalizedEmail) {
+    if (request.userId) {
+      if (!input.actorUserId || input.actorUserId !== request.userId) {
+        throw new Error("Review access denied.");
+      }
+    } else if (
+      !(input.guestOrderId && input.guestOrderId === input.orderId) &&
+      (!normalizedEmail || request.customerEmail?.toLowerCase() !== normalizedEmail)
+    ) {
       throw new Error("Review access denied.");
     }
 
@@ -246,7 +314,7 @@ export async function submitPortalReview(input: {
         )
         values ($1, $2, $3, $4, $5, 'pending', false)
       `,
-      [input.orderId, user?.userId ?? request.userId, rating, title, body]
+      [input.orderId, input.actorUserId ?? request.userId, rating, title, body]
     );
 
     await queryFn(
@@ -261,9 +329,43 @@ export async function submitPortalReview(input: {
     );
   }, {
     actor: {
-      email: normalizedEmail,
+      email: normalizedEmail || null,
+      userId: input.actorUserId ?? null,
       role: "customer",
+      guestOrderId: input.guestOrderId ?? null,
     },
+  });
+}
+
+export async function submitPortalReview(input: {
+  email: string;
+  orderId: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+}) {
+  const normalizedEmail = normalizeEmail(input.email);
+  const rating = Math.floor(input.rating);
+  const title = input.title?.trim() || null;
+  const body = input.body?.trim() || null;
+
+  if (!normalizedEmail || !isDatabaseConfigured()) {
+    throw new Error("Review is unavailable.");
+  }
+
+  if (rating < 1 || rating > 5) {
+    throw new Error("Choose a rating.");
+  }
+
+  const user = await getMatchedUser(normalizedEmail);
+
+  return submitOrderReview({
+    orderId: input.orderId,
+    rating,
+    title,
+    body,
+    actorEmail: normalizedEmail,
+    actorUserId: user?.userId ?? null,
   });
 }
 

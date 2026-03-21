@@ -96,10 +96,6 @@ export function CatalogProductBoard({
               (product.inventoryOnHand ?? 0) - (product.inventoryReserved ?? 0),
               0
             );
-            const isLowStock =
-              product.reorderThreshold != null &&
-              product.reorderThreshold > 0 &&
-              availableUnits <= product.reorderThreshold;
 
             return (
               <button
@@ -220,7 +216,7 @@ function OverlayKpi({
   value,
 }: {
   label: string;
-  value: string;
+  value: string | number;
 }) {
   return (
     <div className="squircle bg-black/40 px-3 py-1.5 backdrop-blur-md dark:bg-black/36">

@@ -5,6 +5,10 @@ import {
   listOrderReturnEvents,
 } from "@/lib/db/repositories/order-returns-repository";
 import {
+  getOrderReview,
+  getOrderReviewRequest,
+} from "@/lib/db/repositories/review-repository";
+import {
   getPortalOrderDetail,
   listOrderStatusEvents,
   listPaymentProofs,
@@ -13,19 +17,22 @@ import {
 export default async function OrderDetailPage({
   params,
 }: {
-  params: { orderId: string };
+  params: Promise<{ orderId: string }>;
 }) {
-  const session = await requireAuthenticatedSession(`/account/orders/${params.orderId}`);
-  const order = await getPortalOrderDetail(session.email, params.orderId);
+  const { orderId } = await params;
+  const session = await requireAuthenticatedSession(`/account/orders/${orderId}`);
+  const order = await getPortalOrderDetail(session.email, orderId);
   const customerActor = {
     email: session.email,
     role: "customer" as const,
   };
-  const [timeline, proofs, returnCase, returnEvents] = await Promise.all([
-    listOrderStatusEvents(params.orderId, customerActor),
+  const [timeline, proofs, reviewRequest, review, returnCase, returnEvents] = await Promise.all([
+    listOrderStatusEvents(orderId, customerActor),
     listPaymentProofs(order?.paymentId ?? "", customerActor),
-    getLatestOrderReturnCase(params.orderId, customerActor),
-    listOrderReturnEvents(params.orderId, customerActor),
+    getOrderReviewRequest(orderId, customerActor),
+    getOrderReview(orderId, customerActor),
+    getLatestOrderReturnCase(orderId, customerActor),
+    listOrderReturnEvents(orderId, customerActor),
   ]);
 
   return (
@@ -33,10 +40,12 @@ export default async function OrderDetailPage({
       order={order}
       timeline={timeline}
       proofs={proofs}
+      reviewRequest={reviewRequest}
+      review={review}
       returnCase={returnCase}
       returnEvents={returnEvents}
       backHref="/account/orders"
-      trackingHref={`/account/tracking/${params.orderId}`}
+      trackingHref={`/account/tracking/${orderId}`}
     />
   );
 }

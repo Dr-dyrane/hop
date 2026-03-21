@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, Clock3, CreditCard, Truck } from "lucide-react";
 import { PaymentProofUploadCard } from "@/components/orders/PaymentProofUploadCard";
+import { OrderReviewCard } from "@/components/orders/OrderReviewCard";
 import { OrderReturnRequestCard } from "@/components/orders/OrderReturnRequestCard";
 import { WorkspaceContextPanel } from "@/components/shell/WorkspaceContextPanel";
 import { QuietValueStrip } from "@/components/ui/QuietValueStrip";
@@ -10,6 +10,8 @@ import { formatNgn } from "@/lib/commerce";
 import type {
   OrderReturnCaseRow,
   OrderReturnEventRow,
+  OrderReviewRequestRow,
+  OrderReviewRow,
   OrderStatusEventRow,
   PaymentProofRow,
   PortalOrderDetail,
@@ -19,8 +21,7 @@ import {
   getOrderStagePresentation,
   getPaymentStatusPresentation,
 } from "@/lib/orders/presentation";
-
-const mapToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+import { buildStaticMapUrl } from "@/lib/mapbox";
 
 function formatTimestamp(value?: string | null) {
   if (!value) {
@@ -57,16 +58,6 @@ function getTrackingCoords(snapshot: Record<string, unknown>) {
   return null;
 }
 
-function buildMapUrl(lat: number, lng: number) {
-  if (!mapToken) {
-    return null;
-  }
-
-  const style = "mapbox/light-v10";
-  const pin = `pin-s+0f0(${lng},${lat})`;
-  return `https://api.mapbox.com/styles/v1/${style}/static/${pin}/${lng},${lat},14/600x300@2x?access_token=${mapToken}`;
-}
-
 function getDeliveryLine(snapshot: Record<string, unknown>) {
   const preferredKeys = ["formatted", "line1", "label"];
 
@@ -96,6 +87,8 @@ export function OrderDetailView({
   order,
   timeline,
   proofs,
+  reviewRequest,
+  review,
   returnCase,
   returnEvents,
   backHref,
@@ -105,6 +98,8 @@ export function OrderDetailView({
   order: PortalOrderDetail | null;
   timeline: OrderStatusEventRow[];
   proofs: PaymentProofRow[];
+  reviewRequest: OrderReviewRequestRow | null;
+  review: OrderReviewRow | null;
   returnCase: OrderReturnCaseRow | null;
   returnEvents: OrderReturnEventRow[];
   backHref: string;
@@ -128,7 +123,15 @@ export function OrderDetailView({
   }
 
   const coords = getTrackingCoords(order.deliveryAddressSnapshot);
-  const mapSrc = coords ? buildMapUrl(coords.lat, coords.lng) : null;
+  const mapSrc = coords
+    ? buildStaticMapUrl({
+        latitude: coords.lat,
+        longitude: coords.lng,
+        width: 600,
+        height: 300,
+        zoom: 14,
+      })
+    : null;
   const stage = getOrderStagePresentation(order);
   const paymentState = getPaymentStatusPresentation(order.payment?.status ?? order.paymentStatus);
   const StageIcon = STAGE_ICONS[stage.key];
@@ -353,6 +356,27 @@ export function OrderDetailView({
             </OrderSurface>
           ) : null}
 
+          {order.status === "delivered" || reviewRequest || review ? (
+            <OrderSurface
+              title="Rating"
+              action={
+                review ? (
+                  <span className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+                    {formatStatusLabel(review.status)}
+                  </span>
+                ) : null
+              }
+            >
+              <OrderReviewCard
+                orderId={order.orderId}
+                accessToken={accessToken}
+                orderStatus={order.status}
+                reviewRequest={reviewRequest}
+                review={review}
+              />
+            </OrderSurface>
+          ) : null}
+
           <OrderSurface title="Updates">
             <div className="grid gap-2 text-sm text-secondary-label">
               {timeline.length === 0 ? (
@@ -374,13 +398,12 @@ export function OrderDetailView({
           {mapSrc ? (
             <OrderSurface title="Map">
               <div className="overflow-hidden rounded-[26px]">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={mapSrc}
                   alt="Delivery location"
-                  width={600}
-                  height={300}
                   className="h-auto w-full"
-                  priority
+                  loading="lazy"
                 />
               </div>
             </OrderSurface>

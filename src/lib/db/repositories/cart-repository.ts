@@ -34,6 +34,8 @@ type CheckoutInput = {
   customerPhoneE164: string;
   deliveryLocation: string;
   notes: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 type CreatedOrder = {
@@ -57,10 +59,17 @@ function generateTransferReference(orderNumber: string) {
   return `PRAX-${orderNumber.replace(/^HOP-/, "")}`;
 }
 
-function buildDeliverySnapshot(deliveryLocation: string) {
+function buildDeliverySnapshot(input: {
+  deliveryLocation: string;
+  latitude: number | null;
+  longitude: number | null;
+}) {
   return {
-    formatted: deliveryLocation,
-    line1: deliveryLocation,
+    label: input.deliveryLocation,
+    formatted: input.deliveryLocation,
+    line1: input.deliveryLocation,
+    latitude: input.latitude,
+    longitude: input.longitude,
   };
 }
 
@@ -713,7 +722,13 @@ export async function createOrderFromCart(input: CheckoutInput) {
             input.customerName,
             normalizedEmail,
             input.customerPhoneE164,
-            JSON.stringify(buildDeliverySnapshot(input.deliveryLocation)),
+            JSON.stringify(
+              buildDeliverySnapshot({
+                deliveryLocation: input.deliveryLocation,
+                latitude: input.latitude,
+                longitude: input.longitude,
+              })
+            ),
             normalizedNotes,
             totals.subtotalNgn,
             totals.discountNgn,

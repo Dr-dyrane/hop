@@ -1,3 +1,5 @@
+"use server";
+
 import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/auth/guards";
 import { advanceOrderReturnCase } from "@/lib/db/repositories/order-returns-repository";
@@ -7,28 +9,50 @@ import {
   cancelOrderByAdmin,
   reviewPayment,
 } from "@/lib/db/repositories/orders-repository";
+import type { OrderAdminActionState } from "@/lib/orders/action-state";
 
-export async function acceptOrderRequestAction(formData: FormData) {
+export async function acceptOrderRequestAction(
+  _previousState: OrderAdminActionState,
+  formData: FormData
+): Promise<OrderAdminActionState> {
   const orderId = formData.get("orderId")?.toString();
   const note = formData.get("note")?.toString().trim() || null;
 
   if (!orderId) {
-    throw new Error("Missing order.");
+    return {
+      status: "error",
+      message: "Request is unavailable.",
+    };
   }
 
-  const session = await requireAdminSession(`/admin/orders/${orderId}`);
-  const actor = await ensureUserByEmail(session.email);
+  try {
+    const session = await requireAdminSession(`/admin/orders/${orderId}`);
+    const actor = await ensureUserByEmail(session.email);
 
-  await acceptOrderRequestByAdmin(
-    orderId,
-    session.email,
-    actor?.userId ?? null,
-    note
-  );
+    await acceptOrderRequestByAdmin(
+      orderId,
+      session.email,
+      actor?.userId ?? null,
+      note
+    );
 
-  revalidatePath(`/admin/orders/${orderId}`);
-  revalidatePath("/admin/orders");
-  revalidatePath("/admin/payments");
+    revalidatePath(`/admin/orders/${orderId}`);
+    revalidatePath("/admin/orders");
+    revalidatePath("/admin/payments");
+    revalidatePath("/account/orders");
+    revalidatePath(`/account/orders/${orderId}`);
+    revalidatePath(`/checkout/orders/${orderId}`);
+
+    return {
+      status: "success",
+      message: "Accepted.",
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message: error instanceof Error ? error.message : "Unable to accept request.",
+    };
+  }
 }
 
 export async function reviewPaymentAction(formData: FormData) {

@@ -4,6 +4,10 @@ import {
   getLatestOrderReturnCase,
   listOrderReturnEvents,
 } from "@/lib/db/repositories/order-returns-repository";
+import {
+  getOrderReview,
+  getOrderReviewRequest,
+} from "@/lib/db/repositories/review-repository";
 import { verifyGuestOrderAccessToken } from "@/lib/orders/access";
 import {
   getGuestOrderDetail,
@@ -15,12 +19,15 @@ export default async function GuestCheckoutOrderPage({
   params,
   searchParams,
 }: {
-  params: { orderId: string };
-  searchParams: { access?: string };
+  params: Promise<{ orderId: string }>;
+  searchParams: Promise<{ access?: string }>;
 }) {
-  const accessToken = searchParams.access;
+  const [{ orderId }, { access: accessToken }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
 
-  if (!verifyGuestOrderAccessToken(accessToken, params.orderId)) {
+  if (!verifyGuestOrderAccessToken(accessToken, orderId)) {
     return (
       <main className="mx-auto min-h-[100svh] w-full max-w-[840px] px-4 pb-16 pt-24 sm:px-6">
         <div className="glass-morphism rounded-[32px] bg-system-background/80 p-6 text-sm text-secondary-label shadow-soft">
@@ -38,16 +45,18 @@ export default async function GuestCheckoutOrderPage({
     );
   }
 
-  const order = await getGuestOrderDetail(params.orderId);
+  const order = await getGuestOrderDetail(orderId);
   const guestActor = {
     role: "customer" as const,
-    guestOrderId: params.orderId,
+    guestOrderId: orderId,
   };
-  const [timeline, proofs, returnCase, returnEvents] = await Promise.all([
-    listOrderStatusEvents(params.orderId, guestActor),
+  const [timeline, proofs, reviewRequest, review, returnCase, returnEvents] = await Promise.all([
+    listOrderStatusEvents(orderId, guestActor),
     listPaymentProofs(order?.paymentId ?? "", guestActor),
-    getLatestOrderReturnCase(params.orderId, guestActor),
-    listOrderReturnEvents(params.orderId, guestActor),
+    getOrderReviewRequest(orderId, guestActor),
+    getOrderReview(orderId, guestActor),
+    getLatestOrderReturnCase(orderId, guestActor),
+    listOrderReturnEvents(orderId, guestActor),
   ]);
 
   return (
@@ -74,6 +83,8 @@ export default async function GuestCheckoutOrderPage({
         order={order}
         timeline={timeline}
         proofs={proofs}
+        reviewRequest={reviewRequest}
+        review={review}
         returnCase={returnCase}
         returnEvents={returnEvents}
         backHref="/"
