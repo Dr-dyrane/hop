@@ -6,15 +6,19 @@ import {
   type DatabaseActorContext,
   withTransaction,
 } from "@/lib/db/client";
-import { releaseInventoryReservationForOrder } from "@/lib/db/repositories/order-inventory";
+import {
+  getOrderInventoryAcceptanceReadiness,
+  releaseInventoryReservationForOrder,
+  reserveInventoryForOrder,
+} from "@/lib/db/repositories/order-inventory";
 import {
   sendOrderCancelledNotification,
   sendOrderPlacedNotifications,
   sendPaymentDecisionNotification,
 } from "@/lib/email/orders";
-import { reserveInventoryForOrder } from "@/lib/db/repositories/order-inventory";
 import { getDeliveryDefaultsSetting } from "@/lib/db/repositories/settings-repository";
 import type {
+  AdminOrderInventoryReadiness,
   AdminPaymentQueueRow,
   BankAccountRow,
   OrderListRow,
@@ -400,6 +404,26 @@ export async function acceptOrderRequestByAdmin(
       notifyAdmin: false,
     });
   }
+}
+
+export async function getAdminOrderInventoryReadiness(
+  orderId: string,
+  actorEmail?: string | null
+): Promise<AdminOrderInventoryReadiness> {
+  if (!orderId || !isDatabaseConfigured()) {
+    return {
+      canAccept: true,
+      hasLowStock: false,
+      summary: "No stock check needed.",
+      rows: [],
+    };
+  }
+
+  return getOrderInventoryAcceptanceReadiness(
+    (text, values = []) =>
+      query(text, values, { actor: buildAdminActor(actorEmail) }),
+    orderId
+  );
 }
 
 export async function listOrdersForPortal(email: string) {

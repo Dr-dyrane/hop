@@ -59,6 +59,7 @@ Examples:
 
 - `NEXT_PUBLIC_APP_URL`
 - `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`
+- `NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY`
 
 ### Server-only variables
 
@@ -76,6 +77,7 @@ Examples:
 - `AWS_ROLE_ARN`
 - `COGNITO_USER_POOL_ID`
 - `RESEND_API_KEY`
+- `WEB_PUSH_PRIVATE_KEY`
 
 ### Optional provider blocks
 
@@ -374,6 +376,19 @@ Development note:
 
 - local development can fall back to `onboarding@resend.dev` when `RESEND_API_KEY` is set and `RESEND_FROM_EMAIL` is omitted
 - production should always set `RESEND_FROM_EMAIL` to a verified sender on your domain
+
+### Required if using web push
+
+- `NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY`
+- `WEB_PUSH_PRIVATE_KEY`
+- `WEB_PUSH_SUBJECT`
+
+Rule:
+
+- generate one VAPID keypair for House of Prax
+- keep the public key in both local env and Vercel because the browser needs it
+- keep the private key server-only
+- use a stable subject such as `mailto:noreply@houseofprax.shop`
 
 ### Required if using direct S3 uploads
 

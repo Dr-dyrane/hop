@@ -386,6 +386,13 @@ Implement in this order.
 
 ### Wave 3. Product and commerce hardening
 
+Status:
+
+- complete for the current code scope
+- admin request acceptance now shows stock readiness before accept
+- local guest and signed-in request-flow verification passes end to end
+- deployed smoke remains a release check, not a code-completion blocker
+
 1. complete product-management audit
 2. show low-stock and blocked-acceptance signals before admin taps accept
 3. finish product CRUD warnings and delete/archive safety

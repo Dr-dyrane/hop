@@ -485,6 +485,25 @@ export type PortalOrderDetail = {
   items: PortalOrderLine[];
 };
 
+export type AdminOrderInventoryReadinessRow = {
+  variantId: string;
+  title: string;
+  quantity: number;
+  onHand: number | null;
+  reserved: number | null;
+  available: number | null;
+  reorderThreshold: number | null;
+  status: "ready" | "low" | "blocked";
+  detail: string;
+};
+
+export type AdminOrderInventoryReadiness = {
+  canAccept: boolean;
+  hasLowStock: boolean;
+  summary: string;
+  rows: AdminOrderInventoryReadinessRow[];
+};
+
 export type CartSnapshotItem = {
   productId: string;
   quantity: number;
@@ -670,6 +689,18 @@ export type WorkspaceNotificationPreference = {
   workspaceEmailEnabled: boolean;
   workspaceInAppEnabled: boolean;
   workspacePushEnabled: boolean;
+};
+
+export type WorkspacePushSubscription = {
+  subscriptionId: string;
+  userId: string;
+  email: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  userAgent: string | null;
+  isActive: boolean;
+  lastSeenAt: string;
 };
 
 export type AdminReviewRow = {

@@ -129,6 +129,8 @@ Current state:
 - redundant mobile sticky save rails are now removed where the phone FAB or inline actions already own the primary action
 - push preference remains stored in the data model, but visible push controls are hidden until real end-to-end web push is live
 - local request-flow verification now has a first-class scripted path that covers request, payment, delivery, review, and refund against a running dev server
+- real web push is now live end to end: VAPID-backed browser subscriptions, service-worker delivery, stored device subscriptions, and order/admin milestone push notifications
+- admin order detail now shows stock readiness before request acceptance and blocks the accept action when inventory is missing or short
 
 This means the system has crossed into operational platform work.
 
@@ -312,10 +314,13 @@ Completed:
 - [x] low-churn secondary audit coverage for layout presentations, layout bindings, and review requests
 - [x] runtime usage of delivery defaults for checkout deadlines and tracking on/off
 - [x] milestone email notifications for checkout, proof submission, payment review, delivery progression, and cancellation
+- [x] VAPID-backed web push subscriptions and service-worker delivery
+- [x] order milestone push notifications for customer and admin flows
 
 Open:
 
 - [ ] review whether any future low-churn mutable tables should join the audit ledger as new admin surfaces are introduced
+- [ ] decide whether push should expand beyond order milestones into richer marketing or stock alerts
 
 ---
 
@@ -420,6 +425,7 @@ Open:
 - [x] keep compressing admin detail and editor flows until phone layouts feel native instead of desktop forms in a smaller frame
 - [x] tighten admin payments and portal order-history density so phone and wide desktop both use the available space truthfully
 - [x] move boolean preferences onto native-style toggle rows in admin settings and portal profile
+- [x] re-enable live push controls now that browser subscriptions and service-worker delivery are real
 
 ---
 
@@ -470,6 +476,21 @@ Missing:
 - explicit archive/delete safeguards for product families
 - image transforms or validation beyond upload-time file typing
 
+### Web push is now operational
+
+Current behavior:
+
+- signed-in customers and admins can enable push on their current device from the existing settings/profile surfaces
+- the app stores browser subscriptions in `app.push_subscriptions`
+- the runtime service worker now receives push payloads and opens the correct in-app route on notification tap
+- order milestones now send push alongside the existing email and in-app paths when the user has an active device subscription
+
+Remaining gaps:
+
+- no richer marketing push campaigns
+- no push-specific analytics or delivery dashboard yet
+- no silent/background data refresh path beyond visible notifications
+
 ### Inventory is now order-coupled
 Current inventory behavior:
 
@@ -481,7 +502,7 @@ Current inventory behavior:
 
 Remaining gaps:
 
-- operator-visible low-stock intervention is still basic
+- operator-visible stock readiness now exists on request acceptance, but broader replenishment planning and inventory forecasting are still basic
 
 ### Return and refund flow is now operational
 
@@ -555,6 +576,7 @@ Current checkpoint verification:
 - `npm run build` passes
 - `npm run db:seed` passes, but bank-account seed safely skips if bank env vars are missing
 - `npm run lint` passes repo-wide
+- `npm run flow:verify` passes end to end against a running local app
 
 ---
 
@@ -575,18 +597,18 @@ Important operational note:
 
 ## 11. Active Next Pass
 
-The active build block is Pass 5: admin console expansion.
+The active build block is Pass 8: hardening and polish, moving into Wave 4 messaging and sensory work.
 
 Implement in this order:
 
 1. Run one deployed business-flow smoke test from sign-in through payment review and delivery-state progression.
 2. Run one deployed business-flow smoke test through the return/refund flow as well.
-3. Keep tightening the Apple-HIG execution across admin and portal root/detail screens.
-4. Decide whether the next operational need is deeper route-polish on delivery or more post-order automation.
+3. Move into Wave 4: lifecycle email redesign, push polish, and sensory feedback.
+4. Keep tightening the Apple-HIG execution across admin and portal root/detail screens.
 
 After that:
 
-1. continue admin and portal polish
+1. continue native-feel polish across admin and portal
 2. deepen delivery quality where ETA/live behavior still feels thin
 3. harden uploads, audit coverage, and quality
 

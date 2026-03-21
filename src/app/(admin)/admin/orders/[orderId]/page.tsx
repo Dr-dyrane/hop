@@ -7,6 +7,7 @@ import { formatNgn } from "@/lib/commerce";
 import { requireAdminSession } from "@/lib/auth/guards";
 import {
   getAdminOrderDetail,
+  getAdminOrderInventoryReadiness,
   listOrderStatusEvents,
   listPaymentProofs,
   listPaymentReviewEvents,
@@ -119,7 +120,7 @@ export default async function AdminOrderDetailPage({
     email: session.email,
     role: "admin" as const,
   };
-  const [orderEvents, paymentReviews, paymentProofs, reviewRequest, customerReview, returnCase, returnEvents, returnProofs] = await Promise.all([
+  const [orderEvents, paymentReviews, paymentProofs, reviewRequest, customerReview, returnCase, returnEvents, returnProofs, requestReadiness] = await Promise.all([
     listOrderStatusEvents(orderId, adminActor),
     order.paymentId ? listPaymentReviewEvents(order.paymentId, session.email) : [],
     order.paymentId ? listPaymentProofs(order.paymentId, adminActor) : [],
@@ -128,6 +129,9 @@ export default async function AdminOrderDetailPage({
     getLatestOrderReturnCase(orderId, adminActor),
     listOrderReturnEvents(orderId, adminActor),
     listOrderReturnProofs(orderId, adminActor),
+    order.status === "checkout_draft"
+      ? getAdminOrderInventoryReadiness(orderId, session.email)
+      : Promise.resolve(null),
   ]);
   const returnItems = returnCase
     ? await listOrderReturnCaseItems(returnCase.returnCaseId, adminActor)
@@ -270,11 +274,65 @@ export default async function AdminOrderDetailPage({
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)]">
         <div className="space-y-4">
+          {requestReadiness ? (
+            <DetailSurface
+              title="Stock check"
+              action={
+                <InventoryStatusPill
+                  status={
+                    requestReadiness.canAccept
+                      ? requestReadiness.hasLowStock
+                        ? "low"
+                        : "ready"
+                      : "blocked"
+                  }
+                />
+              }
+            >
+              <div className="space-y-3">
+                <div className="rounded-[22px] bg-system-fill/36 px-4 py-4 text-sm text-secondary-label">
+                  {requestReadiness.summary}
+                </div>
+                <div className="grid gap-2 text-sm text-secondary-label">
+                  {requestReadiness.rows.length === 0 ? (
+                    <div className="rounded-[22px] bg-system-fill/36 px-4 py-3">
+                      No stock-tracked items.
+                    </div>
+                  ) : (
+                    requestReadiness.rows.map((row) => (
+                      <div
+                        key={row.variantId}
+                        className="rounded-[22px] bg-system-fill/36 px-4 py-3"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-medium text-label">
+                              {row.title}
+                            </div>
+                            <div className="mt-1 text-xs text-secondary-label">
+                              {row.quantity} requested
+                              {row.available === null
+                                ? " • no stock record"
+                                : ` • ${row.available} available`}
+                            </div>
+                          </div>
+                          <InventoryStatusPill status={row.status} />
+                        </div>
+                        <div className="mt-2 text-xs text-secondary-label">{row.detail}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </DetailSurface>
+          ) : null}
+
           <DetailSurface title="Actions">
             <AdminOrderActions
               orderId={order.orderId}
               paymentId={order.paymentId}
               isRequestPending={isRequestPending}
+              requestReadiness={requestReadiness}
               paymentActions={paymentActions}
               canCancel={canCancelOrder(order)}
             />
@@ -676,5 +734,28 @@ function SurfaceMeta({
       </div>
       <div className="mt-1 text-sm font-medium text-label">{value}</div>
     </div>
+  );
+}
+
+function InventoryStatusPill({
+  status,
+}: {
+  status: "ready" | "low" | "blocked";
+}) {
+  const label =
+    status === "ready" ? "Ready" : status === "low" ? "Low" : "Blocked";
+
+  return (
+    <span
+      className={
+        status === "ready"
+          ? "rounded-full bg-system-fill px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label"
+          : status === "low"
+            ? "rounded-full bg-accent/14 px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-accent"
+            : "rounded-full bg-red-500/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-red-500"
+      }
+    >
+      {label}
+    </span>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { PortalProfile } from "@/lib/db/types";
 import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
 import { PreferenceToggleRow } from "@/components/forms/PreferenceToggleRow";
+import { WorkspacePushPreferenceRow } from "@/components/notifications/WorkspacePushPreferenceRow";
 import { updateProfileAction } from "@/app/(portal)/account/profile/actions";
 import { useUI } from "@/components/providers/UIProvider";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,9 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
   const [workspaceInAppEnabled, setWorkspaceInAppEnabled] = useState(
     profile.workspaceInAppEnabled
   );
-  const [workspacePushEnabled] = useState(profile.workspacePushEnabled);
+  const [workspacePushEnabled, setWorkspacePushEnabled] = useState(
+    profile.workspacePushEnabled
+  );
   const [draft, setDraft] = useState({
     fullName: profile.fullName,
     preferredPhone: profile.preferredPhoneE164,
@@ -158,6 +161,12 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
             detail="Notification sheet"
             value={workspaceInAppEnabled}
             onChange={setWorkspaceInAppEnabled}
+          />
+          <WorkspacePushPreferenceRow
+            label="Push"
+            detail="Instant order alerts"
+            value={workspacePushEnabled}
+            onChange={setWorkspacePushEnabled}
           />
         </div>
       </ProgressiveFormSection>

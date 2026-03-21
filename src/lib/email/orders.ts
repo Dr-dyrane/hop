@@ -3,6 +3,7 @@ import "server-only";
 import { formatNgn } from "@/lib/commerce";
 import { serverEnv } from "@/lib/config/server";
 import { sendResendEmail } from "@/lib/email/resend";
+import { sendWorkspacePushToEmails } from "@/lib/push/web-push";
 import {
   getOrderNotificationSnapshot,
   type OrderNotificationSnapshot,
@@ -97,6 +98,22 @@ function buildGuestOrderLink(orderId: string) {
   return `${serverEnv.public.appUrl}/checkout/orders/${orderId}?access=${encodeURIComponent(token)}`;
 }
 
+function buildAccountOrderLink(orderId: string) {
+  return `${serverEnv.public.appUrl}/account/orders/${orderId}`;
+}
+
+function buildAccountTrackingLink(orderId: string) {
+  return `${serverEnv.public.appUrl}/account/tracking/${orderId}`;
+}
+
+function buildAdminOrderLink(orderId: string) {
+  return `${serverEnv.public.appUrl}/admin/orders/${orderId}`;
+}
+
+function buildAdminPaymentsLink() {
+  return `${serverEnv.public.appUrl}/admin/payments`;
+}
+
 async function sendSafe(input: {
   to: string | string[];
   subject: string;
@@ -159,6 +176,45 @@ async function getAdminWorkspaceRecipients() {
   return recipients;
 }
 
+async function sendCustomerWorkspacePush(
+  order: OrderNotificationSnapshot | null | undefined,
+  input: {
+    title: string;
+    body: string;
+    href?: string;
+    tag?: string;
+  }
+) {
+  const customerEmail = order?.customerEmail?.trim().toLowerCase();
+
+  if (!customerEmail || !order?.orderId) {
+    return false;
+  }
+
+  return sendWorkspacePushToEmails([customerEmail], {
+    title: input.title,
+    body: input.body,
+    href: input.href ?? buildAccountOrderLink(order.orderId),
+    tag: input.tag ?? `order-${order.orderId}`,
+  });
+}
+
+async function sendAdminWorkspacePush(
+  input: {
+    title: string;
+    body: string;
+    href: string;
+    tag?: string;
+  }
+) {
+  return sendWorkspacePushToEmails(serverEnv.auth.adminEmails, {
+    title: input.title,
+    body: input.body,
+    href: input.href,
+    tag: input.tag,
+  });
+}
+
 export async function sendOrderPlacedNotifications(input: {
   orderId: string;
   customerLink?: string | null;
@@ -219,6 +275,14 @@ export async function sendOrderPlacedNotifications(input: {
     });
   }
 
+  await sendCustomerWorkspacePush(order, {
+    title: isRequest ? "Request received" : "Order received",
+    body: isRequest
+      ? `Order #${order.orderNumber} is with Praxy now.`
+      : `Use ${order.transferReference} to complete payment.`,
+    href: buildAccountOrderLink(order.orderId),
+  });
+
   const adminRecipients =
     input.notifyAdmin ?? true ? await getAdminWorkspaceRecipients() : [];
 
@@ -246,6 +310,15 @@ export async function sendOrderPlacedNotifications(input: {
           </div>
           ${buildActionLink("Open order", adminHref)}`,
       }),
+    });
+  }
+
+  if ((input.notifyAdmin ?? true) !== false) {
+    await sendAdminWorkspacePush({
+      title: isRequest ? "New request" : "New order",
+      body: `${order.customerName} opened ${order.orderNumber}.`,
+      href: buildAdminOrderLink(order.orderId),
+      tag: `admin-order-${order.orderId}`,
     });
   }
 }
@@ -284,6 +357,13 @@ export async function sendPaymentProofSubmittedNotifications(input: {
     });
   }
 
+  await sendCustomerWorkspacePush(order, {
+    title: proofIncluded ? "Proof received" : "Payment submitted",
+    body: proofIncluded
+      ? `Order #${order.orderNumber} is waiting for review.`
+      : `Praxy will review order #${order.orderNumber} shortly.`,
+  });
+
   const adminRecipients = await getAdminWorkspaceRecipients();
 
   if (adminRecipients.length > 0) {
@@ -306,6 +386,13 @@ export async function sendPaymentProofSubmittedNotifications(input: {
       }),
     });
   }
+
+  await sendAdminWorkspacePush({
+    title: proofIncluded ? "Proof waiting" : "Payment waiting",
+    body: `${order.customerName} updated ${order.orderNumber}.`,
+    href: buildAdminPaymentsLink(),
+    tag: `admin-payment-${order.orderId}`,
+  });
 }
 
 export async function sendTransferReminderNotification(input: {
@@ -325,7 +412,7 @@ export async function sendTransferReminderNotification(input: {
 
   const orderHref = buildGuestOrderLink(order.orderId);
 
-  return sendSafe({
+  const sent = await sendSafe({
     to: customerEmail,
     subject: `Transfer reminder for ${order.orderNumber}`,
     text: `Complete payment for order ${order.orderNumber} before the transfer window closes.`,
@@ -344,6 +431,13 @@ export async function sendTransferReminderNotification(input: {
       footer: "Once the transfer is sent, tap the confirmation button from the order page.",
     }),
   });
+
+  await sendCustomerWorkspacePush(order, {
+    title: "Transfer reminder",
+    body: `Complete payment for #${order.orderNumber}.`,
+  });
+
+  return sent;
 }
 
 export async function sendReviewReminderNotification(input: {
@@ -363,7 +457,7 @@ export async function sendReviewReminderNotification(input: {
 
   const orderHref = buildGuestOrderLink(order.orderId);
 
-  return sendSafe({
+  const sent = await sendSafe({
     to: customerEmail,
     subject: `Rate ${order.orderNumber}`,
     text: `Leave a quick rating for order ${order.orderNumber}.`,
@@ -375,6 +469,13 @@ export async function sendReviewReminderNotification(input: {
       footer: "You can also rate it directly from your account order history.",
     }),
   });
+
+  await sendCustomerWorkspacePush(order, {
+    title: "Rate your order",
+    body: `Order #${order.orderNumber} is ready for rating.`,
+  });
+
+  return sent;
 }
 
 export async function sendPaymentQueueReminderNotification(input: {
@@ -388,7 +489,7 @@ export async function sendPaymentQueueReminderNotification(input: {
     return false;
   }
 
-  return sendSafe({
+  const sent = await sendSafe({
     to: adminRecipients,
     subject: `Payment still waiting for ${order.orderNumber}`,
     text: `Order ${order.orderNumber} still needs payment review.`,
@@ -400,6 +501,15 @@ export async function sendPaymentQueueReminderNotification(input: {
       footer: "Use the payments queue to confirm, reject, or keep it under review.",
     }),
   });
+
+  await sendAdminWorkspacePush({
+    title: "Payment still waiting",
+    body: `${order.orderNumber} still needs review.`,
+    href: buildAdminPaymentsLink(),
+    tag: `admin-payment-${order.orderId}`,
+  });
+
+  return sent;
 }
 
 export async function sendReturnQueueReminderNotification(input: {
@@ -436,7 +546,7 @@ export async function sendReturnQueueReminderNotification(input: {
             footer: "Complete the refund from the order detail once it has been sent.",
           };
 
-  return sendSafe({
+  const sent = await sendSafe({
     to: adminRecipients,
     subject: copy.subject,
     text: `${copy.title}. Order ${order.orderNumber}.`,
@@ -448,6 +558,15 @@ export async function sendReturnQueueReminderNotification(input: {
       footer: copy.footer,
     }),
   });
+
+  await sendAdminWorkspacePush({
+    title: copy.title,
+    body: `${order.orderNumber} still needs action.`,
+    href: buildAdminOrderLink(order.orderId),
+    tag: `admin-return-${order.orderId}`,
+  });
+
+  return sent;
 }
 
 export async function sendPaymentDecisionNotification(input: {
@@ -501,6 +620,16 @@ export async function sendPaymentDecisionNotification(input: {
       }`,
     }),
   });
+
+  await sendCustomerWorkspacePush(order, {
+    title: copy.title,
+    body:
+      input.action === "confirmed"
+        ? `Order #${order.orderNumber} is being prepared.`
+        : input.action === "rejected"
+          ? `Order #${order.orderNumber} needs another payment step.`
+          : `Order #${order.orderNumber} is under review.`,
+  });
 }
 
 export async function sendDeliveryStatusNotification(input: {
@@ -553,6 +682,18 @@ export async function sendDeliveryStatusNotification(input: {
           : undefined,
     }),
   });
+
+  await sendCustomerWorkspacePush(order, {
+    title: copy.title,
+    body:
+      input.status === "delivered"
+        ? `Order #${order.orderNumber} has been delivered.`
+        : `Order #${order.orderNumber} is on the road.`,
+    href:
+      input.status === "delivered"
+        ? buildAccountOrderLink(order.orderId)
+        : buildAccountTrackingLink(order.orderId),
+  });
 }
 
 export async function sendOrderCancelledNotification(input: {
@@ -586,6 +727,11 @@ export async function sendOrderCancelledNotification(input: {
       }`,
     }),
   });
+
+  await sendCustomerWorkspacePush(order, {
+    title: "Order cancelled",
+    body: `Order #${order.orderNumber} has been closed.`,
+  });
 }
 
 export async function sendOrderReturnRequestedNotifications(input: {
@@ -614,6 +760,11 @@ export async function sendOrderReturnRequestedNotifications(input: {
     });
   }
 
+  await sendCustomerWorkspacePush(order, {
+    title: "Return received",
+    body: `Praxy is reviewing the return for #${order.orderNumber}.`,
+  });
+
   const adminRecipients = await getAdminWorkspaceRecipients();
 
   if (adminRecipients.length > 0) {
@@ -629,6 +780,13 @@ export async function sendOrderReturnRequestedNotifications(input: {
       }),
     });
   }
+
+  await sendAdminWorkspacePush({
+    title: "Return requested",
+    body: `${order.customerName} requested a return for ${order.orderNumber}.`,
+    href: buildAdminOrderLink(order.orderId),
+    tag: `admin-return-${order.orderId}`,
+  });
 }
 
 export async function sendOrderReturnProofSubmittedNotifications(input: {
@@ -657,6 +815,11 @@ export async function sendOrderReturnProofSubmittedNotifications(input: {
     });
   }
 
+  await sendCustomerWorkspacePush(order, {
+    title: "Return proof received",
+    body: `Order #${order.orderNumber} is back in motion.`,
+  });
+
   const adminRecipients = await getAdminWorkspaceRecipients();
 
   if (adminRecipients.length > 0) {
@@ -673,6 +836,13 @@ export async function sendOrderReturnProofSubmittedNotifications(input: {
       }),
     });
   }
+
+  await sendAdminWorkspacePush({
+    title: "Return proof waiting",
+    body: `${order.customerName} added return proof for ${order.orderNumber}.`,
+    href: buildAdminOrderLink(order.orderId),
+    tag: `admin-return-${order.orderId}`,
+  });
 }
 
 export async function sendOrderReturnDecisionNotification(input: {
@@ -730,6 +900,16 @@ export async function sendOrderReturnDecisionNotification(input: {
       footer: copy.footer,
     }),
   });
+
+  await sendCustomerWorkspacePush(order, {
+    title: copy.title,
+    body:
+      input.action === "approved"
+        ? `Return for #${order.orderNumber} is approved.`
+        : input.action === "received"
+          ? `Return for #${order.orderNumber} has been received.`
+          : `Return for #${order.orderNumber} was not approved.`,
+  });
 }
 
 export async function sendOrderRefundedNotification(input: {
@@ -773,7 +953,12 @@ export async function sendOrderRefundedNotification(input: {
           input.note
             ? `<div style="margin-top:18px;border-radius:24px;background:#f4f2ea;padding:18px;font-size:14px;line-height:1.6;color:#374151;">${input.note}</div>`
             : ""
-        }`,
+      }`,
     }),
+  });
+
+  await sendCustomerWorkspacePush(order, {
+    title: "Refund sent",
+    body: `Refund for #${order.orderNumber} is on the way.`,
   });
 }

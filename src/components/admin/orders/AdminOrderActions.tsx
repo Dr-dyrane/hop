@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { AdminOrderInventoryReadiness } from "@/lib/db/types";
 import {
   acceptOrderRequestAction,
   cancelOrderAction,
@@ -15,12 +16,14 @@ export function AdminOrderActions({
   orderId,
   paymentId,
   isRequestPending,
+  requestReadiness,
   paymentActions,
   canCancel,
 }: {
   orderId: string;
   paymentId: string | null;
   isRequestPending: boolean;
+  requestReadiness?: AdminOrderInventoryReadiness | null;
   paymentActions: readonly string[];
   canCancel: boolean;
 }) {
@@ -49,10 +52,14 @@ export function AdminOrderActions({
             <input type="hidden" name="note" value="Request accepted from order detail." />
             <button
               type="submit"
-              disabled={acceptPending}
+              disabled={acceptPending || requestReadiness?.canAccept === false}
               className="button-secondary min-h-[44px] w-full text-xs font-semibold uppercase tracking-headline disabled:translate-y-0 disabled:shadow-none disabled:opacity-50"
             >
-              {acceptPending ? "Checking stock" : "Accept"}
+              {acceptPending
+                ? "Checking stock"
+                : requestReadiness?.canAccept === false
+                  ? "Needs stock"
+                  : "Accept"}
             </button>
           </form>
           <form action={cancelOrderAction} className="flex">
@@ -73,6 +80,19 @@ export function AdminOrderActions({
               )}
             >
               {acceptState.message}
+            </div>
+          ) : requestReadiness ? (
+            <div
+              className={cn(
+                "rounded-[24px] bg-system-fill/42 px-4 py-4 text-sm sm:col-span-4",
+                requestReadiness.canAccept
+                  ? requestReadiness.hasLowStock
+                    ? "text-label"
+                    : "text-secondary-label"
+                  : "text-red-500"
+              )}
+            >
+              {requestReadiness.summary}
             </div>
           ) : null}
         </>

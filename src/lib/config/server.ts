@@ -63,6 +63,15 @@ export const serverEnv = {
     sesFromEmail: readEmailEnv("SES_FROM_EMAIL", process.env.SES_FROM_EMAIL),
     sesConfigurationSet: readOptionalEnv(process.env.SES_CONFIGURATION_SET),
   },
+  webPush: {
+    publicKey: readOptionalEnv(process.env.NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY),
+    privateKey: readOptionalEnv(process.env.WEB_PUSH_PRIVATE_KEY),
+    subject:
+      readOptionalEnv(process.env.WEB_PUSH_SUBJECT) ??
+      (readEmailEnv("RESEND_FROM_EMAIL", process.env.RESEND_FROM_EMAIL)
+        ? `mailto:${readEmailEnv("RESEND_FROM_EMAIL", process.env.RESEND_FROM_EMAIL)}`
+        : undefined),
+  },
   operations: {
     bankName: readOptionalEnv(process.env.BANK_TRANSFER_BANK_NAME),
     accountName: readOptionalEnv(process.env.BANK_TRANSFER_ACCOUNT_NAME),
@@ -95,4 +104,10 @@ export const hasStorageConfig = Boolean(
 export const hasEmailDeliveryConfig = Boolean(
   (serverEnv.email.resendApiKey && serverEnv.email.resendFromEmail) ||
     serverEnv.email.sesFromEmail
+);
+
+export const hasWebPushConfig = Boolean(
+  serverEnv.webPush.publicKey &&
+    serverEnv.webPush.privateKey &&
+    serverEnv.webPush.subject
 );

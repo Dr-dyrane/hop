@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { QueryResult, QueryResultRow } from "pg";
+import type { AdminOrderInventoryReadiness, AdminOrderInventoryReadinessRow } from "@/lib/db/types";
 
 type QueryFn = <TRow extends QueryResultRow>(
   text: string,
@@ -19,6 +20,15 @@ type InventoryState = {
   reserved: number;
 };
 
+type OrderInventoryReadinessState = {
+  variantId: string;
+  quantity: number;
+  title: string;
+  onHand: number | null;
+  reserved: number | null;
+  reorderThreshold: number | null;
+};
+
 async function listOrderInventoryLines(queryFn: QueryFn, orderId: string) {
   const result = await queryFn<OrderInventoryLine>(
     `
@@ -35,6 +45,118 @@ async function listOrderInventoryLines(queryFn: QueryFn, orderId: string) {
   );
 
   return result.rows;
+}
+
+export async function getOrderInventoryAcceptanceReadiness(
+  queryFn: QueryFn,
+  orderId: string
+): Promise<AdminOrderInventoryReadiness> {
+  const result = await queryFn<OrderInventoryReadinessState>(
+    `
+      select
+        oi.variant_id as "variantId",
+        sum(oi.quantity)::int as quantity,
+        max(oi.title) as title,
+        ii.on_hand as "onHand",
+        ii.reserved as "reserved",
+        ii.reorder_threshold as "reorderThreshold"
+      from app.order_items oi
+      left join app.inventory_items ii
+        on ii.variant_id = oi.variant_id
+      where oi.order_id = $1
+        and oi.variant_id is not null
+      group by
+        oi.variant_id,
+        ii.on_hand,
+        ii.reserved,
+        ii.reorder_threshold
+      order by max(oi.created_at) asc, max(oi.title) asc
+    `,
+    [orderId]
+  );
+
+  const rows: AdminOrderInventoryReadinessRow[] = result.rows.map((row) => {
+    if (row.onHand === null || row.reserved === null) {
+      return {
+        variantId: row.variantId,
+        title: row.title,
+        quantity: row.quantity,
+        onHand: row.onHand,
+        reserved: row.reserved,
+        available: null,
+        reorderThreshold: row.reorderThreshold,
+        status: "blocked",
+        detail: "No stock record.",
+      };
+    }
+
+    const available = Math.max(row.onHand - row.reserved, 0);
+    const remainingAfterAccept = available - row.quantity;
+    const lowThreshold = Math.max(row.reorderThreshold ?? 0, 0);
+
+    if (available < row.quantity) {
+      return {
+        variantId: row.variantId,
+        title: row.title,
+        quantity: row.quantity,
+        onHand: row.onHand,
+        reserved: row.reserved,
+        available,
+        reorderThreshold: row.reorderThreshold,
+        status: "blocked",
+        detail:
+          available <= 0
+            ? "Out of stock."
+            : `Only ${available} left.`,
+      };
+    }
+
+    if (remainingAfterAccept <= lowThreshold || remainingAfterAccept === 0) {
+      return {
+        variantId: row.variantId,
+        title: row.title,
+        quantity: row.quantity,
+        onHand: row.onHand,
+        reserved: row.reserved,
+        available,
+        reorderThreshold: row.reorderThreshold,
+        status: "low",
+        detail:
+          remainingAfterAccept <= 0
+            ? "Will use the last units."
+            : `${remainingAfterAccept} left after accept.`,
+      };
+    }
+
+    return {
+      variantId: row.variantId,
+      title: row.title,
+      quantity: row.quantity,
+      onHand: row.onHand,
+      reserved: row.reserved,
+      available,
+      reorderThreshold: row.reorderThreshold,
+      status: "ready",
+      detail: "Ready now.",
+    };
+  });
+
+  const canAccept = rows.every((row) => row.status !== "blocked");
+  const hasLowStock = rows.some((row) => row.status === "low");
+
+  return {
+    canAccept,
+    hasLowStock,
+    summary:
+      rows.length === 0
+        ? "No stock check needed."
+        : !canAccept
+          ? "Needs stock."
+          : hasLowStock
+            ? "Acceptable now. Low after accept."
+            : "Ready to accept.",
+    rows,
+  };
 }
 
 async function listReturnInventoryLines(queryFn: QueryFn, returnCaseId: string) {

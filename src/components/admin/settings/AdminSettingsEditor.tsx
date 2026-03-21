@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
 import { PreferenceToggleRow } from "@/components/forms/PreferenceToggleRow";
+import { WorkspacePushPreferenceRow } from "@/components/notifications/WorkspacePushPreferenceRow";
 import {
   updateNotificationPreferenceAction,
   updateBankAccountAction,
@@ -233,7 +234,9 @@ function NotificationPanel({
   const [workspaceInAppEnabled, setWorkspaceInAppEnabled] = useState(
     notificationPreference.workspaceInAppEnabled
   );
-  const [workspacePushEnabled] = useState(notificationPreference.workspacePushEnabled);
+  const [workspacePushEnabled, setWorkspacePushEnabled] = useState(
+    notificationPreference.workspacePushEnabled
+  );
 
   function handleSubmit(formData: FormData) {
     setMessage(null);
@@ -278,6 +281,12 @@ function NotificationPanel({
           detail="Notification sheet"
           value={workspaceInAppEnabled}
           onChange={setWorkspaceInAppEnabled}
+        />
+        <WorkspacePushPreferenceRow
+          label="Push"
+          detail="Instant order alerts"
+          value={workspacePushEnabled}
+          onChange={setWorkspacePushEnabled}
         />
       </div>
     </SettingsCard>
