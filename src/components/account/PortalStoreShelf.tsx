@@ -76,7 +76,7 @@ export function PortalStoreShelf({
           return (
             <article
               key={product.productId}
-              className="group relative overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(243,239,229,0.90)_58%,rgba(230,223,210,0.72)_100%)] shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),rgba(14,17,14,0.94)_58%,rgba(8,10,8,1)_100%)]"
+              className="group relative isolate overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(243,239,229,0.90)_58%,rgba(230,223,210,0.72)_100%)] shadow-[0_18px_50px_rgba(15,23,42,0.06)] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),rgba(14,17,14,0.94)_58%,rgba(8,10,8,1)_100%)]"
             >
               <button
                 type="button"
@@ -102,20 +102,20 @@ export function PortalStoreShelf({
                   </div>
                 )}
 
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-24 bg-gradient-to-b from-white/96 via-white/56 to-transparent dark:from-black/58 dark:via-black/18 sm:h-28" />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-gradient-to-t from-white/98 via-white/42 to-transparent dark:from-black/78 dark:via-black/24 sm:h-28" />
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-white/96 via-white/56 to-transparent dark:from-black/58 dark:via-black/18 sm:h-28" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-white/98 via-white/42 to-transparent dark:from-black/78 dark:via-black/24 sm:h-28" />
 
-                <div className="pointer-events-none absolute left-3 top-3 z-30 max-w-[58%] text-label dark:text-white sm:left-4 sm:top-4">
+                <div className="pointer-events-none absolute left-3 top-3 z-20 max-w-[58%] text-label dark:text-white sm:left-4 sm:top-4">
                   <div className="truncate text-[0.88rem] font-semibold tracking-[-0.02em] sm:text-[1rem]">
                     {title}
                   </div>
                 </div>
 
-                <div className="pointer-events-none absolute right-3 top-3 z-30 text-[0.76rem] font-medium tracking-[-0.01em] text-label/80 dark:text-white/88 sm:right-4 sm:top-4 sm:text-[0.85rem]">
+                <div className="pointer-events-none absolute right-3 top-3 z-20 text-[0.76rem] font-medium tracking-[-0.01em] text-label/80 dark:text-white/88 sm:right-4 sm:top-4 sm:text-[0.85rem]">
                   {formatNgn(product.priceNgn)}
                 </div>
 
-                <div className="pointer-events-none absolute bottom-3 right-3 z-30 sm:bottom-4 sm:right-4">
+                <div className="pointer-events-none absolute bottom-3 right-3 z-20 sm:bottom-4 sm:right-4">
                   <button
                     type="button"
                     onClick={(event) => {
