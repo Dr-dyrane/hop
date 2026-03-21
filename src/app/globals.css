@@ -69,8 +69,6 @@
   --duration-fast: 180ms;
   --duration-base: 320ms;
   --duration-slow: 700ms;
-  --scale-pressed: 0.982;
-  --scale-pressed-soft: 0.992;
 }
 
 /* Default: light theme */
@@ -666,26 +664,6 @@ body[data-overlay-active="true"] .z-layer-mobile-fab {
     transform: none;
     border-radius: 24px;
   }
-
-  .button-primary,
-  .button-secondary,
-  .motion-press,
-  .motion-press-soft,
-  .motion-surface {
-    transition-duration: 0.01ms;
-    animation: none;
-  }
-
-  .button-primary:hover,
-  .button-primary:active,
-  .button-secondary:hover,
-  .button-secondary:active,
-  .motion-press:active,
-  .motion-press-soft:active,
-  .motion-surface:hover {
-    transform: none;
-    filter: none;
-  }
 }
 
 /* Fallback for browsers without backdrop-filter */
@@ -758,28 +736,11 @@ body[data-overlay-active="true"] .z-layer-mobile-fab {
   corner-shape: squircle;
   /* Apple-style button geometry */
   box-shadow: var(--shadow-button);
-  will-change: transform, box-shadow, filter;
-  transform: translateZ(0);
-  -webkit-tap-highlight-color: transparent;
   transition:
     transform var(--duration-fast) var(--ease-premium),
     box-shadow var(--duration-fast) var(--ease-premium),
-    filter var(--duration-fast) var(--ease-premium),
     background-color var(--duration-base) var(--ease-premium),
     color var(--duration-base) var(--ease-premium);
-}
-
-@media (hover: hover) {
-  .button-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-float);
-  }
-}
-
-.button-primary:active {
-  transform: scale(var(--scale-pressed));
-  filter: saturate(1.02) brightness(0.98);
-  box-shadow: var(--shadow-soft);
 }
 
 .button-secondary {
@@ -797,69 +758,14 @@ body[data-overlay-active="true"] .z-layer-mobile-fab {
   -webkit-backdrop-filter: blur(10px) saturate(120%);
   font-weight: 500;
   corner-shape: squircle;
-  will-change: transform, background-color, color, filter;
-  transform: translateZ(0);
-  -webkit-tap-highlight-color: transparent;
   transition:
     transform var(--duration-fast) var(--ease-premium),
-    filter var(--duration-fast) var(--ease-premium),
     background-color var(--duration-base) var(--ease-premium),
     color var(--duration-base) var(--ease-premium);
 }
 
-@media (hover: hover) {
-  .button-secondary:hover {
-    transform: translateY(-1px);
-    background: color-mix(in srgb, var(--system-fill) 84%, transparent);
-    color: var(--label);
-  }
-}
-
-.button-secondary:active {
-  transform: scale(var(--scale-pressed-soft));
-  filter: brightness(0.98);
-}
-
-.motion-press,
-.motion-press-soft,
-.motion-surface {
-  -webkit-tap-highlight-color: transparent;
-  will-change: transform, box-shadow, filter, opacity;
-  transform: translateZ(0);
-}
-
-.motion-press,
-.motion-press-soft {
-  transition:
-    transform var(--duration-fast) var(--ease-premium),
-    box-shadow var(--duration-fast) var(--ease-premium),
-    filter var(--duration-fast) var(--ease-premium),
-    opacity var(--duration-fast) var(--ease-premium),
-    background-color var(--duration-base) var(--ease-premium),
-    color var(--duration-base) var(--ease-premium);
-}
-
-.motion-press:active {
-  transform: scale(var(--scale-pressed));
-  filter: brightness(0.98);
-}
-
-.motion-press-soft:active {
-  transform: scale(var(--scale-pressed-soft));
-  filter: brightness(0.985);
-}
-
-.motion-surface {
-  transition:
-    transform var(--duration-fast) var(--ease-premium),
-    box-shadow var(--duration-base) var(--ease-premium),
-    background-color var(--duration-base) var(--ease-premium);
-}
-
-@media (hover: hover) {
-  .motion-surface:hover {
-    transform: translateY(-2px);
-  }
+.button-secondary:hover {
+  transform: translateY(-2px);
 }
 
 .hero-product-image {
