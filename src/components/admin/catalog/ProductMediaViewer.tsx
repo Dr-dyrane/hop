@@ -14,6 +14,7 @@ import { useTheme } from "next-themes";
 import * as THREE from "three";
 import type { AdminCatalogProductMedia } from "@/lib/db/types";
 import { SceneEnvironment } from "@/components/3d/SceneEnvironment";
+import { useOverlayPresence } from "@/components/providers/UIProvider";
 import { cn } from "@/lib/utils";
 
 function getMediaLabel(mediaType: AdminCatalogProductMedia["mediaType"]) {
@@ -177,6 +178,8 @@ export function ProductMediaViewer({
   item: AdminCatalogProductMedia | null;
   onClose: () => void;
 }) {
+  useOverlayPresence("admin-product-media", item !== null);
+
   useEffect(() => {
     if (!item) {
       return;
@@ -205,7 +208,7 @@ export function ProductMediaViewer({
 
   return (
     <div
-      className="fixed inset-0 z-[90] flex items-center justify-center bg-system-background/54 px-4 py-6 backdrop-blur-2xl"
+      className="z-layer-modal fixed inset-0 flex items-center justify-center bg-system-background/54 px-4 py-6 backdrop-blur-2xl"
       onClick={onClose}
     >
       <div

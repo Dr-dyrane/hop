@@ -11,6 +11,7 @@ import {
   Truck,
   X,
 } from "lucide-react";
+import { useOverlayPresence } from "@/components/providers/UIProvider";
 import type { WorkspaceNotification } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,7 @@ export function WorkspaceNotificationSheet({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const count = notifications.length;
+  useOverlayPresence("workspace-notifications", isOpen);
   const countLabel = useMemo(() => {
     if (count < 10) {
       return `${count}`;
@@ -103,7 +105,7 @@ export function WorkspaceNotificationSheet({
 
       <div
         className={cn(
-          "fixed inset-0 z-[2147483630] transition-opacity duration-300",
+          "z-layer-sheet-backdrop fixed inset-0 transition-opacity duration-300",
           isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         )}
       >
@@ -111,7 +113,7 @@ export function WorkspaceNotificationSheet({
           type="button"
           onClick={() => setIsOpen(false)}
           aria-label="Close notifications"
-          className="absolute inset-0 bg-black/35 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/48 backdrop-blur-md"
         />
       </div>
 
@@ -121,11 +123,11 @@ export function WorkspaceNotificationSheet({
         aria-label="Notifications"
         aria-hidden={!isOpen}
         className={cn(
-          "fixed right-0 top-0 z-[2147483640] h-[100svh] w-full max-w-[420px] transition-transform duration-500 ease-[var(--ease-premium)]",
+          "z-layer-sheet fixed right-0 top-0 h-svh w-full max-w-full transition-transform duration-500 ease-[var(--ease-premium)] sm:max-w-[28rem] lg:max-w-[30rem]",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <div className="glass-morphism flex h-full flex-col overflow-hidden rounded-l-[36px] bg-system-background/96 p-4 shadow-[0_32px_120px_rgba(0,0,0,0.22)] sm:p-5">
+        <div className="flex h-full flex-col overflow-hidden bg-[color:var(--system-background)] p-4 shadow-[0_32px_120px_rgba(0,0,0,0.22)] sm:rounded-l-[36px] sm:p-5">
           <div className="flex items-start justify-between gap-4 px-1 pb-5 pt-2">
             <div>
               <h2 className="text-3xl font-headline font-bold tracking-display text-label">

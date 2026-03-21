@@ -105,7 +105,7 @@ export function MapboxAddressAutocomplete({
   const showSuggestions = isFocused && suggestions.length > 0;
 
   return (
-    <div className={cn("relative z-20", className)}>
+    <div className={cn("z-layer-popover relative", className)}>
       <input
         type="text"
         name={name}

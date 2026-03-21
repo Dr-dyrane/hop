@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Archive, Save, Trash2 } from "lucide-react";
 import { ProductMediaManager } from "@/components/admin/catalog/ProductMediaManager";
 import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
+import { useUI } from "@/components/providers/UIProvider";
 import { formatNgn } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
 import type {
@@ -33,6 +34,7 @@ export function ProductEditorForm({
   };
 }) {
   const router = useRouter();
+  const { hasActiveOverlay } = useUI();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
@@ -306,7 +308,12 @@ export function ProductEditorForm({
         </aside>
       </div>
 
-      <div className="sticky bottom-6 z-30">
+      <div
+        className={cn(
+          "z-layer-sticky-action sticky bottom-6",
+          hasActiveOverlay && "pointer-events-none translate-y-4 opacity-0"
+        )}
+      >
         <div className="flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/56 px-4 py-3 shadow-[0_12px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl">
           <p
             className={cn(

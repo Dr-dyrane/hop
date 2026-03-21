@@ -16,7 +16,7 @@ export async function GET(request: Request) {
       const snapshot = await getAdminDeliveryBoardSnapshot({
         actorEmail: session.email,
       });
-      return buildAdminDeliveryLiveSnapshot(snapshot);
+      return await buildAdminDeliveryLiveSnapshot(snapshot);
     },
   });
 }

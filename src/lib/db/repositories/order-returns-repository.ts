@@ -15,6 +15,7 @@ import {
 import type {
   AdminOrderReturnQueueRow,
   OrderReturnCaseRow,
+  OrderReturnCaseItemRow,
   OrderReturnEventRow,
   OrderReturnProofRow,
 } from "@/lib/db/types";
@@ -216,10 +217,88 @@ export async function listOrderReturnProofs(
   return result.rows;
 }
 
+export async function listOrderReturnCaseItems(
+  returnCaseId: string,
+  actor?: DatabaseActorContext
+) {
+  if (!returnCaseId || !isDatabaseConfigured()) {
+    return [] satisfies OrderReturnCaseItemRow[];
+  }
+
+  const result = await query<OrderReturnCaseItemRow>(
+    `
+      select
+        rci.id as "returnItemId",
+        rci.return_case_id as "returnCaseId",
+        rci.order_id as "orderId",
+        rci.order_item_id as "orderItemId",
+        rci.title,
+        rci.sku,
+        rci.quantity,
+        rci.unit_price_ngn as "unitPriceNgn",
+        rci.line_total_ngn as "lineTotalNgn",
+        rci.created_at as "createdAt"
+      from app.order_return_case_items rci
+      where rci.return_case_id = $1
+      order by rci.created_at asc
+    `,
+    [returnCaseId],
+    { actor }
+  );
+
+  return result.rows;
+}
+
+type ReturnableOrderItem = {
+  orderItemId: string;
+  title: string;
+  sku: string;
+  quantity: number;
+  unitPriceNgn: number;
+  returnableQuantity: number;
+};
+
+async function listReturnableOrderItems(queryFn: typeof query, orderId: string) {
+  const result = await queryFn<ReturnableOrderItem>(
+    `
+      with prior_returns as (
+        select
+          rci.order_item_id,
+          sum(rci.quantity)::int as returned_quantity
+        from app.order_return_case_items rci
+        inner join app.order_return_cases rc
+          on rc.id = rci.return_case_id
+        where rci.order_id = $1
+          and rc.status <> 'rejected'
+        group by rci.order_item_id
+      )
+      select
+        oi.id as "orderItemId",
+        oi.title,
+        oi.sku,
+        oi.quantity,
+        oi.unit_price_ngn as "unitPriceNgn",
+        greatest(oi.quantity - coalesce(pr.returned_quantity, 0), 0)::int as "returnableQuantity"
+      from app.order_items oi
+      left join prior_returns pr
+        on pr.order_item_id = oi.id
+      where oi.order_id = $1
+      order by oi.created_at asc
+    `,
+    [orderId]
+  );
+
+  return result.rows;
+}
+
 export async function requestOrderReturn(input: {
   orderId: string;
   reason: string;
   details?: string | null;
+  items?: Array<{
+    orderItemId: string;
+    quantity: number;
+  }>;
   refundBankName?: string | null;
   refundAccountName?: string | null;
   refundAccountNumber?: string | null;
@@ -293,6 +372,56 @@ export async function requestOrderReturn(input: {
       throw new Error("A return is already open for this order.");
     }
 
+    const returnableItems = await listReturnableOrderItems(queryFn, input.orderId);
+    const requestedItems =
+      input.items && input.items.length > 0
+        ? input.items
+        : returnableItems
+            .filter((item) => item.returnableQuantity > 0)
+            .map((item) => ({
+              orderItemId: item.orderItemId,
+              quantity: item.returnableQuantity,
+            }));
+    const normalizedItems = requestedItems
+      .map((item) => ({
+        orderItemId: item.orderItemId,
+        quantity: Math.max(0, Math.floor(item.quantity)),
+      }))
+      .filter((item) => item.orderItemId && item.quantity > 0);
+
+    if (normalizedItems.length === 0) {
+      throw new Error("Choose at least one item to return.");
+    }
+
+    const returnableByItem = new Map(
+      returnableItems.map((item) => [item.orderItemId, item])
+    );
+    const selectedItems = normalizedItems.map((item) => {
+      const line = returnableByItem.get(item.orderItemId);
+
+      if (!line) {
+        throw new Error("One of the selected items is not available for return.");
+      }
+
+      if (line.returnableQuantity <= 0) {
+        throw new Error(`${line.title} is no longer returnable.`);
+      }
+
+      if (item.quantity > line.returnableQuantity) {
+        throw new Error(`${line.title} only has ${line.returnableQuantity} returnable.`);
+      }
+
+      return {
+        ...line,
+        quantity: item.quantity,
+        lineTotalNgn: line.unitPriceNgn * item.quantity,
+      };
+    });
+    const requestedRefundAmountNgn = selectedItems.reduce(
+      (total, item) => total + item.lineTotalNgn,
+      0
+    );
+
     const insertResult = await queryFn<{ returnCaseId: string }>(
       `
         insert into app.order_return_cases (
@@ -316,7 +445,7 @@ export async function requestOrderReturn(input: {
         normalizeEmail(input.actorEmail),
         reason,
         details,
-        order.totalNgn,
+        requestedRefundAmountNgn,
         refundBankName,
         refundAccountName,
         refundAccountNumber,
@@ -327,6 +456,34 @@ export async function requestOrderReturn(input: {
 
     if (!returnCaseId) {
       throw new Error("Return request could not be created.");
+    }
+
+    for (const item of selectedItems) {
+      await queryFn(
+        `
+          insert into app.order_return_case_items (
+            return_case_id,
+            order_id,
+            order_item_id,
+            title,
+            sku,
+            quantity,
+            unit_price_ngn,
+            line_total_ngn
+          )
+          values ($1, $2, $3, $4, $5, $6, $7, $8)
+        `,
+        [
+          returnCaseId,
+          input.orderId,
+          item.orderItemId,
+          item.title,
+          item.sku,
+          item.quantity,
+          item.unitPriceNgn,
+          item.lineTotalNgn,
+        ]
+      );
     }
 
     await queryFn(
@@ -349,7 +506,11 @@ export async function requestOrderReturn(input: {
         input.actorUserId ?? null,
         normalizeEmail(input.actorEmail),
         details,
-        JSON.stringify({ reason }),
+        JSON.stringify({
+          reason,
+          itemCount: selectedItems.length,
+          unitCount: selectedItems.reduce((total, item) => total + item.quantity, 0),
+        }),
       ]
     );
 
@@ -504,7 +665,7 @@ export async function advanceOrderReturnCase(input: {
     }
 
     if (input.action === "received") {
-      await restockInventoryForReturnedOrder(queryFn, current.orderId);
+      await restockInventoryForReturnedOrder(queryFn, current.returnCaseId);
     }
 
     await queryFn(

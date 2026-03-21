@@ -2,6 +2,7 @@ import { requireAuthenticatedSession } from "@/lib/auth/guards";
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
 import {
   getLatestOrderReturnCase,
+  listOrderReturnCaseItems,
   listOrderReturnEvents,
   listOrderReturnProofs,
 } from "@/lib/db/repositories/order-returns-repository";
@@ -36,6 +37,9 @@ export default async function OrderDetailPage({
     listOrderReturnEvents(orderId, customerActor),
     listOrderReturnProofs(orderId, customerActor),
   ]);
+  const returnItems = returnCase
+    ? await listOrderReturnCaseItems(returnCase.returnCaseId, customerActor)
+    : [];
 
   return (
     <OrderDetailView
@@ -45,6 +49,7 @@ export default async function OrderDetailPage({
       reviewRequest={reviewRequest}
       review={review}
       returnCase={returnCase}
+      returnItems={returnItems}
       returnEvents={returnEvents}
       returnProofs={returnProofs}
       backHref="/account/orders"

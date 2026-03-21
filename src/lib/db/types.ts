@@ -212,6 +212,15 @@ export type DeliveryTrackingPoint = {
   recordedAt: string;
 };
 
+export type DeliveryRouteEstimate = {
+  distanceMeters: number;
+  distanceKilometers: number;
+  durationSeconds: number;
+  durationMinutes: number;
+  source: "mapbox" | "fallback";
+  computedAt: string;
+};
+
 export type DeliveryTimelineEvent = {
   eventId: string;
   orderId: string;
@@ -250,6 +259,7 @@ export type PortalTrackingSnapshot = {
   riderPhone: string | null;
   riderVehicleType: string | null;
   latestPoint: DeliveryTrackingPoint | null;
+  routeEstimate: DeliveryRouteEstimate | null;
   events: DeliveryTimelineEvent[];
 };
 
@@ -386,11 +396,14 @@ export type PortalOrderListRow = {
 };
 
 export type PortalOrderLine = {
+  orderItemId: string;
   title: string;
   sku: string;
   unitPriceNgn: number;
   quantity: number;
   lineTotalNgn: number;
+  returnedQuantity: number;
+  returnableQuantity: number;
 };
 
 export type PortalOrderDetail = {
@@ -518,6 +531,19 @@ export type OrderReturnCaseRow = {
   resolutionNote: string | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type OrderReturnCaseItemRow = {
+  returnItemId: string;
+  returnCaseId: string;
+  orderId: string;
+  orderItemId: string;
+  title: string;
+  sku: string;
+  quantity: number;
+  unitPriceNgn: number;
+  lineTotalNgn: number;
+  createdAt: string;
 };
 
 export type OrderReturnEventRow = {

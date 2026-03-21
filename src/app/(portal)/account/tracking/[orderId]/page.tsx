@@ -21,6 +21,7 @@ export default async function TrackingPage({
       initialSnapshot={snapshot}
       pollUrl={`/api/account/tracking/${orderId}`}
       streamUrl={`/api/account/tracking/${orderId}/stream`}
+      backHref={`/account/orders/${orderId}`}
     />
   );
 }

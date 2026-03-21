@@ -16,6 +16,7 @@ import {
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Product3DViewer } from "@/components/3d/Product3DViewer";
+import { useOverlayPresence } from "@/components/providers/UIProvider";
 import type { AdminCatalogProduct } from "@/lib/db/types";
 import { cn } from "@/lib/utils";
 import { formatNgn } from "@/lib/commerce";
@@ -48,6 +49,7 @@ export function CatalogProductBoard({
     () => products.find((product) => product.productId === activeProductId) ?? null,
     [activeProductId, products]
   );
+  useOverlayPresence("admin-catalog-product", activeProduct !== null);
 
   function runQuickAction(
     key: string,
@@ -295,11 +297,11 @@ function CatalogProductModal({
   return (
     <>
       <div
-        className="fixed inset-0 z-[2147483630] bg-black/40 backdrop-blur-md"
+        className="z-layer-modal-backdrop fixed inset-0 bg-black/40 backdrop-blur-md"
         onClick={onClose}
       />
 
-      <div className="fixed inset-0 z-[2147483640] flex items-center justify-center px-4 py-6">
+      <div className="z-layer-modal fixed inset-0 flex items-center justify-center px-4 py-6">
         <div
           role="dialog"
           aria-modal="true"

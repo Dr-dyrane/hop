@@ -64,10 +64,10 @@ function buildTransferDeadlineAt(staleTransferWindowMinutes: number) {
 
 export async function expireStaleAwaitingTransferOrders() {
   if (!isDatabaseConfigured()) {
-    return;
+    return 0;
   }
 
-  await withTransaction(async (queryFn) => {
+  return withTransaction(async (queryFn) => {
     const staleOrdersResult = await queryFn<{
       orderId: string;
       paymentId: string | null;
@@ -154,6 +154,7 @@ export async function expireStaleAwaitingTransferOrders() {
         ]
       );
     }
+    return staleOrdersResult.rows.length;
   }, {
     actor: {
       role: "admin",
@@ -511,15 +512,31 @@ async function getOrderPaymentSummary(
 async function listOrderItems(orderId: string, actor?: DatabaseActorContext) {
   const itemsResult = await query<PortalOrderLine>(
     `
+      with prior_returns as (
+        select
+          rci.order_item_id,
+          sum(rci.quantity)::int as returned_quantity
+        from app.order_return_case_items rci
+        inner join app.order_return_cases rc
+          on rc.id = rci.return_case_id
+        where rci.order_id = $1
+          and rc.status <> 'rejected'
+        group by rci.order_item_id
+      )
       select
-        title,
-        sku,
-        unit_price_ngn as "unitPriceNgn",
-        quantity,
-        line_total_ngn as "lineTotalNgn"
-      from app.order_items
-      where order_id = $1
-      order by created_at asc
+        oi.id as "orderItemId",
+        oi.title,
+        oi.sku,
+        oi.unit_price_ngn as "unitPriceNgn",
+        oi.quantity,
+        oi.line_total_ngn as "lineTotalNgn",
+        coalesce(pr.returned_quantity, 0)::int as "returnedQuantity",
+        greatest(oi.quantity - coalesce(pr.returned_quantity, 0), 0)::int as "returnableQuantity"
+      from app.order_items oi
+      left join prior_returns pr
+        on pr.order_item_id = oi.id
+      where oi.order_id = $1
+      order by oi.created_at asc
     `,
     [orderId],
     { actor }

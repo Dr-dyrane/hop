@@ -1,4 +1,9 @@
-import type { AdminDeliveryOrder, AdminDeliveryRider } from "@/lib/db/types";
+import type {
+  AdminDeliveryOrder,
+  AdminDeliveryRider,
+  DeliveryRouteEstimate,
+} from "@/lib/db/types";
+import { getDeliveryRouteEstimate } from "@/lib/delivery/route-estimate";
 import { buildTrackingMapUrl, getTrackingCoords as getSnapshotTrackingCoords } from "@/lib/delivery/tracking";
 
 export type AdminDeliveryLiveSnapshot = {
@@ -14,6 +19,7 @@ export type AdminDeliveryLiveSnapshot = {
     addressLine: string;
     mapUrl: string | null;
     trackedAt: string | null;
+    routeEstimate: DeliveryRouteEstimate | null;
   } | null;
 };
 
@@ -45,11 +51,11 @@ export function getOrderTrackingCoords(order: AdminDeliveryOrder) {
   return getSnapshotTrackingCoords(order.deliveryAddressSnapshot);
 }
 
-export function buildAdminDeliveryLiveSnapshot(input: {
+export async function buildAdminDeliveryLiveSnapshot(input: {
   orders: AdminDeliveryOrder[];
   riders: AdminDeliveryRider[];
   trackingEnabled?: boolean;
-}): AdminDeliveryLiveSnapshot {
+}): Promise<AdminDeliveryLiveSnapshot> {
   const preparingOrders = input.orders.filter((order) => order.deliveryStage === "preparing");
   const readyOrders = input.orders.filter(
     (order) => order.deliveryStage === "ready_for_dispatch"
@@ -62,6 +68,13 @@ export function buildAdminDeliveryLiveSnapshot(input: {
       Boolean(getOrderTrackingCoords(order))
     ) ?? null;
   const mapCoords = mapOrder ? getOrderTrackingCoords(mapOrder) : null;
+  const routeEstimate =
+    mapOrder && mapOrder.latestTrackingRecordedAt && mapCoords
+      ? await getDeliveryRouteEstimate(
+          mapCoords,
+          getSnapshotTrackingCoords(mapOrder.deliveryAddressSnapshot)
+        )
+      : null;
 
   return {
     trackingEnabled: input.trackingEnabled ?? true,
@@ -85,6 +98,7 @@ export function buildAdminDeliveryLiveSnapshot(input: {
               })
             : null,
           trackedAt: mapOrder.latestTrackingRecordedAt,
+          routeEstimate,
         }
       : null,
   };

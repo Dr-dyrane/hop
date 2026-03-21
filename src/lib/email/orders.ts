@@ -103,13 +103,15 @@ async function sendSafe(input: {
   html: string;
 }) {
   if (!serverEnv.email.resendApiKey || !serverEnv.email.resendFromEmail) {
-    return;
+    return false;
   }
 
   try {
     await sendResendEmail(input);
+    return true;
   } catch (error) {
     console.error("Email delivery failed:", error);
+    return false;
   }
 }
 
@@ -256,6 +258,132 @@ export async function sendPaymentProofSubmittedNotifications(input: {
       }),
     });
   }
+}
+
+export async function sendTransferReminderNotification(input: {
+  orderId: string;
+}) {
+  const order = await loadOrder(input.orderId);
+
+  if (!order?.customerEmail) {
+    return false;
+  }
+
+  const orderHref = buildGuestOrderLink(order.orderId);
+
+  return sendSafe({
+    to: order.customerEmail,
+    subject: `Transfer reminder for ${order.orderNumber}`,
+    text: `Complete payment for order ${order.orderNumber} before the transfer window closes.`,
+    html: buildShell({
+      eyebrow: "House of Prax",
+      title: "Transfer reminder",
+      intro: "Your order is still open. Complete the transfer before the window closes.",
+      bodyHtml: `${buildOrderFacts(order)}
+        <div style="margin-top:18px;border-radius:24px;background:#f4f2ea;padding:18px;">
+          <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Transfer details</div>
+          <div style="margin-top:8px;font-size:18px;font-weight:600;color:#111827;">${order.bankName ?? "Pending"}</div>
+          <div style="margin-top:4px;font-size:15px;color:#374151;">${order.accountName ?? "Pending"}</div>
+          <div style="margin-top:4px;font-size:24px;font-weight:700;color:#111827;">${order.accountNumber ?? "Pending"}</div>
+        </div>
+        ${buildActionLink("Open order", orderHref)}`,
+      footer: "Once the transfer is sent, tap the confirmation button from the order page.",
+    }),
+  });
+}
+
+export async function sendReviewReminderNotification(input: {
+  orderId: string;
+}) {
+  const order = await loadOrder(input.orderId);
+
+  if (!order?.customerEmail) {
+    return false;
+  }
+
+  const orderHref = buildGuestOrderLink(order.orderId);
+
+  return sendSafe({
+    to: order.customerEmail,
+    subject: `Rate ${order.orderNumber}`,
+    text: `Leave a quick rating for order ${order.orderNumber}.`,
+    html: buildShell({
+      eyebrow: "House of Prax",
+      title: "One quick rating",
+      intro: "Your order is already delivered. A quick rating helps Praxy close the loop.",
+      bodyHtml: `${buildOrderFacts(order)}${buildActionLink("Rate order", orderHref)}`,
+      footer: "You can also rate it directly from your account order history.",
+    }),
+  });
+}
+
+export async function sendPaymentQueueReminderNotification(input: {
+  orderId: string;
+}) {
+  const order = await loadOrder(input.orderId);
+
+  if (!order || serverEnv.auth.adminEmails.length === 0) {
+    return false;
+  }
+
+  return sendSafe({
+    to: serverEnv.auth.adminEmails,
+    subject: `Payment still waiting for ${order.orderNumber}`,
+    text: `Order ${order.orderNumber} still needs payment review.`,
+    html: buildShell({
+      eyebrow: "Operations console",
+      title: "Payment still waiting",
+      intro: `${order.customerName} is still waiting for payment review on order ${order.orderNumber}.`,
+      bodyHtml: `${buildOrderFacts(order)}${buildActionLink("Open payments", `${serverEnv.public.appUrl}/admin/payments`)}`,
+      footer: "Use the payments queue to confirm, reject, or keep it under review.",
+    }),
+  });
+}
+
+export async function sendReturnQueueReminderNotification(input: {
+  orderId: string;
+  status: "requested" | "approved" | "received";
+}) {
+  const order = await loadOrder(input.orderId);
+
+  if (!order || serverEnv.auth.adminEmails.length === 0) {
+    return false;
+  }
+
+  const copy =
+    input.status === "requested"
+      ? {
+          subject: `Return still waiting for ${order.orderNumber}`,
+          title: "Return still waiting",
+          intro: `${order.customerName}'s return request is still waiting for review.`,
+          footer: "Approve or reject it from the order detail.",
+        }
+      : input.status === "approved"
+        ? {
+            subject: `Return still inbound for ${order.orderNumber}`,
+            title: "Return still inbound",
+            intro: `${order.customerName}'s approved return is still waiting to be marked received.`,
+            footer: "Mark it received once the product is back with House of Prax.",
+          }
+        : {
+            subject: `Refund still open for ${order.orderNumber}`,
+            title: "Refund still open",
+            intro: `${order.customerName}'s return is received, but the refund step is still open.`,
+            footer: "Complete the refund from the order detail once it has been sent.",
+          };
+
+  return sendSafe({
+    to: serverEnv.auth.adminEmails,
+    subject: copy.subject,
+    text: `${copy.title}. Order ${order.orderNumber}.`,
+    html: buildShell({
+      eyebrow: "Operations console",
+      title: copy.title,
+      intro: copy.intro,
+      bodyHtml: `${buildOrderFacts(order)}${buildActionLink("Open order", `${serverEnv.public.appUrl}/admin/orders/${order.orderId}`)}`,
+      footer: copy.footer,
+    }),
+  });
 }
 
 export async function sendPaymentDecisionNotification(input: {
@@ -412,6 +540,46 @@ export async function sendOrderReturnRequestedNotifications(input: {
         title: "Return requested",
         intro: `${order.customerName} requested a return for order ${order.orderNumber}.`,
         bodyHtml: `${buildOrderFacts(order)}${buildActionLink("Open order", `${serverEnv.public.appUrl}/admin/orders/${order.orderId}`)}`,
+      }),
+    });
+  }
+}
+
+export async function sendOrderReturnProofSubmittedNotifications(input: {
+  orderId: string;
+}) {
+  const order = await loadOrder(input.orderId);
+
+  if (!order) {
+    return;
+  }
+
+  if (order.customerEmail) {
+    await sendSafe({
+      to: order.customerEmail,
+      subject: `Return proof received for ${order.orderNumber}`,
+      text: `Return proof for order ${order.orderNumber} has been received.`,
+      html: buildShell({
+        eyebrow: "House of Prax",
+        title: "Return proof received",
+        intro: "Your return proof is in. Praxy can now keep the return moving.",
+        bodyHtml: `${buildOrderFacts(order)}${buildActionLink("Open order", buildGuestOrderLink(order.orderId))}`,
+        footer: "You will get another update if Praxy leaves the return queue or completes the refund.",
+      }),
+    });
+  }
+
+  if (serverEnv.auth.adminEmails.length > 0) {
+    await sendSafe({
+      to: serverEnv.auth.adminEmails,
+      subject: `Return proof waiting for ${order.orderNumber}`,
+      text: `Order ${order.orderNumber} now has return proof waiting in the order detail.`,
+      html: buildShell({
+        eyebrow: "Operations console",
+        title: "Return proof waiting",
+        intro: `${order.customerName} added return proof for order ${order.orderNumber}.`,
+        bodyHtml: `${buildOrderFacts(order)}${buildActionLink("Open order", `${serverEnv.public.appUrl}/admin/orders/${order.orderId}`)}`,
+        footer: "Use the return section in the order detail to review the proof and continue the case.",
       }),
     });
   }

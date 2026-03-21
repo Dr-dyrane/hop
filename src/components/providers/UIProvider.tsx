@@ -2,6 +2,7 @@
 
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -21,6 +22,8 @@ interface NavUIContextType {
   setIsMobileMenuOpen: (open: boolean) => void;
   isScrollNavCollapsed: boolean;
   setIsScrollNavCollapsed: (collapsed: boolean) => void;
+  hasActiveOverlay: boolean;
+  setOverlayActive: (id: string, active: boolean) => void;
 }
 
 interface LiquidGlassContextType {
@@ -39,6 +42,7 @@ const defaultLiquidGlassState: LiquidGlassState = {
 export function UIProvider({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrollNavCollapsed, setIsScrollNavCollapsed] = useState(true);
+  const [activeOverlayIds, setActiveOverlayIds] = useState<string[]>([]);
   const [liquidGlassState, setLiquidGlassState] = useState(defaultLiquidGlassState);
   const stateRef = useRef(defaultLiquidGlassState);
 
@@ -109,14 +113,36 @@ export function UIProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const setOverlayActive = useCallback((id: string, active: boolean) => {
+    setActiveOverlayIds((current) => {
+      if (active) {
+        return current.includes(id) ? current : [...current, id];
+      }
+
+      return current.filter((value) => value !== id);
+    });
+  }, []);
+
+  const hasActiveOverlay = activeOverlayIds.length > 0;
+
+  useEffect(() => {
+    document.body.dataset.overlayActive = hasActiveOverlay ? "true" : "false";
+
+    return () => {
+      delete document.body.dataset.overlayActive;
+    };
+  }, [hasActiveOverlay]);
+
   const navValue = useMemo(
     () => ({
       isMobileMenuOpen,
       setIsMobileMenuOpen,
       isScrollNavCollapsed,
       setIsScrollNavCollapsed,
+      hasActiveOverlay,
+      setOverlayActive,
     }),
-    [isMobileMenuOpen, isScrollNavCollapsed]
+    [hasActiveOverlay, isMobileMenuOpen, isScrollNavCollapsed, setOverlayActive]
   );
 
   const liquidGlassValue = useMemo(
@@ -174,6 +200,18 @@ export function useUI() {
     throw new Error("useUI must be used within a UIProvider");
   }
   return context;
+}
+
+export function useOverlayPresence(id: string, isActive: boolean) {
+  const { setOverlayActive } = useUI();
+
+  useEffect(() => {
+    setOverlayActive(id, isActive);
+
+    return () => {
+      setOverlayActive(id, false);
+    };
+  }, [id, isActive, setOverlayActive]);
 }
 
 export function useLiquidGlass() {

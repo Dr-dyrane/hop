@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useSseResource } from "@/hooks/useSseResource";
 import type { AdminDeliveryLiveSnapshot } from "@/lib/delivery/snapshot";
+import { formatRouteDistance, formatRouteDuration } from "@/lib/delivery/tracking";
 
 function formatTimestamp(value?: string | null) {
   if (!value) {
@@ -30,6 +31,16 @@ export function AdminDeliveryLiveSurface({
     streamUrl,
     fallbackUrl,
   });
+  const etaLabel = data.mapOrder?.routeEstimate
+    ? formatRouteDuration(data.mapOrder.routeEstimate.durationMinutes)
+    : data.mapOrder?.trackedAt
+      ? "Calculating"
+      : "Waiting";
+  const distanceLabel = data.mapOrder?.routeEstimate
+    ? formatRouteDistance(data.mapOrder.routeEstimate.distanceKilometers)
+    : data.mapOrder?.trackedAt
+      ? "Calculating"
+      : "Waiting";
 
   return (
     <div className="space-y-4">
@@ -52,9 +63,17 @@ export function AdminDeliveryLiveSurface({
               priority
             />
             <div className="bg-system-fill/70 px-4 py-3 text-sm text-secondary-label">
-              <div className="font-semibold text-label">#{data.mapOrder.orderNumber}</div>
-              <div>{data.mapOrder.addressLine}</div>
-              <div className="mt-2 text-[11px]">{formatTimestamp(data.mapOrder.trackedAt)}</div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="font-semibold text-label">#{data.mapOrder.orderNumber}</div>
+                  <div>{data.mapOrder.addressLine}</div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <div className="font-semibold text-label">{etaLabel}</div>
+                  <div className="text-[11px]">{distanceLabel}</div>
+                </div>
+              </div>
+              <div className="mt-3 text-[11px]">{formatTimestamp(data.mapOrder.trackedAt)}</div>
             </div>
           </div>
         ) : (

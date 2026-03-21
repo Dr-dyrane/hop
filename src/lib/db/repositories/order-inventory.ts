@@ -37,6 +37,26 @@ async function listOrderInventoryLines(queryFn: QueryFn, orderId: string) {
   return result.rows;
 }
 
+async function listReturnInventoryLines(queryFn: QueryFn, returnCaseId: string) {
+  const result = await queryFn<OrderInventoryLine>(
+    `
+      select
+        oi.variant_id as "variantId",
+        sum(rci.quantity)::int as quantity,
+        max(rci.title) as title
+      from app.order_return_case_items rci
+      inner join app.order_items oi
+        on oi.id = rci.order_item_id
+      where rci.return_case_id = $1
+        and oi.variant_id is not null
+      group by oi.variant_id
+    `,
+    [returnCaseId]
+  );
+
+  return result.rows;
+}
+
 async function lockInventoryState(
   queryFn: QueryFn,
   variantIds: string[]
@@ -63,10 +83,13 @@ async function lockInventoryState(
 
 async function applyInventoryDelta(
   queryFn: QueryFn,
-  orderId: string,
+  sourceId: string,
   mode: "reserve" | "release" | "deliver" | "restock"
 ) {
-  const lines = await listOrderInventoryLines(queryFn, orderId);
+  const lines =
+    mode === "restock"
+      ? await listReturnInventoryLines(queryFn, sourceId)
+      : await listOrderInventoryLines(queryFn, sourceId);
 
   if (lines.length === 0) {
     return;
@@ -116,15 +139,15 @@ async function applyInventoryDelta(
 
   const valueExpression =
     mode === "reserve"
-      ? "ii.reserved + order_inventory.quantity"
+      ? "ii.reserved + inventory_source.quantity"
       : mode === "release"
-        ? "greatest(0, ii.reserved - order_inventory.quantity)"
-        : "greatest(0, ii.reserved - order_inventory.quantity)";
+        ? "greatest(0, ii.reserved - inventory_source.quantity)"
+        : "greatest(0, ii.reserved - inventory_source.quantity)";
   const onHandExpression =
     mode === "deliver"
-      ? "greatest(0, ii.on_hand - order_inventory.quantity)"
+      ? "greatest(0, ii.on_hand - inventory_source.quantity)"
       : mode === "restock"
-        ? "ii.on_hand + order_inventory.quantity"
+        ? "ii.on_hand + inventory_source.quantity"
         : "ii.on_hand";
 
   await queryFn(
@@ -137,15 +160,26 @@ async function applyInventoryDelta(
         where oi.order_id = $1
           and oi.variant_id is not null
         group by oi.variant_id
+      ),
+      return_inventory as (
+        select
+          oi.variant_id,
+          sum(rci.quantity)::int as quantity
+        from app.order_return_case_items rci
+        inner join app.order_items oi
+          on oi.id = rci.order_item_id
+        where rci.return_case_id = $1
+          and oi.variant_id is not null
+        group by oi.variant_id
       )
       update app.inventory_items ii
       set
-        reserved = ${valueExpression},
-        on_hand = ${onHandExpression}
-      from order_inventory
-      where ii.variant_id = order_inventory.variant_id
+        reserved = ${mode === "restock" ? "ii.reserved" : valueExpression},
+        on_hand = ${mode === "restock" ? "ii.on_hand + inventory_source.quantity" : onHandExpression}
+      from ${mode === "restock" ? "return_inventory" : "order_inventory"} inventory_source
+      where ii.variant_id = inventory_source.variant_id
     `,
-    [orderId]
+    [sourceId]
   );
 }
 
@@ -169,7 +203,7 @@ export async function finalizeInventoryForDeliveredOrder(
 
 export async function restockInventoryForReturnedOrder(
   queryFn: QueryFn,
-  orderId: string
+  returnCaseId: string
 ) {
-  await applyInventoryDelta(queryFn, orderId, "restock");
+  await applyInventoryDelta(queryFn, returnCaseId, "restock");
 }

@@ -26,6 +26,7 @@ import {
   type ShellNavIcon,
   type ShellNavItem,
 } from "@/lib/app-shell";
+import { useUI } from "@/components/providers/UIProvider";
 import { cn } from "@/lib/utils";
 
 const NAV_ICON_MAP: Record<ShellNavIcon, typeof Home> = {
@@ -61,6 +62,7 @@ export function WorkspaceNav({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { hasActiveOverlay } = useUI();
 
   if (mode === "mobile") {
     const matchedRoute = getShellMatchedRoute(pathname, headerRoutes);
@@ -100,7 +102,10 @@ export function WorkspaceNav({
       <>
         <nav
           aria-label="Section navigation"
-          className="glass-morphism fixed bottom-3 left-3 z-40 w-[min(calc(50vw+1rem),18rem)] max-w-[calc(100vw-5.75rem)] rounded-[30px] bg-system-background/88 p-2 shadow-[0_20px_60px_rgba(15,23,42,0.12)] md:hidden"
+          className={cn(
+            "z-layer-mobile-nav glass-morphism fixed bottom-3 left-3 w-[min(calc(50vw+1rem),18rem)] max-w-[calc(100vw-5.75rem)] rounded-[30px] bg-system-background/88 p-2 shadow-[0_20px_60px_rgba(15,23,42,0.12)] md:hidden",
+            hasActiveOverlay && "pointer-events-none translate-y-4 opacity-0"
+          )}
         >
           <ul className="scrollbar-hide flex min-w-0 gap-1 overflow-x-auto">
             {items.map((item) => {
@@ -133,7 +138,10 @@ export function WorkspaceNav({
             type="button"
             onClick={handleMobileFab}
             aria-label={mobileFab.label}
-            className="fixed right-3 bottom-3 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-label)] shadow-[0_16px_36px_rgba(15,23,42,0.12)] transition-transform duration-200 active:scale-[0.98] md:hidden"
+            className={cn(
+              "z-layer-mobile-fab fixed right-3 bottom-3 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-label)] shadow-[0_16px_36px_rgba(15,23,42,0.12)] transition-transform duration-200 active:scale-[0.98] md:hidden",
+              hasActiveOverlay && "pointer-events-none translate-y-4 opacity-0"
+            )}
           >
             {(() => {
               const ActionIcon = FAB_ICON_MAP[mobileFab.icon];

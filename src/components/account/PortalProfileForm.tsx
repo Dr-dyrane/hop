@@ -4,9 +4,11 @@ import { useState, useTransition } from "react";
 import type { PortalProfile } from "@/lib/db/types";
 import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
 import { updateProfileAction } from "@/app/(portal)/account/profile/actions";
+import { useUI } from "@/components/providers/UIProvider";
 import { cn } from "@/lib/utils";
 
 export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
+  const { hasActiveOverlay } = useUI();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
@@ -143,7 +145,12 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
         </button>
       </ProgressiveFormSection>
 
-      <div className="sticky bottom-6 z-30">
+      <div
+        className={cn(
+          "z-layer-sticky-action sticky bottom-6 hidden md:block",
+          hasActiveOverlay && "pointer-events-none translate-y-4 opacity-0"
+        )}
+      >
         <div className="flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/56 px-4 py-3 shadow-[0_12px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl">
           <p
             className={cn(

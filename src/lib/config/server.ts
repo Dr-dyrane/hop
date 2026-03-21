@@ -68,6 +68,9 @@ export const serverEnv = {
     accountName: readOptionalEnv(process.env.BANK_TRANSFER_ACCOUNT_NAME),
     accountNumber: readOptionalEnv(process.env.BANK_TRANSFER_ACCOUNT_NUMBER),
   },
+  cron: {
+    secret: readOptionalEnv(process.env.CRON_SECRET),
+  },
   vercel: {
     accessToken: readOptionalEnv(process.env.VERCEL_ACCESS_TOKEN),
   },

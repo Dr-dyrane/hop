@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { MapboxAddressAutocomplete } from "@/components/maps/MapboxAddressAutocomplete";
 import { MapboxLocationPicker } from "@/components/maps/MapboxLocationPicker";
+import { useOverlayPresence } from "@/components/providers/UIProvider";
 
 const fieldClassName =
   "w-full rounded-[28px] bg-system-fill/80 px-4 py-3 text-sm text-label placeholder:text-secondary-label transition-colors duration-300 focus:bg-system-fill dark:bg-white/[0.05] dark:focus:bg-white/[0.08]";
@@ -49,6 +50,7 @@ export function CartDrawer() {
   const showEmptyState = isCartReady && cartLines.length === 0;
   const canRefreshCart =
     checkoutError === "Cart refreshed." || checkoutError === "Cart is empty.";
+  useOverlayPresence("commerce-cart", isCartOpen);
 
   useEffect(() => {
     if (!isCartOpen) {
@@ -75,7 +77,7 @@ export function CartDrawer() {
     <>
       <div
         className={cn(
-          "fixed inset-0 z-[2147483630] transition-opacity duration-300",
+          "z-layer-sheet-backdrop fixed inset-0 transition-opacity duration-300",
           isCartOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
@@ -85,7 +87,7 @@ export function CartDrawer() {
           type="button"
           aria-label="Close cart"
           onClick={closeCart}
-          className="absolute inset-0 bg-black/35 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/48 backdrop-blur-md"
         />
       </div>
 
@@ -95,11 +97,11 @@ export function CartDrawer() {
         aria-label="Shopping cart"
         aria-hidden={!isCartOpen}
         className={cn(
-          "fixed right-0 top-0 z-[2147483640] h-[100svh] w-full max-w-[480px] transition-transform duration-500 ease-[var(--ease-premium)]",
+          "z-layer-sheet fixed right-0 top-0 h-[100svh] w-full max-w-full transition-transform duration-500 ease-[var(--ease-premium)] sm:max-w-[480px]",
           isCartOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <div className="glass-morphism flex h-full flex-col overflow-hidden rounded-l-[36px] bg-system-background/96 p-4 shadow-[0_32px_120px_rgba(0,0,0,0.22)] sm:p-5">
+        <div className="flex h-full flex-col overflow-hidden bg-[color:var(--system-background)] p-4 shadow-[0_32px_120px_rgba(0,0,0,0.22)] sm:rounded-l-[36px] sm:p-5">
           <div className="flex items-start justify-between gap-4 px-1 pb-5 pt-2">
             <div>
               <span className="inline-flex items-center rounded-full bg-accent/10 px-3 py-2 text-[10px] font-semibold uppercase tracking-headline text-accent dark:bg-accent/15">

@@ -32,6 +32,18 @@ export function Footer() {
           ))}
         </div>
 
+        <div className="mb-20 flex flex-col items-center gap-4">
+          <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label opacity-50">
+            Portal
+          </div>
+          <Link
+            href="/account"
+            className="button-primary min-h-[48px] px-6 text-[10px] font-semibold uppercase tracking-headline"
+          >
+            Create Account
+          </Link>
+        </div>
+
         <div className="flex flex-col items-center gap-4">
           <div className="text-[9px] font-semibold uppercase tracking-tightest text-secondary-label opacity-20">
             Copyright {new Date().getFullYear()} {brand.name}. Designed for

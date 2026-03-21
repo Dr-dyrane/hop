@@ -11,6 +11,7 @@ The goal is that product, engineering, operations, and database rules are all re
 - [Platform Bible](C:/Users/Dyrane/Documents/GitHub/hop/docs/planning/README_BIBLE.md)
 - [Schema Blueprint](C:/Users/Dyrane/Documents/GitHub/hop/docs/planning/SCHEMA_BLUEPRINT.md)
 - [Implementation Blueprint](C:/Users/Dyrane/Documents/GitHub/hop/docs/planning/IMPLEMENTATION_BLUEPRINT.md)
+- [Native App Execution Plan](C:/Users/Dyrane/Documents/GitHub/hop/docs/planning/NATIVE_APP_EXECUTION_PLAN.md)
 - [Rendezvous Pass Tracker](C:/Users/Dyrane/Documents/GitHub/hop/docs/planning/RENDEZVOUS_STATUS.md)
 - [End-To-End Flows](C:/Users/Dyrane/Documents/GitHub/hop/docs/planning/END_TO_END_FLOWS.md)
 - [State Machines](C:/Users/Dyrane/Documents/GitHub/hop/docs/planning/STATE_MACHINES.md)
@@ -21,6 +22,7 @@ The goal is that product, engineering, operations, and database rules are all re
 
 - [Environment and Vercel](C:/Users/Dyrane/Documents/GitHub/hop/docs/operations/ENVIRONMENT_AND_VERCEL.md)
 - [Database Operations](C:/Users/Dyrane/Documents/GitHub/hop/docs/operations/DATABASE_OPERATIONS.md)
+- [Order Flow Smoke Test](C:/Users/Dyrane/Documents/GitHub/hop/docs/operations/ORDER_FLOW_SMOKE_TEST.md)
 
 ## Database Repository Structure
 
@@ -46,9 +48,10 @@ The goal is that product, engineering, operations, and database rules are all re
 1. Read the Platform Bible for the product and architecture direction.
 2. Read the Schema Blueprint for the relational model and domain boundaries.
 3. Read the Implementation Blueprint for the migration plan, route contracts, APIs, and permissions.
-4. Read the Rendezvous Pass Tracker for the current implementation checkpoint, active pass, and task ledger.
-5. Read the Environment and Vercel document before touching secrets or deployment configuration.
-6. Read the Database Operations document before adding any migrations, triggers, functions, or policies.
+4. Read the Native App Execution Plan for the current native-feel, viewport, notifications, feedback, and lifecycle-email roadmap.
+5. Read the Rendezvous Pass Tracker for the current implementation checkpoint, active pass, and task ledger.
+6. Read the Environment and Vercel document before touching secrets or deployment configuration.
+7. Read the Database Operations document before adding any migrations, triggers, functions, or policies.
 
 ---
 

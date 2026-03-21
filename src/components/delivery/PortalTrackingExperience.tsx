@@ -9,6 +9,8 @@ import { useSseResource } from "@/hooks/useSseResource";
 import type { PortalTrackingSnapshot } from "@/lib/db/types";
 import {
   buildTrackingMapUrl,
+  formatRouteDistance,
+  formatRouteDuration,
   getTrackingCoords,
   getTrackingFreshness,
 } from "@/lib/delivery/tracking";
@@ -50,10 +52,12 @@ export function PortalTrackingExperience({
   initialSnapshot,
   pollUrl,
   streamUrl,
+  backHref,
 }: {
   initialSnapshot: PortalTrackingSnapshot;
   pollUrl: string;
   streamUrl: string;
+  backHref?: string;
 }) {
   const { data: snapshot, error } = useSseResource<PortalTrackingSnapshot>({
     initialData: initialSnapshot,
@@ -82,6 +86,16 @@ export function PortalTrackingExperience({
   const freshness = getTrackingFreshness(snapshot.latestPoint?.recordedAt ?? null);
   const freshnessTone =
     freshness.tone === "live" ? "success" : freshness.tone === "muted" ? "muted" : "default";
+  const etaLabel = snapshot.routeEstimate
+    ? formatRouteDuration(snapshot.routeEstimate.durationMinutes)
+    : snapshot.latestPoint
+      ? "Calculating"
+      : "Waiting";
+  const distanceLabel = snapshot.routeEstimate
+    ? formatRouteDistance(snapshot.routeEstimate.distanceKilometers)
+    : snapshot.latestPoint
+      ? "Calculating"
+      : "Waiting";
 
   return (
     <div className="space-y-6 pb-20">
@@ -108,7 +122,7 @@ export function PortalTrackingExperience({
         ]}
         actions={
           <Link
-            href={`/account/orders/${snapshot.orderId}`}
+            href={backHref ?? `/account/orders/${snapshot.orderId}`}
             className="flex min-h-[40px] items-center rounded-[18px] bg-system-fill/42 px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label"
           >
             View order
@@ -128,31 +142,66 @@ export function PortalTrackingExperience({
               : "Paused",
           },
           {
+            label: "ETA",
+            value: etaLabel,
+            detail: snapshot.routeEstimate
+              ? snapshot.routeEstimate.source === "mapbox"
+                ? "Route"
+                : "Estimate"
+              : snapshot.latestPoint
+                ? "Route"
+                : "Pending",
+          },
+          {
+            label: "Distance",
+            value: distanceLabel,
+            detail: snapshot.latestPoint ? "To stop" : "Waiting",
+          },
+          {
             label: "Rider",
             value: snapshot.riderName ?? "Pending",
             detail: snapshot.riderVehicleType ?? "Assignment pending",
           },
-          {
-            label: "Phone",
-            value: snapshot.riderPhone ?? snapshot.customerPhone,
-            detail: snapshot.riderPhone ? "Courier" : "Order contact",
-          },
         ]}
-        columns={3}
+        columns={4}
       />
 
       <section className="grid gap-4 min-[1100px]:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
         <TrackingSurface title="Map">
           {mapSrc ? (
-            <div className="overflow-hidden rounded-[26px]">
-              <Image
-                src={mapSrc}
-                alt={`Tracking map for order ${snapshot.orderNumber}`}
-                width={960}
-                height={540}
-                className="h-auto w-full"
-                priority
-              />
+            <div className="space-y-3">
+              <div className="overflow-hidden rounded-[26px]">
+                <Image
+                  src={mapSrc}
+                  alt={`Tracking map for order ${snapshot.orderNumber}`}
+                  width={960}
+                  height={540}
+                  className="h-auto w-full"
+                  priority
+                />
+              </div>
+              <div className="grid gap-3 rounded-[22px] bg-system-fill/36 px-4 py-4 text-sm text-secondary-label sm:grid-cols-3">
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+                    ETA
+                  </div>
+                  <div className="mt-1 font-medium text-label">{etaLabel}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+                    Distance
+                  </div>
+                  <div className="mt-1 font-medium text-label">{distanceLabel}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+                    Update
+                  </div>
+                  <div className="mt-1 font-medium text-label">
+                    {formatTimestamp(snapshot.latestPoint?.recordedAt ?? null)}
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex min-h-[280px] items-center justify-center rounded-[26px] bg-system-fill/42 text-sm text-secondary-label">

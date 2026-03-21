@@ -13,6 +13,7 @@ import {
 } from "@/lib/db/repositories/orders-repository";
 import {
   getLatestOrderReturnCase,
+  listOrderReturnCaseItems,
   listOrderReturnEvents,
   listOrderReturnProofs,
 } from "@/lib/db/repositories/order-returns-repository";
@@ -128,6 +129,9 @@ export default async function AdminOrderDetailPage({
     listOrderReturnEvents(orderId, adminActor),
     listOrderReturnProofs(orderId, adminActor),
   ]);
+  const returnItems = returnCase
+    ? await listOrderReturnCaseItems(returnCase.returnCaseId, adminActor)
+    : [];
   const stage = getOrderStagePresentation(order);
   const paymentState = getPaymentStatusPresentation(order.payment?.status ?? order.paymentStatus);
   const paymentActions = availablePaymentActions(order.payment?.status ?? order.paymentStatus);
@@ -430,6 +434,27 @@ export default async function AdminOrderDetailPage({
                         <span>{proof.mimeType}</span>
                         <span>{formatTimestamp(proof.createdAt)}</span>
                       </Link>
+                    ))}
+                  </div>
+                ) : null}
+
+                {returnItems.length > 0 ? (
+                  <div className="grid gap-2 text-sm text-secondary-label">
+                    {returnItems.map((item) => (
+                      <div
+                        key={item.returnItemId}
+                        className="flex items-center justify-between gap-4 rounded-[22px] bg-system-fill/36 px-4 py-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-label">{item.title}</div>
+                          <div className="mt-1 text-xs text-secondary-label">
+                            {item.quantity} x {formatNgn(item.unitPriceNgn)}
+                          </div>
+                        </div>
+                        <div className="shrink-0 font-medium text-label">
+                          {formatNgn(item.lineTotalNgn)}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : null}

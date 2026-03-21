@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Box, ShoppingBag, X } from "lucide-react";
 import { useCommerce } from "@/components/providers/CommerceProvider";
+import { useOverlayPresence } from "@/components/providers/UIProvider";
 import { formatNgn } from "@/lib/commerce";
 import { isStorefrontVisibleProduct } from "@/lib/catalog/storefront";
 import type { PublishedCatalogProduct } from "@/lib/db/types";
@@ -39,6 +40,7 @@ export function PortalStoreShelf({
   );
   const activeProduct =
     availableProducts.find((product) => product.productId === activeProductId) ?? null;
+  useOverlayPresence("portal-store-preview", activeProduct !== null);
 
   useEffect(() => {
     if (!activeProduct) {
@@ -133,7 +135,7 @@ export function PortalStoreShelf({
 
       <div
         className={cn(
-          "fixed inset-0 z-[60] transition-opacity duration-300",
+          "z-layer-modal-backdrop fixed inset-0 transition-opacity duration-300",
           activeProduct ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         )}
       >
@@ -147,7 +149,7 @@ export function PortalStoreShelf({
 
       <div
         className={cn(
-          "pointer-events-none fixed inset-0 z-[65] flex items-end justify-center p-3 sm:items-center sm:p-6",
+          "z-layer-modal pointer-events-none fixed inset-0 flex items-end justify-center p-3 sm:items-center sm:p-6",
           activeProduct ? "opacity-100" : "opacity-0"
         )}
       >

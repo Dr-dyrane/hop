@@ -8,6 +8,7 @@ import {
   saveAddressAction,
   setDefaultAddressAction,
 } from "@/app/(portal)/account/addresses/actions";
+import { useUI } from "@/components/providers/UIProvider";
 import { cn } from "@/lib/utils";
 import { MapboxLocationPicker } from "@/components/maps/MapboxLocationPicker";
 import { MapboxAddressAutocomplete } from "@/components/maps/MapboxAddressAutocomplete";
@@ -31,6 +32,7 @@ const emptyDraft = {
 };
 
 export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
+  const { hasActiveOverlay } = useUI();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
@@ -475,7 +477,12 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
         )}
       </div>
 
-      <div className="sticky bottom-6 z-30">
+      <div
+        className={cn(
+          "z-layer-sticky-action sticky bottom-6 hidden md:block",
+          hasActiveOverlay && "pointer-events-none translate-y-4 opacity-0"
+        )}
+      >
         <div className="flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/56 px-4 py-3 shadow-[0_12px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl">
           <p
             className={cn(

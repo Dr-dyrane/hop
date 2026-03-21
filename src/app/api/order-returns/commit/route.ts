@@ -4,6 +4,7 @@ import {
   createOrderReturnProof,
   getLatestOrderReturnCase,
 } from "@/lib/db/repositories/order-returns-repository";
+import { sendOrderReturnProofSubmittedNotifications } from "@/lib/email/orders";
 import { resolveOrderProofAccess } from "@/lib/orders/proof-access";
 
 export async function POST(request: Request) {
@@ -77,6 +78,10 @@ export async function POST(request: Request) {
           : access.order.customerEmail,
       actorUserId: matchedUser?.userId ?? null,
       guestOrderId: access.mode === "guest" ? orderId : null,
+    });
+
+    await sendOrderReturnProofSubmittedNotifications({
+      orderId,
     });
 
     return NextResponse.json(

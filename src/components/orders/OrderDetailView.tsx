@@ -9,6 +9,7 @@ import { QuietValueStrip } from "@/components/ui/QuietValueStrip";
 import { formatNgn } from "@/lib/commerce";
 import type {
   OrderReturnCaseRow,
+  OrderReturnCaseItemRow,
   OrderReturnEventRow,
   OrderReturnProofRow,
   OrderReviewRequestRow,
@@ -91,6 +92,7 @@ export function OrderDetailView({
   reviewRequest,
   review,
   returnCase,
+  returnItems,
   returnEvents,
   returnProofs,
   backHref,
@@ -103,6 +105,7 @@ export function OrderDetailView({
   reviewRequest: OrderReviewRequestRow | null;
   review: OrderReviewRow | null;
   returnCase: OrderReturnCaseRow | null;
+  returnItems: OrderReturnCaseItemRow[];
   returnEvents: OrderReturnEventRow[];
   returnProofs: OrderReturnProofRow[];
   backHref: string;
@@ -265,6 +268,11 @@ export function OrderDetailView({
                       <div className="mt-1 text-xs">
                         {item.quantity} x {formatNgn(item.unitPriceNgn)}
                       </div>
+                      {item.returnedQuantity > 0 ? (
+                        <div className="mt-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+                          {item.returnedQuantity} returned
+                        </div>
+                      ) : null}
                     </div>
                     <div className="shrink-0 text-right font-medium text-label">
                       {formatNgn(item.lineTotalNgn)}
@@ -354,6 +362,7 @@ export function OrderDetailView({
                 accessToken={accessToken}
                 orderStatus={order.status}
                 returnCase={returnCase}
+                items={order.items}
                 returnEvents={returnEvents}
                 proofs={returnProofs}
               />
@@ -409,6 +418,29 @@ export function OrderDetailView({
                   className="h-auto w-full"
                   loading="lazy"
                 />
+              </div>
+            </OrderSurface>
+          ) : null}
+
+          {returnItems.length > 0 ? (
+            <OrderSurface title="Return Items">
+              <div className="grid gap-2 text-sm text-secondary-label">
+                {returnItems.map((item) => (
+                  <div
+                    key={item.returnItemId}
+                    className="flex items-center justify-between gap-4 rounded-[22px] bg-system-fill/36 px-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-label">{item.title}</div>
+                      <div className="mt-1 text-xs text-secondary-label">
+                        {item.quantity} x {formatNgn(item.unitPriceNgn)}
+                      </div>
+                    </div>
+                    <div className="shrink-0 font-medium text-label">
+                      {formatNgn(item.lineTotalNgn)}
+                    </div>
+                  </div>
+                ))}
               </div>
             </OrderSurface>
           ) : null}

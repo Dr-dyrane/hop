@@ -10,6 +10,8 @@ import { finalizeInventoryForDeliveredOrder } from "@/lib/db/repositories/order-
 import { getDeliveryDefaultsSetting } from "@/lib/db/repositories/settings-repository";
 import { sendDeliveryStatusNotification } from "@/lib/email/orders";
 import { readCourierAccessToken } from "@/lib/delivery/access";
+import { getDeliveryRouteEstimate } from "@/lib/delivery/route-estimate";
+import { getTrackingCoords } from "@/lib/delivery/tracking";
 import type {
   AdminDeliveryOrder,
   AdminDeliveryRider,
@@ -1126,7 +1128,11 @@ export async function recordCourierTrackingPoint(input: {
   });
 }
 
-export async function listDeliveryEventsForOrder(orderId: string, limit = 16) {
+export async function listDeliveryEventsForOrder(
+  orderId: string,
+  limit = 16,
+  actor?: DatabaseActorContext
+) {
   if (!orderId || !isDatabaseConfigured()) {
     return [] satisfies DeliveryTimelineEvent[];
   }
@@ -1148,10 +1154,70 @@ export async function listDeliveryEventsForOrder(orderId: string, limit = 16) {
       order by created_at desc
       limit $2
     `,
-    [orderId, limit]
+    [orderId, limit],
+    actor ? { actor } : undefined
   );
 
   return result.rows;
+}
+
+type TrackingSnapshotRow = Omit<PortalTrackingSnapshot, "latestPoint" | "events" | "routeEstimate"> & {
+  latestTrackingPointId: string | null;
+  latestTrackingLatitude: number | null;
+  latestTrackingLongitude: number | null;
+  latestTrackingHeading: number | null;
+  latestTrackingAccuracyMeters: number | null;
+  latestTrackingRecordedAt: string | null;
+};
+
+async function buildTrackingSnapshot(
+  row: TrackingSnapshotRow,
+  orderId: string,
+  actor?: DatabaseActorContext
+) {
+  const deliveryDefaults = await getDeliveryDefaultsSetting();
+  const events = await listDeliveryEventsForOrder(orderId, 16, actor);
+  const latestPoint =
+    deliveryDefaults.trackingEnabled && row.latestTrackingPointId
+      ? {
+          pointId: row.latestTrackingPointId,
+          assignmentId: row.assignmentId ?? "",
+          latitude: row.latestTrackingLatitude ?? 0,
+          longitude: row.latestTrackingLongitude ?? 0,
+          heading: row.latestTrackingHeading,
+          accuracyMeters: row.latestTrackingAccuracyMeters,
+          recordedAt: row.latestTrackingRecordedAt ?? new Date(0).toISOString(),
+        }
+      : null;
+  const routeEstimate =
+    deliveryDefaults.trackingEnabled && latestPoint
+      ? await getDeliveryRouteEstimate(
+          {
+            lat: latestPoint.latitude,
+            lng: latestPoint.longitude,
+          },
+          getTrackingCoords(row.deliveryAddressSnapshot)
+        )
+      : null;
+
+  return {
+    orderId: row.orderId,
+    orderNumber: row.orderNumber,
+    status: row.status,
+    fulfillmentStatus: row.fulfillmentStatus,
+    trackingEnabled: deliveryDefaults.trackingEnabled,
+    customerName: row.customerName,
+    customerPhone: row.customerPhone,
+    deliveryAddressSnapshot: row.deliveryAddressSnapshot,
+    assignmentId: row.assignmentId,
+    assignmentStatus: row.assignmentStatus,
+    riderName: row.riderName,
+    riderPhone: row.riderPhone,
+    riderVehicleType: row.riderVehicleType,
+    latestPoint,
+    routeEstimate,
+    events,
+  } satisfies PortalTrackingSnapshot;
 }
 
 export async function getPortalTrackingSnapshot(email: string, orderId: string) {
@@ -1160,18 +1226,9 @@ export async function getPortalTrackingSnapshot(email: string, orderId: string) 
   if (!normalizedEmail || !orderId || !isDatabaseConfigured()) {
     return null;
   }
-  const deliveryDefaults = await getDeliveryDefaultsSetting();
 
-  const result = await query<
-    Omit<PortalTrackingSnapshot, "latestPoint" | "events"> & {
-      latestTrackingPointId: string | null;
-      latestTrackingLatitude: number | null;
-      latestTrackingLongitude: number | null;
-      latestTrackingHeading: number | null;
-      latestTrackingAccuracyMeters: number | null;
-      latestTrackingRecordedAt: string | null;
-    }
-  >(
+  const actor = buildCustomerActor(normalizedEmail);
+  const result = await query<TrackingSnapshotRow>(
     `
       with matched_user as (
         select id
@@ -1236,7 +1293,7 @@ export async function getPortalTrackingSnapshot(email: string, orderId: string) 
       limit 1
     `,
     [normalizedEmail, orderId],
-    { actor: buildCustomerActor(normalizedEmail) }
+    actor ? { actor } : undefined
   );
 
   const row = result.rows[0];
@@ -1245,33 +1302,82 @@ export async function getPortalTrackingSnapshot(email: string, orderId: string) 
     return null;
   }
 
-  const events = await listDeliveryEventsForOrder(orderId, 16);
+  return buildTrackingSnapshot(row, orderId, actor);
+}
 
-  return {
-    orderId: row.orderId,
-    orderNumber: row.orderNumber,
-    status: row.status,
-    fulfillmentStatus: row.fulfillmentStatus,
-    trackingEnabled: deliveryDefaults.trackingEnabled,
-    customerName: row.customerName,
-    customerPhone: row.customerPhone,
-    deliveryAddressSnapshot: row.deliveryAddressSnapshot,
-    assignmentId: row.assignmentId,
-    assignmentStatus: row.assignmentStatus,
-    riderName: row.riderName,
-    riderPhone: row.riderPhone,
-    riderVehicleType: row.riderVehicleType,
-    latestPoint: deliveryDefaults.trackingEnabled && row.latestTrackingPointId
-      ? {
-          pointId: row.latestTrackingPointId,
-          assignmentId: row.assignmentId ?? "",
-          latitude: row.latestTrackingLatitude ?? 0,
-          longitude: row.latestTrackingLongitude ?? 0,
-          heading: row.latestTrackingHeading,
-          accuracyMeters: row.latestTrackingAccuracyMeters,
-          recordedAt: row.latestTrackingRecordedAt ?? new Date(0).toISOString(),
-        }
-      : null,
-    events,
-  } satisfies PortalTrackingSnapshot;
+export async function getGuestTrackingSnapshot(orderId: string) {
+  if (!orderId || !isDatabaseConfigured()) {
+    return null;
+  }
+
+  const actor = {
+    role: "customer" as const,
+    guestOrderId: orderId,
+  };
+  const result = await query<TrackingSnapshotRow>(
+    `
+      select
+        o.id as "orderId",
+        o.public_order_number as "orderNumber",
+        o.status,
+        o.fulfillment_status as "fulfillmentStatus",
+        o.customer_name as "customerName",
+        o.customer_phone_e164 as "customerPhone",
+        o.delivery_address_snapshot as "deliveryAddressSnapshot",
+        a.id as "assignmentId",
+        a.status as "assignmentStatus",
+        r.name as "riderName",
+        r.phone_e164 as "riderPhone",
+        r.vehicle_type as "riderVehicleType",
+        tp."pointId" as "latestTrackingPointId",
+        tp.latitude as "latestTrackingLatitude",
+        tp.longitude as "latestTrackingLongitude",
+        tp.heading as "latestTrackingHeading",
+        tp."accuracyMeters" as "latestTrackingAccuracyMeters",
+        tp."recordedAt" as "latestTrackingRecordedAt"
+      from app.orders o
+      left join lateral (
+        select
+          id,
+          status,
+          rider_id
+        from app.delivery_assignments
+        where order_id = o.id
+        order by
+          case
+            when status in ('assigned', 'picked_up', 'out_for_delivery', 'failed', 'delivered') then 0
+            else 1
+          end asc,
+          updated_at desc
+        limit 1
+      ) a on true
+      left join app.riders r
+        on r.id = a.rider_id
+      left join lateral (
+        select
+          id as "pointId",
+          latitude::float8 as latitude,
+          longitude::float8 as longitude,
+          heading::float8 as heading,
+          accuracy_meters::float8 as "accuracyMeters",
+          recorded_at as "recordedAt"
+        from app.tracking_points
+        where assignment_id = a.id
+        order by recorded_at desc
+        limit 1
+      ) tp on true
+      where o.id = $1
+      limit 1
+    `,
+    [orderId],
+    { actor }
+  );
+
+  const row = result.rows[0];
+
+  if (!row) {
+    return null;
+  }
+
+  return buildTrackingSnapshot(row, orderId, actor);
 }

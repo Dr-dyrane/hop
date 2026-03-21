@@ -459,7 +459,7 @@ export default async function AdminDeliveryPage() {
   const liveOrders = orders.filter(
     (order) => order.deliveryStage === "out_for_delivery"
   );
-  const liveSnapshot = buildAdminDeliveryLiveSnapshot({
+  const liveSnapshot = await buildAdminDeliveryLiveSnapshot({
     orders,
     riders,
     trackingEnabled,

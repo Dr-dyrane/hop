@@ -72,6 +72,7 @@ Examples:
 - `DATABASE_URL`
 - `APP_SESSION_SECRET`
 - `ADMIN_EMAILS`
+- `CRON_SECRET`
 - `AWS_ROLE_ARN`
 - `COGNITO_USER_POOL_ID`
 - `RESEND_API_KEY`
@@ -226,6 +227,22 @@ vercel env add DATABASE_URL development
 vercel env add RESEND_API_KEY preview
 ```
 
+### Cron automation
+
+The repo uses:
+
+- [`vercel.json`](C:/Users/Dyrane/Documents/GitHub/hop/vercel.json)
+
+Current scheduled path:
+
+- `/api/cron/order-automation`
+
+Protection rule:
+
+- set `CRON_SECRET` in Vercel
+- Vercel cron requests must send `Authorization: Bearer <CRON_SECRET>`
+- local development may call the route without a secret only when `NODE_ENV` is not `production`
+
 ### Update a variable
 
 ```powershell
@@ -289,6 +306,7 @@ Every environment-variable change should satisfy all three:
 - `APP_SESSION_SECRET`
 - `AUTH_DEV_OTP_CODE`
 - `ADMIN_EMAILS`
+- `CRON_SECRET`
 - `AWS_REGION`
 - `AWS_ROLE_ARN`
 - `PGHOST`

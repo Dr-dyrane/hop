@@ -2,6 +2,7 @@ import Link from "next/link";
 import { OrderDetailView } from "@/components/orders/OrderDetailView";
 import {
   getLatestOrderReturnCase,
+  listOrderReturnCaseItems,
   listOrderReturnEvents,
   listOrderReturnProofs,
 } from "@/lib/db/repositories/order-returns-repository";
@@ -60,6 +61,9 @@ export default async function GuestCheckoutOrderPage({
     listOrderReturnEvents(orderId, guestActor),
     listOrderReturnProofs(orderId, guestActor),
   ]);
+  const returnItems = returnCase
+    ? await listOrderReturnCaseItems(returnCase.returnCaseId, guestActor)
+    : [];
 
   return (
     <main className="mx-auto min-h-[100svh] w-full max-w-[840px] px-4 pb-16 pt-24 sm:px-6">
@@ -86,12 +90,18 @@ export default async function GuestCheckoutOrderPage({
         timeline={timeline}
         proofs={proofs}
         reviewRequest={reviewRequest}
-        review={review}
-        returnCase={returnCase}
-        returnEvents={returnEvents}
-        returnProofs={returnProofs}
+      review={review}
+      returnCase={returnCase}
+      returnItems={returnItems}
+      returnEvents={returnEvents}
+      returnProofs={returnProofs}
         backHref="/"
         accessToken={accessToken}
+        trackingHref={
+          accessToken
+            ? `/checkout/orders/${orderId}/tracking?access=${encodeURIComponent(accessToken)}`
+            : null
+        }
       />
     </main>
   );

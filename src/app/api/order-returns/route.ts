@@ -9,6 +9,10 @@ export async function POST(request: Request) {
     accessToken?: string;
     reason?: string;
     details?: string;
+    items?: Array<{
+      orderItemId?: string;
+      quantity?: number;
+    }>;
     refundBankName?: string;
     refundAccountName?: string;
     refundAccountNumber?: string;
@@ -53,6 +57,10 @@ export async function POST(request: Request) {
       orderId,
       reason,
       details,
+      items: body.items?.map((item) => ({
+        orderItemId: item.orderItemId?.trim() ?? "",
+        quantity: Number(item.quantity ?? 0),
+      })),
       refundBankName: body.refundBankName?.trim() || null,
       refundAccountName: body.refundAccountName?.trim() || null,
       refundAccountNumber: body.refundAccountNumber?.trim() || null,

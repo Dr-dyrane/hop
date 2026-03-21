@@ -7,6 +7,7 @@ import type {
   OrderReturnCaseRow,
   OrderReturnEventRow,
   OrderReturnProofRow,
+  PortalOrderLine,
 } from "@/lib/db/types";
 import { OrderReturnProofUploadCard } from "@/components/orders/OrderReturnProofUploadCard";
 
@@ -36,6 +37,7 @@ export function OrderReturnRequestCard({
   returnCase,
   returnEvents,
   proofs,
+  items,
 }: {
   orderId: string;
   accessToken?: string;
@@ -43,20 +45,39 @@ export function OrderReturnRequestCard({
   returnCase: OrderReturnCaseRow | null;
   returnEvents: OrderReturnEventRow[];
   proofs: OrderReturnProofRow[];
+  items: PortalOrderLine[];
 }) {
   const router = useRouter();
+  const returnableItems = items.filter((item) => item.returnableQuantity > 0);
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [refundBankName, setRefundBankName] = useState("");
   const [refundAccountName, setRefundAccountName] = useState("");
   const [refundAccountNumber, setRefundAccountNumber] = useState("");
+  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>(() =>
+    Object.fromEntries(
+      returnableItems.map((item) => [item.orderItemId, item.returnableQuantity])
+    )
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const selectedUnitCount = Object.values(selectedQuantities).reduce(
+    (total, quantity) => total + quantity,
+    0
+  );
 
   const canRequestReturn = orderStatus === "delivered" && !returnCase;
 
   if (!canRequestReturn && !returnCase) {
     return null;
+  }
+
+  if (canRequestReturn && returnableItems.length === 0) {
+    return (
+      <div className="rounded-[22px] bg-system-fill/36 px-4 py-3 text-sm text-secondary-label">
+        Nothing left to return.
+      </div>
+    );
   }
 
   async function handleSubmit() {
@@ -75,6 +96,12 @@ export function OrderReturnRequestCard({
             accessToken,
             reason,
             details,
+            items: Object.entries(selectedQuantities)
+              .filter(([, quantity]) => quantity > 0)
+              .map(([orderItemId, quantity]) => ({
+                orderItemId,
+                quantity,
+              })),
             refundBankName,
             refundAccountName,
             refundAccountNumber,
@@ -202,8 +229,75 @@ export function OrderReturnRequestCard({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-[22px] bg-system-fill/36 px-4 py-3 text-sm text-secondary-label">
-        Ask for a return.
+      <div className="flex items-center justify-between gap-4 rounded-[22px] bg-system-fill/36 px-4 py-3 text-sm text-secondary-label">
+        <span>Choose the items to return.</span>
+        <span className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+          {selectedUnitCount} selected
+        </span>
+      </div>
+
+      <div className="grid gap-2">
+        {returnableItems.map((item) => {
+            const selectedQuantity = selectedQuantities[item.orderItemId] ?? 0;
+            const selectedAmount = item.unitPriceNgn * selectedQuantity;
+
+            return (
+              <div
+                key={item.orderItemId}
+                className="rounded-[22px] bg-system-fill/36 px-4 py-3"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-label">{item.title}</div>
+                    <div className="mt-1 text-xs text-secondary-label">
+                      {item.sku} / {item.returnableQuantity} left
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right text-sm font-medium text-label">
+                    {formatNgn(selectedAmount)}
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+                    {selectedQuantity}/{item.returnableQuantity}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedQuantities((current) => ({
+                          ...current,
+                          [item.orderItemId]: Math.max(
+                            0,
+                            (current[item.orderItemId] ?? item.returnableQuantity) - 1
+                          ),
+                        }))
+                      }
+                      className="rounded-full bg-system-background px-3 py-2 text-[10px] font-semibold uppercase tracking-headline text-label"
+                    >
+                      Less
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedQuantities((current) => ({
+                          ...current,
+                          [item.orderItemId]: Math.min(
+                            item.returnableQuantity,
+                            (current[item.orderItemId] ?? item.returnableQuantity) + 1
+                          ),
+                        }))
+                      }
+                      className="rounded-full bg-system-background px-3 py-2 text-[10px] font-semibold uppercase tracking-headline text-label"
+                    >
+                      More
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
       </div>
 
       <input
@@ -246,7 +340,7 @@ export function OrderReturnRequestCard({
         <button
           type="button"
           onClick={() => void handleSubmit()}
-          disabled={isPending}
+          disabled={isPending || selectedUnitCount === 0}
           className="button-secondary min-h-[44px] text-xs font-semibold uppercase tracking-headline"
         >
           {isPending ? "Sending" : "Send"}

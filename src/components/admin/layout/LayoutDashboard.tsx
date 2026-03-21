@@ -75,7 +75,7 @@ export function LayoutDashboard({
       {(success || error) ? (
         <div
           className={cn(
-            "fixed bottom-8 right-8 z-50 flex items-center gap-3 rounded-2xl px-6 py-4 shadow-float animate-in fade-in slide-in-from-bottom-4 duration-300",
+            "z-layer-toast fixed bottom-8 right-8 flex items-center gap-3 rounded-2xl px-6 py-4 shadow-float animate-in fade-in slide-in-from-bottom-4 duration-300",
             success
               ? "bg-accent/10 text-accent backdrop-blur-xl"
               : "bg-red-500/10 text-red-500 backdrop-blur-xl"

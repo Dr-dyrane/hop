@@ -101,6 +101,12 @@ Current state:
 - delivered order detail now exposes direct rating submission for signed-in and guest order access, instead of relying only on the separate reviews page
 - delivered-order email now links straight back into the order surface so the review handoff is part of the post-delivery automation
 - return-proof uploads now work through direct S3 upload for signed-in and guest order access, and Praxy can review them from admin order detail
+- return requests now support partial item selection instead of forcing whole-order returns
+- return-proof uploads now notify both the customer and Praxy instead of silently updating the case
+- scheduled order automation now runs through a dedicated cron route for stale-transfer expiry, transfer reminders, and post-delivery review reminders
+- scheduled order automation now also reminds Praxy about stuck payment reviews and return cases that have gone quiet
+- delivery tracking now surfaces cached route ETA and distance on both the customer tracking view and Praxy's live delivery map
+- guest checkout tracking now runs on the same live snapshot model as the signed-in tracking route
 
 This means the system has crossed into operational platform work.
 
@@ -265,7 +271,14 @@ Completed:
 - [x] proof upload now advances payment/order state into `submitted`
 - [x] payment confirmation without receipt now still updates payment status and submitted amount
 - [x] stale awaiting-transfer orders now expire and release stock
+- [x] scheduled transfer reminders before deadline
+- [x] scheduled operator reminders for stale payment reviews
+- [x] scheduled post-delivery review reminders
+- [x] scheduled operator reminders for quiet return cases
+- [x] dedicated cron route for order maintenance automation
 - [x] inventory reservation/release/delivery decrement now follows the order lifecycle
+- [x] cached route ETA and distance estimates on the live delivery path
+- [x] guest live tracking route using the same snapshot model as signed-in tracking
 - [x] delivery assignment schema and repository path
 - [x] review request and review schema
 - [x] review repository and moderation write path
@@ -341,6 +354,7 @@ Completed:
 - [x] quieter order history and confirmation surfaces
 - [x] review history
 - [x] signed-in tracking route
+- [x] guest tracking route
 - [x] addresses
 - [x] profile
 - [x] reorder
@@ -395,18 +409,20 @@ Current implementation:
 
 This is acceptable for the current pass, but a fuller focused checkout shell may still be introduced later if the flow needs more space.
 
-### Delivery is polling-based, not streaming
+### Delivery tracking is live, but route polish is still basic
 
 Current tracking behavior:
 
 - courier links can post tracking points into the platform
 - the signed-in portal tracking route now streams a real delivery snapshot and latest rider position
+- the guest portal tracking route now uses the same live snapshot model with tokenized access
 - admin dispatch metrics and map now stream from the same live delivery snapshot path
+- portal tracking and the admin live map now surface route ETA and distance estimates
 
 Missing:
 
-- richer route/ETA logic
-- guest tracking on the same live model
+- richer route overlays or turn-by-turn context
+- more deliberate ETA fallbacks when live signal is stale
 
 ### Catalog media is product-level first
 
@@ -441,6 +457,7 @@ Remaining gaps:
 Current return/refund behavior:
 
 - delivered orders can open a return request from the signed-in or guest order detail surface
+- return requests can now target specific line items and quantities instead of only the whole order
 - admin order detail can approve, reject, mark received, and mark refunded
 - `/admin/orders` now surfaces open return cases directly in the main queue
 - return events now have their own timeline instead of overloading core order status
@@ -450,7 +467,6 @@ Current return/refund behavior:
 
 Remaining gaps:
 
-- partial returns are not supported yet
 - deployed smoke test still has not been run end to end against the return-proof path
 
 ### RLS is active on the first protected slice
@@ -535,7 +551,7 @@ Implement in this order:
 1. Run one deployed business-flow smoke test from sign-in through payment review and delivery-state progression.
 2. Run one deployed business-flow smoke test through the return/refund flow as well.
 3. Keep tightening the Apple-HIG execution across admin and portal root/detail screens.
-4. Decide whether the next operational need is partial returns or return-proof uploads.
+4. Decide whether the next operational need is deeper route-polish on delivery or more post-order automation.
 
 After that:
 

@@ -10,11 +10,12 @@ export async function GET() {
   const snapshot = await getAdminDeliveryBoardSnapshot({
     actorEmail: session.email,
   });
+  const liveSnapshot = await buildAdminDeliveryLiveSnapshot(snapshot);
 
   return NextResponse.json(
     {
       ok: true,
-      data: buildAdminDeliveryLiveSnapshot(snapshot),
+      data: liveSnapshot,
     },
     { status: 200 }
   );
