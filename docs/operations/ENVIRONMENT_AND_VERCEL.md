@@ -237,6 +237,12 @@ Current scheduled path:
 
 - `/api/cron/order-automation`
 
+Hobby plan rule:
+
+- Vercel Hobby deployments fail if a cron is configured more than once per day
+- the committed schedule must stay at once daily unless the project moves to a plan that supports higher frequency
+- if Prax needs more frequent order automation before then, use an external scheduler to call `/api/cron/order-automation` with `Authorization: Bearer <CRON_SECRET>`
+
 Protection rule:
 
 - set `CRON_SECRET` in Vercel
