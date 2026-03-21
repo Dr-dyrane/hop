@@ -1,7 +1,11 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normalizeValue(value: string | undefined) {
-  const trimmed = value?.trim();
+  const trimmed = value
+    ?.replace(/\\r/g, "")
+    ?.replace(/\\n/g, "")
+    ?.replace(/[\r\n]/g, "")
+    ?.trim();
 
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 }

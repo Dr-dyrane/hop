@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type { PortalProfile } from "@/lib/db/types";
 import { ProgressiveFormSection } from "@/components/forms/ProgressiveFormSection";
+import { PreferenceToggleRow } from "@/components/forms/PreferenceToggleRow";
 import { updateProfileAction } from "@/app/(portal)/account/profile/actions";
 import { useUI } from "@/components/providers/UIProvider";
 import { cn } from "@/lib/utils";
@@ -20,9 +21,7 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
   const [workspaceInAppEnabled, setWorkspaceInAppEnabled] = useState(
     profile.workspaceInAppEnabled
   );
-  const [workspacePushEnabled, setWorkspacePushEnabled] = useState(
-    profile.workspacePushEnabled
-  );
+  const [workspacePushEnabled] = useState(profile.workspacePushEnabled);
   const [draft, setDraft] = useState({
     fullName: profile.fullName,
     preferredPhone: profile.preferredPhoneE164,
@@ -125,7 +124,6 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
             marketingOptIn ? "marketing" : null,
             workspaceEmailEnabled ? "email" : null,
             workspaceInAppEnabled ? "in-app" : null,
-            workspacePushEnabled ? "push" : null,
           ]
             .filter(Boolean)
             .join(" / ") || "Quiet"
@@ -142,100 +140,26 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
           </button>
         }
       >
-        <button
-          type="button"
-          onClick={() => setMarketingOptIn((current) => !current)}
-          className="flex min-h-[52px] w-full items-center justify-between rounded-[22px] bg-system-fill/42 px-4"
-        >
-          <div className="text-left">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
-              Updates
-            </p>
-            <p className="mt-1 text-sm text-label">{marketingOptIn ? "On" : "Off"}</p>
-          </div>
-          <span
-            className={cn(
-              "inline-flex min-w-[58px] justify-center rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]",
-              marketingOptIn
-                ? "bg-accent/10 text-accent"
-                : "bg-system-fill/52 text-secondary-label"
-            )}
-          >
-            {marketingOptIn ? "On" : "Off"}
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setWorkspaceEmailEnabled((current) => !current)}
-          className="mt-3 flex min-h-[52px] w-full items-center justify-between rounded-[22px] bg-system-fill/42 px-4"
-        >
-          <div className="text-left">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
-              Email alerts
-            </p>
-            <p className="mt-1 text-sm text-label">
-              {workspaceEmailEnabled ? "Important email on" : "Important email off"}
-            </p>
-          </div>
-          <span
-            className={cn(
-              "inline-flex min-w-[58px] justify-center rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]",
-              workspaceEmailEnabled
-                ? "bg-accent/10 text-accent"
-                : "bg-system-fill/52 text-secondary-label"
-            )}
-          >
-            {workspaceEmailEnabled ? "On" : "Off"}
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setWorkspaceInAppEnabled((current) => !current)}
-          className="mt-3 flex min-h-[52px] w-full items-center justify-between rounded-[22px] bg-system-fill/42 px-4"
-        >
-          <div className="text-left">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
-              In-app
-            </p>
-            <p className="mt-1 text-sm text-label">
-              {workspaceInAppEnabled ? "Notification sheet on" : "Notification sheet off"}
-            </p>
-          </div>
-          <span
-            className={cn(
-              "inline-flex min-w-[58px] justify-center rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]",
-              workspaceInAppEnabled
-                ? "bg-accent/10 text-accent"
-                : "bg-system-fill/52 text-secondary-label"
-            )}
-          >
-            {workspaceInAppEnabled ? "On" : "Off"}
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setWorkspacePushEnabled((current) => !current)}
-          className="mt-3 flex min-h-[52px] w-full items-center justify-between rounded-[22px] bg-system-fill/42 px-4"
-        >
-          <div className="text-left">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
-              Push
-            </p>
-            <p className="mt-1 text-sm text-label">
-              {workspacePushEnabled ? "Push allowed when enabled" : "Push off"}
-            </p>
-          </div>
-          <span
-            className={cn(
-              "inline-flex min-w-[58px] justify-center rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]",
-              workspacePushEnabled
-                ? "bg-accent/10 text-accent"
-                : "bg-system-fill/52 text-secondary-label"
-            )}
-          >
-            {workspacePushEnabled ? "On" : "Off"}
-          </span>
-        </button>
+        <div className="space-y-3">
+          <PreferenceToggleRow
+            label="Updates"
+            detail="New drops and product news"
+            value={marketingOptIn}
+            onChange={setMarketingOptIn}
+          />
+          <PreferenceToggleRow
+            label="Email alerts"
+            detail="Important order messages"
+            value={workspaceEmailEnabled}
+            onChange={setWorkspaceEmailEnabled}
+          />
+          <PreferenceToggleRow
+            label="In-app"
+            detail="Notification sheet"
+            value={workspaceInAppEnabled}
+            onChange={setWorkspaceInAppEnabled}
+          />
+        </div>
       </ProgressiveFormSection>
 
       <div

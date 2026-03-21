@@ -103,11 +103,11 @@ export function WorkspaceNav({
         <nav
           aria-label="Section navigation"
           className={cn(
-            "z-layer-mobile-nav glass-morphism fixed bottom-3 left-3 w-[calc(100vw-5.75rem)] max-w-[28rem] rounded-[30px] bg-system-background/88 p-2 shadow-[0_20px_60px_rgba(15,23,42,0.12)] md:hidden",
+            "z-layer-mobile-nav fixed bottom-3 left-3 w-[calc(100vw-5.75rem)] max-w-[24rem] rounded-[28px] bg-[color:var(--system-background)]/24 p-2 shadow-[0_20px_60px_rgba(15,23,42,0.12)] backdrop-blur-sm md:hidden",
             hasActiveOverlay && "pointer-events-none translate-y-4 opacity-0"
           )}
         >
-          <ul className="scrollbar-hide flex min-w-0 items-stretch gap-1 overflow-x-auto">
+          <ul className="scrollbar-hide flex min-w-0 items-center gap-1 overflow-x-auto">
             {items.map((item) => {
               const active = isActiveShellPath(pathname, item);
               const Icon = NAV_ICON_MAP[item.icon];
@@ -118,14 +118,21 @@ export function WorkspaceNav({
                     href={item.href}
                     aria-label={item.label}
                     className={cn(
-                      "flex min-h-[56px] min-w-[68px] flex-col items-center justify-center gap-1 rounded-[22px] px-3 py-2 text-[10px] font-semibold tracking-tight transition-all duration-200",
-                      active //dont change this hard coded bg-white dark:bg-black
-                        ? "bg-white dark:bg-black text-[var(--accent-label)] shadow-[0_14px_30px_rgba(15,23,42,0.08)]"
-                        : "text-secondary-label hover:bg-system-fill/80 hover:text-label"
+                      "flex h-12 items-center justify-center rounded-full text-[11px] font-semibold tracking-tight transition-all duration-200",
+                      active
+                        ? "min-w-[7rem] gap-2 bg-[var(--accent)]/20 px-4 shadow-[0_14px_30px_rgba(15,23,42,0.12)]"
+                        : "w-11 text-secondary-label hover:bg-system-fill/80 hover:text-label"
                     )}
                   >
                     <Icon className="h-[17px] w-[17px]" strokeWidth={1.9} />
-                    <span className="leading-none">{item.shortLabel}</span>
+                    <span
+                      className={cn(
+                        "overflow-hidden whitespace-nowrap leading-none transition-all duration-200",
+                        active ? "max-w-[5rem] opacity-100" : "max-w-0 opacity-0"
+                      )}
+                    >
+                      {item.shortLabel}
+                    </span>
                   </Link>
                 </li>
               );

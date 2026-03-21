@@ -4,6 +4,10 @@ This document is the manual runbook for proving that House of Prax can handle on
 
 Use it on deployed code.
 
+For local verification against a running dev server, use:
+
+- `npm run flow:verify`
+
 The goal is not exhaustive QA.
 
 The goal is to prove that the core business loop works:
@@ -13,6 +17,15 @@ The goal is to prove that the core business loop works:
 - delivery can progress
 - the customer can rate the order
 - a return/refund can be processed
+
+The scripted verifier covers:
+
+- storefront render
+- guest request flow
+- signed-in request flow
+- admin payment and delivery flow
+- delivered review submission
+- signed-in return, proof, and refund flow
 
 ---
 

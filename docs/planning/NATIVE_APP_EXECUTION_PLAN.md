@@ -12,6 +12,8 @@ Read this with:
 - `docs/planning/UI_IMPLEMENTATION_DOCTRINE.md`
 - `docs/ui/apple_hig_integration.md`
 
+Dont make any changes to market page - alreaady perfect.
+
 ---
 
 ## 1. Product References
@@ -149,6 +151,8 @@ Current correction:
 - guest confirmation now uses a calmer utility top bar that feels closer to a native handoff surface than a generic web header
 - payment, rating, and return feedback now uses quiet inline state pills instead of floating helper copy
 - admin users, taxonomy, and settings now use phone-safe composer and save rows instead of desktop-style footer controls
+- admin settings and portal profile now use native-style toggle rows for boolean preferences instead of select menus or custom badge buttons
+- push remains a future native-web milestone, so the current settings surfaces only expose live email and in-app controls
 
 ### Preferred phone rhythm
 

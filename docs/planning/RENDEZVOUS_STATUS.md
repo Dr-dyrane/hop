@@ -122,6 +122,9 @@ Current state:
 - guest confirmation now uses a calmer native-style top bar instead of a generic three-cell utility header
 - admin users and catalog taxonomy now exist as real management routes instead of hidden data-only capabilities
 - admin users, taxonomy, and settings now use phone-safe composer and action rows instead of desktop-style footer controls
+- admin settings and portal profile now use native-style toggle rows for notification and tracking preferences instead of generic boolean form controls
+- push preference remains stored in the data model, but visible push controls are hidden until real end-to-end web push is live
+- local request-flow verification now has a first-class scripted path that covers request, payment, delivery, review, and refund against a running dev server
 
 This means the system has crossed into operational platform work.
 
@@ -412,6 +415,7 @@ Open:
 - [x] keep reducing desktop-style form density on customer return and refund flows
 - [x] keep compressing admin detail and editor flows until phone layouts feel native instead of desktop forms in a smaller frame
 - [x] tighten admin payments and portal order-history density so phone and wide desktop both use the available space truthfully
+- [x] move boolean preferences onto native-style toggle rows in admin settings and portal profile
 
 ---
 

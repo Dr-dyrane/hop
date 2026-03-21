@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
+import { PreferenceToggleRow } from "@/components/forms/PreferenceToggleRow";
 import {
   updateNotificationPreferenceAction,
   updateBankAccountAction,
@@ -114,10 +115,12 @@ function DeliveryDefaultsPanel({
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [tone, setTone] = useState<"success" | "error" | null>(null);
+  const [trackingEnabled, setTrackingEnabled] = useState(deliveryDefaults.trackingEnabled);
 
   function handleSubmit(formData: FormData) {
     setMessage(null);
     setTone(null);
+    formData.set("trackingEnabled", trackingEnabled ? "true" : "false");
 
     startTransition(async () => {
       const result = await updateDeliveryDefaultsAction(formData);
@@ -144,14 +147,11 @@ function DeliveryDefaultsPanel({
       pending={isPending}
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <SelectGroup
+        <PreferenceToggleRow
           label="Tracking"
-          name="trackingEnabled"
-          defaultValue={deliveryDefaults.trackingEnabled ? "true" : "false"}
-          options={[
-            { label: "On", value: "true" },
-            { label: "Off", value: "false" },
-          ]}
+          detail="Live route updates"
+          value={trackingEnabled}
+          onChange={setTrackingEnabled}
         />
         <InputGroup
           label="Stale Window"
@@ -227,10 +227,20 @@ function NotificationPanel({
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
   const [tone, setTone] = useState<"success" | "error" | null>(null);
+  const [workspaceEmailEnabled, setWorkspaceEmailEnabled] = useState(
+    notificationPreference.workspaceEmailEnabled
+  );
+  const [workspaceInAppEnabled, setWorkspaceInAppEnabled] = useState(
+    notificationPreference.workspaceInAppEnabled
+  );
+  const [workspacePushEnabled] = useState(notificationPreference.workspacePushEnabled);
 
   function handleSubmit(formData: FormData) {
     setMessage(null);
     setTone(null);
+    formData.set("workspaceEmailEnabled", workspaceEmailEnabled ? "true" : "false");
+    formData.set("workspaceInAppEnabled", workspaceInAppEnabled ? "true" : "false");
+    formData.set("workspacePushEnabled", workspacePushEnabled ? "true" : "false");
 
     startTransition(async () => {
       const result = await updateNotificationPreferenceAction(formData);
@@ -256,33 +266,18 @@ function NotificationPanel({
       tone={tone}
       pending={isPending}
     >
-      <div className="grid gap-4 sm:grid-cols-3">
-        <SelectGroup
+      <div className="grid gap-3">
+        <PreferenceToggleRow
           label="Email"
-          name="workspaceEmailEnabled"
-          defaultValue={notificationPreference.workspaceEmailEnabled ? "true" : "false"}
-          options={[
-            { label: "On", value: "true" },
-            { label: "Off", value: "false" },
-          ]}
+          detail="Important messages"
+          value={workspaceEmailEnabled}
+          onChange={setWorkspaceEmailEnabled}
         />
-        <SelectGroup
+        <PreferenceToggleRow
           label="In-app"
-          name="workspaceInAppEnabled"
-          defaultValue={notificationPreference.workspaceInAppEnabled ? "true" : "false"}
-          options={[
-            { label: "On", value: "true" },
-            { label: "Off", value: "false" },
-          ]}
-        />
-        <SelectGroup
-          label="Push"
-          name="workspacePushEnabled"
-          defaultValue={notificationPreference.workspacePushEnabled ? "true" : "false"}
-          options={[
-            { label: "On", value: "true" },
-            { label: "Off", value: "false" },
-          ]}
+          detail="Notification sheet"
+          value={workspaceInAppEnabled}
+          onChange={setWorkspaceInAppEnabled}
         />
       </div>
     </SettingsCard>
