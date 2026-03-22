@@ -4,6 +4,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { WorkspaceHeaderTitle } from "@/components/shell/WorkspaceHeaderTitle";
+import { WorkspaceHeaderAction } from "@/components/shell/WorkspaceHeaderAction";
 import { WorkspaceNav } from "@/components/shell/WorkspaceNav";
 import { WorkspaceNotificationSheet } from "@/components/shell/WorkspaceNotificationSheet";
 import type { ShellHeaderRoute, ShellNavItem } from "@/lib/app-shell";
@@ -144,13 +145,9 @@ export function WorkspaceShell({
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-3">
-                  {sessionEmail ? (
-                    <div className="md:hidden">
-                      <SignOutButton />
-                    </div>
-                  ) : null}
+                  <WorkspaceHeaderAction routes={headerRoutes} />
                   <WorkspaceNotificationSheet notifications={notifications} />
-                  <ThemeToggle />
+                  <ThemeToggle mode="icon" />
                 </div>
               </div>
             </div>

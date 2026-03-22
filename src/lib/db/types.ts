@@ -502,6 +502,8 @@ export type PortalOrderLine = {
   orderItemId: string;
   title: string;
   sku: string;
+  productSlug: string | null;
+  imageUrl: string | null;
   unitPriceNgn: number;
   quantity: number;
   lineTotalNgn: number;

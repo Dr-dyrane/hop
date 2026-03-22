@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useState } from "react";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PaymentProofUploadCard } from "@/components/orders/PaymentProofUploadCard";
 import { OrderReviewCard } from "@/components/orders/OrderReviewCard";
@@ -23,6 +24,7 @@ import styles from "./order-detail.module.css";
 
 export function TransferPanel({
   isRequestPending,
+  collapseToLedger,
   dueAmount,
   totalAmount,
   stageIcon,
@@ -34,6 +36,7 @@ export function TransferPanel({
   dimmed,
 }: {
   isRequestPending: boolean;
+  collapseToLedger: boolean;
   dueAmount: string;
   totalAmount: string;
   stageIcon: IconName;
@@ -44,9 +47,27 @@ export function TransferPanel({
   instructions?: string | null;
   dimmed: boolean;
 }) {
+  const [showTransferDetails, setShowTransferDetails] = useState(false);
+  const isLedgerMode = collapseToLedger && !isRequestPending;
+
+  const transferDetails = (
+    <>
+      <div className={styles.metaGrid}>
+        <MetaCard label="Bank" value={bankName} />
+        <MetaCard label="Name" value={accountName} />
+      </div>
+
+      <div className={styles.accountCard}>
+        <div className={styles.metaLabel}>Number</div>
+        <div className={styles.accountNumber}>{accountNumber}</div>
+        {instructions ? <div className={styles.helperText}>{instructions}</div> : null}
+      </div>
+    </>
+  );
+
   return (
     <FocusPanel
-      title="Transfer"
+      title={isLedgerMode ? "Payment completed" : "Transfer"}
       variant="primary"
       dimmed={dimmed}
       action={
@@ -59,24 +80,29 @@ export function TransferPanel({
       {isRequestPending ? (
         <div className={styles.transferPending}>
           <div className={styles.transferAmount}>{totalAmount}</div>
-          <div className={styles.calloutCard}>
-            Transfer details appear here after approval.
+          <div className={styles.calloutCard}>Awaiting approval.</div>
+        </div>
+      ) : isLedgerMode ? (
+        <div className={styles.transferReady}>
+          <div className={styles.ledgerSummaryRow}>
+            <div className={styles.ledgerSummaryText}>Payment completed - {dueAmount}</div>
+            <button
+              type="button"
+              className={styles.inlineButton}
+              onClick={() => setShowTransferDetails((current) => !current)}
+              aria-expanded={showTransferDetails}
+            >
+              {showTransferDetails ? "Hide details" : "View details"}
+            </button>
           </div>
+
+          {showTransferDetails ? transferDetails : null}
         </div>
       ) : (
         <div className={styles.transferReady}>
           <div className={styles.transferAmount}>{dueAmount}</div>
 
-          <div className={styles.metaGrid}>
-            <MetaCard label="Bank" value={bankName} />
-            <MetaCard label="Name" value={accountName} />
-          </div>
-
-          <div className={styles.accountCard}>
-            <div className={styles.metaLabel}>Number</div>
-            <div className={styles.accountNumber}>{accountNumber}</div>
-            {instructions ? <div className={styles.helperText}>{instructions}</div> : null}
-          </div>
+          {transferDetails}
         </div>
       )}
     </FocusPanel>
@@ -85,7 +111,6 @@ export function TransferPanel({
 
 export function PaymentPanel({
   order,
-  stageDetail,
   stageIcon,
   stageLabel,
   proofs,
@@ -95,7 +120,6 @@ export function PaymentPanel({
   onToggle,
 }: {
   order: PortalOrderDetail;
-  stageDetail: string;
   stageIcon: IconName;
   stageLabel: string;
   proofs: PaymentProofRow[];
@@ -113,7 +137,6 @@ export function PaymentPanel({
       dimmed={dimmed}
       action={
         <div className={styles.panelActionGroup}>
-          <span className={styles.panelCaption}>{stageDetail}</span>
           {canOpen ? (
             <button
               type="button"
@@ -130,11 +153,7 @@ export function PaymentPanel({
       <div className={cn(styles.taskShell, isFocused && styles.taskShellActive)}>
         <TaskIntro
           title={proofs.length > 0 ? "Payment proof activity" : "Upload payment proof"}
-          description={
-            order.paymentId
-              ? "Keep this task focused. Upload proof, review timestamps, and continue your order flow."
-              : "This task becomes available after approval."
-          }
+          description={order.paymentId ? undefined : "Awaiting approval."}
           status={stageLabel}
           icon={stageIcon}
         />
@@ -163,7 +182,7 @@ export function PaymentPanel({
             </AnimatedReveal>
           </>
         ) : (
-          <div className={styles.calloutCard}>Available after approval.</div>
+          <div className={styles.calloutCard}>Awaiting approval.</div>
         )}
 
         {proofs.length > 0 ? (
@@ -201,15 +220,39 @@ export function PaymentPanel({
 export function ItemsPanel({
   items,
   dimmed,
+  onOpenItem,
 }: {
   items: PortalOrderDetail["items"];
   dimmed: boolean;
+  onOpenItem: (orderItemId: string) => void;
 }) {
   return (
     <FocusPanel title="Items" variant="secondary" dimmed={dimmed}>
       <div className={styles.itemList}>
         {items.map((item) => (
-          <div key={`${item.sku}-${item.title}`} className={styles.itemCard}>
+          <button
+            key={`${item.orderItemId}-${item.sku}-${item.title}`}
+            type="button"
+            className={cn(styles.itemCard, styles.itemCardButton)}
+            onClick={() => onOpenItem(item.orderItemId)}
+            aria-label={`Preview ${item.title}`}
+          >
+            <div className={styles.itemThumb}>
+              {item.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={item.imageUrl}
+                  alt={`${item.title} thumbnail`}
+                  className={styles.itemThumbImage}
+                  loading="lazy"
+                />
+              ) : (
+                <span className={styles.itemThumbPlaceholder}>
+                  <Icon name="image" size={16} strokeWidth={1.8} />
+                </span>
+              )}
+            </div>
+
             <div className={styles.itemLeft}>
               <div className={styles.itemTitle}>{item.title}</div>
               <div className={styles.itemMeta}>
@@ -220,8 +263,11 @@ export function ItemsPanel({
               ) : null}
             </div>
 
-            <div className={styles.itemTotal}>{formatNgn(item.lineTotalNgn)}</div>
-          </div>
+            <div className={styles.itemRight}>
+              <div className={styles.itemTotal}>{formatNgn(item.lineTotalNgn)}</div>
+              <span className={styles.itemPreviewLabel}>Preview</span>
+            </div>
+          </button>
         ))}
       </div>
     </FocusPanel>
@@ -265,6 +311,109 @@ export function DeliveryPanel({
   );
 }
 
+export function PostDeliveryActionsPanel({
+  hasReview,
+  hasReturn,
+  reviewSubmitted,
+  returnCaseStatus,
+  dimmed,
+  onOpenReview,
+  onOpenReturn,
+}: {
+  hasReview: boolean;
+  hasReturn: boolean;
+  reviewSubmitted: boolean;
+  returnCaseStatus?: string | null;
+  dimmed: boolean;
+  onOpenReview: () => void;
+  onOpenReturn: () => void;
+}) {
+  return (
+    <FocusPanel title="After delivery" variant="primary" dimmed={dimmed}>
+      <div className={styles.postDeliveryActions}>
+        {hasReview ? (
+          <button
+            type="button"
+            className={styles.primaryTaskButton}
+            onClick={onOpenReview}
+          >
+            {reviewSubmitted ? "Review rating" : "Leave a rating"}
+          </button>
+        ) : null}
+
+        {hasReturn ? (
+          <button
+            type="button"
+            className={styles.secondaryTaskButton}
+            onClick={onOpenReturn}
+          >
+            {returnCaseStatus ? "Manage return" : "Request return"}
+          </button>
+        ) : null}
+      </div>
+    </FocusPanel>
+  );
+}
+
+export function ItemPreviewPanel({
+  item,
+  canReorder,
+  isReordering,
+  onReorder,
+}: {
+  item: PortalOrderDetail["items"][number];
+  canReorder: boolean;
+  isReordering: boolean;
+  onReorder: () => void;
+}) {
+  return (
+    <div className={styles.itemPreviewSheet}>
+      <div className={styles.itemPreviewMedia}>
+        {item.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className={styles.itemPreviewImage}
+            loading="lazy"
+          />
+        ) : (
+          <div className={styles.itemPreviewPlaceholder}>
+            <Icon name="package" size={26} strokeWidth={1.7} />
+          </div>
+        )}
+      </div>
+
+      <div className={styles.itemPreviewBody}>
+        <h3 className={styles.itemPreviewTitle}>{item.title}</h3>
+        <p className={styles.itemPreviewMeta}>
+          {item.quantity} x {formatNgn(item.unitPriceNgn)}
+        </p>
+        <p className={styles.itemPreviewTotal}>{formatNgn(item.lineTotalNgn)}</p>
+        {item.sku ? <p className={styles.itemPreviewSku}>SKU: {item.sku}</p> : null}
+        {item.returnedQuantity > 0 ? (
+          <p className={styles.itemPreviewReturned}>
+            Returned: {item.returnedQuantity}
+          </p>
+        ) : null}
+      </div>
+
+      {canReorder ? (
+        <div className={styles.itemPreviewActions}>
+          <button
+            type="button"
+            className={styles.primaryTaskButton}
+            onClick={onReorder}
+            disabled={isReordering}
+          >
+            {isReordering ? "Preparing" : "Reorder"}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function ReturnPanel({
   order,
   returnCase,
@@ -295,9 +444,7 @@ export function ReturnPanel({
             <span className={styles.panelCaption}>
               {formatOrderStatusLabel(returnCase.status)}
             </span>
-          ) : (
-            <span className={styles.panelCaption}>Post-delivery</span>
-          )}
+          ) : null}
 
           <button
             type="button"
@@ -311,10 +458,7 @@ export function ReturnPanel({
       }
     >
       <div className={cn(styles.taskShell, isFocused && styles.taskShellActive)}>
-        <TaskIntro
-          title="Return request"
-          description="Start with essentials, then reveal the rest of the return flow only when needed."
-        />
+        <TaskIntro title="Return request" />
 
         {!isFocused ? (
           <button type="button" className={styles.primaryTaskButton} onClick={onToggle}>
@@ -366,9 +510,7 @@ export function ReviewPanel({
         <div className={styles.panelActionGroup}>
           {review ? (
             <span className={styles.panelCaption}>{formatOrderStatusLabel(review.status)}</span>
-          ) : (
-            <span className={styles.panelCaption}>Optional</span>
-          )}
+          ) : null}
 
           <button
             type="button"
@@ -382,10 +524,7 @@ export function ReviewPanel({
       }
     >
       <div className={cn(styles.taskShell, isFocused && styles.taskShellActive)}>
-        <TaskIntro
-          title="Leave a rating"
-          description="Keep this lightweight. Ask for rating first, then let text details follow naturally."
-        />
+        <TaskIntro title="Leave a rating" />
 
         {!isFocused ? (
           <button type="button" className={styles.primaryTaskButton} onClick={onToggle}>

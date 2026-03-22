@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Minus, Plus } from "lucide-react";
 import { formatNgn } from "@/lib/commerce";
+import { useFeedback } from "@/components/providers/FeedbackProvider";
 import type {
   OrderReturnCaseRow,
   OrderReturnEventRow,
@@ -68,6 +69,7 @@ export function OrderReturnRequestCard({
   items: PortalOrderLine[];
 }) {
   const router = useRouter();
+  const feedback = useFeedback();
   const returnableItems = items.filter((item) => item.returnableQuantity > 0);
   const [step, setStep] = useState<ReturnStep>(1);
   const [reason, setReason] = useState("");
@@ -115,9 +117,7 @@ export function OrderReturnRequestCard({
     return (
       <div className={styles.infoCard}>
         <div className={styles.infoTitle}>Returns open after delivery</div>
-        <div className={styles.infoText}>
-          This flow becomes available once the order is marked as delivered.
-        </div>
+        <div className={styles.infoText}>Available after delivery.</div>
       </div>
     );
   }
@@ -229,8 +229,10 @@ export function OrderReturnRequestCard({
 
         setSubmitted(true);
         setMessage({ tone: "success", text: "Return request submitted." });
+        feedback.success();
         router.refresh();
       } catch (submitError) {
+        feedback.blocked();
         setMessage({
           tone: "error",
           text: getClientErrorMessage(submitError, "Unable to submit return request."),
@@ -243,9 +245,7 @@ export function OrderReturnRequestCard({
     return (
       <div className={styles.successCard}>
         <div className={styles.successTitle}>Return request submitted</div>
-        <div className={styles.successText}>
-          Your request has been received. We will review it and update status here.
-        </div>
+        <div className={styles.successText}>Request received. Status updates appear here.</div>
       </div>
     );
   }
@@ -346,9 +346,7 @@ export function OrderReturnRequestCard({
       <div className={styles.header}>
         <div>
           <h3 className={styles.title}>Start a return</h3>
-          <p className={styles.description}>
-            Reveal one decision at a time so the flow stays calm and easy.
-          </p>
+          <p className={styles.description}>Step by step.</p>
         </div>
         <div className={styles.stepPill}>Step {step} of 4</div>
       </div>
@@ -387,12 +385,13 @@ export function OrderReturnRequestCard({
                       <button
                         type="button"
                         className={styles.iconButton}
-                        onClick={() =>
+                        onClick={() => {
+                          feedback.tap();
                           setSelectedQuantities((current) => ({
                             ...current,
                             [item.orderItemId]: Math.max(0, (current[item.orderItemId] ?? 0) - 1),
-                          }))
-                        }
+                          }));
+                        }}
                         aria-label={`Decrease ${item.title}`}
                       >
                         <Minus className="h-4 w-4" strokeWidth={1.8} />
@@ -401,15 +400,16 @@ export function OrderReturnRequestCard({
                       <button
                         type="button"
                         className={styles.iconButton}
-                        onClick={() =>
+                        onClick={() => {
+                          feedback.tap();
                           setSelectedQuantities((current) => ({
                             ...current,
                             [item.orderItemId]: Math.min(
                               item.returnableQuantity,
                               (current[item.orderItemId] ?? 0) + 1
                             ),
-                          }))
-                        }
+                          }));
+                        }}
                         aria-label={`Increase ${item.title}`}
                       >
                         <Plus className="h-4 w-4" strokeWidth={1.8} />
@@ -426,7 +426,14 @@ export function OrderReturnRequestCard({
                   ? "Select at least one item."
                   : `${selectedUnitCount} selected - ${formatNgn(selectedTotal)}`}
               </div>
-              <button type="button" className={styles.primaryButton} onClick={nextFromItems}>
+              <button
+                type="button"
+                className={styles.primaryButton}
+                onClick={() => {
+                  feedback.selection();
+                  nextFromItems();
+                }}
+              >
                 Continue
               </button>
             </div>
@@ -452,6 +459,7 @@ export function OrderReturnRequestCard({
                   type="button"
                   className={cn(styles.reasonCard, reason === option && styles.reasonCardActive)}
                   onClick={() => {
+                    feedback.tap();
                     setReason(option);
                     setError("reason");
                   }}
@@ -464,10 +472,24 @@ export function OrderReturnRequestCard({
             {errors.reason ? <div className={styles.errorBanner}>{errors.reason}</div> : null}
 
             <div className={styles.actionsRow}>
-              <button type="button" className={styles.secondaryButton} onClick={() => setStep(1)}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => {
+                  feedback.selection();
+                  setStep(1);
+                }}
+              >
                 Back
               </button>
-              <button type="button" className={styles.primaryButton} onClick={nextFromReason}>
+              <button
+                type="button"
+                className={styles.primaryButton}
+                onClick={() => {
+                  feedback.selection();
+                  nextFromReason();
+                }}
+              >
                 Continue
               </button>
             </div>
@@ -490,7 +512,7 @@ export function OrderReturnRequestCard({
               value={details}
               onChange={(event) => setDetails(event.target.value)}
               rows={5}
-              placeholder="Share the key detail only. Keep it simple."
+              placeholder="Optional details"
             />
 
             <div className={styles.fieldStack}>
@@ -552,10 +574,24 @@ export function OrderReturnRequestCard({
             </div>
 
             <div className={styles.actionsRow}>
-              <button type="button" className={styles.secondaryButton} onClick={() => setStep(2)}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => {
+                  feedback.selection();
+                  setStep(2);
+                }}
+              >
                 Back
               </button>
-              <button type="button" className={styles.primaryButton} onClick={nextFromDetails}>
+              <button
+                type="button"
+                className={styles.primaryButton}
+                onClick={() => {
+                  feedback.selection();
+                  nextFromDetails();
+                }}
+              >
                 Review
               </button>
             </div>
@@ -593,13 +629,23 @@ export function OrderReturnRequestCard({
             ) : null}
 
             <div className={styles.actionsRow}>
-              <button type="button" className={styles.secondaryButton} onClick={() => setStep(3)}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => {
+                  feedback.selection();
+                  setStep(3);
+                }}
+              >
                 Back
               </button>
               <button
                 type="button"
                 className={styles.primaryButton}
-                onClick={() => void submitReturn()}
+                onClick={() => {
+                  feedback.selection();
+                  void submitReturn();
+                }}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Submitting..." : "Submit request"}

@@ -7,7 +7,9 @@ export {
 export {
   TransferPanel,
   PaymentPanel,
+  PostDeliveryActionsPanel,
   ItemsPanel,
+  ItemPreviewPanel,
   DeliveryPanel,
   ReturnPanel,
   ReviewPanel,

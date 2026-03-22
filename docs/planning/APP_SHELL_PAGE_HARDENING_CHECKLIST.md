@@ -20,6 +20,7 @@ Every page must be evaluated as:
 8. accessibility
 9. maintainability
 10. local styling safety
+11. state aware flow
 
 You must proactively refactor, not wait to be told every small change.
 
@@ -50,7 +51,7 @@ GLOBAL STYLING RULES
 - Avoid leaking page-specific styles into global CSS
 - Avoid adding new global utility classes unless absolutely necessary
 - Prefer local surface systems per page/component
-- Zero borders unless explicitly required
+- Zero borders no exception !important
 - Separate surfaces using tone, shadow, blur, spacing, and elevation
 - Do not rely on outlines or strokes for visual structure
 - Use soft depth, not harsh separation
@@ -341,3 +342,46 @@ Refactor the order detail flow into:
 - zero borders
 - use existing theme tokens
 ```
+
+## Order Detail History Checkpoint (March 22, 2026)
+
+This checkpoint records the hardening pass that turned order detail from a static card stack into a state-aware ledger workflow.
+
+### Scope covered
+
+- account order detail (`/account/orders/[orderId]`)
+- admin order detail (`/admin/orders/[orderId]`)
+- checkout order detail (`/checkout/orders/[orderId]`)
+- shared order detail component stack under `src/components/orders/order-detail/`
+
+### Architecture decisions captured
+
+- moved order-detail rendering logic to a state-first policy layer in `src/lib/orders/ledger-policy.ts`
+- kept state derivation and UI copy mapping in `src/lib/orders/detail-view.ts` to avoid scattered conditional logic
+- split monolithic order detail UI into local modules (`overview`, `workflow-panels`, `tracking`, `tracking-details`, `adaptive-sheet`, `primitives`, `types`)
+- adopted local CSS modules for order detail surfaces and task cards to prevent global regressions
+- standardized adaptive task panels with sheet behavior:
+  - mobile: bottom sheet
+  - tablet: centered modal
+  - desktop: side sheet
+- promoted tracking from generic details dump to journey-first visual timeline with explicit state mapping
+
+### UX rules now enforced in code
+
+- primary workflow panel gets focus; secondary sections dim during active task panels
+- post-delivery actions are separated from active payment workflow
+- archive/history content is intentionally de-emphasized versus live workflow state
+- lifecycle gates (payment, return, review, tracking) are state-aware and route-consistent
+
+### Verification gates completed
+
+- `npm run lint` on order detail components and related repositories
+- `npx tsc --noEmit`
+- `npm run orders:ledger:verify`
+- `npm run build` (Next.js production build)
+
+### Why this checkpoint exists
+
+- preserves rationale for future refactors of account/admin order management pages
+- documents how to extend the ledger flow without reintroducing equal-weight card noise
+- serves as the baseline standard for future app-shell hardening passes

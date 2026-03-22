@@ -2,6 +2,7 @@ import { requireAuthenticatedSession } from "@/lib/auth/guards";
 import { getPortalProfile } from "@/lib/db/repositories/account-repository";
 import { PortalProfileForm } from "@/components/account/PortalProfileForm";
 import { WorkspaceContextPanel } from "@/components/shell/WorkspaceContextPanel";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 export default async function ProfilePage() {
   const session = await requireAuthenticatedSession("/account/profile");
@@ -10,8 +11,11 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-8 pb-20 md:space-y-10">
       <div className="rounded-[24px] bg-[color:var(--surface)]/88 px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)] md:hidden">
-        <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
-          Profile
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+            Profile
+          </div>
+          <SignOutButton />
         </div>
         <div className="mt-2 text-lg font-semibold tracking-tight text-label">
           {profile.fullName || "You"}
@@ -25,6 +29,9 @@ export default async function ProfilePage() {
           detail={profile.email}
           tags={[{ label: "Profile", tone: "muted" }]}
         />
+        <div className="mt-4 flex justify-end">
+          <SignOutButton />
+        </div>
       </div>
 
       <div className="max-w-5xl">

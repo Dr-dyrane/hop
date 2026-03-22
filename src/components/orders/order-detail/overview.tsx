@@ -19,51 +19,25 @@ export function OrderNotFound({ backHref }: { backHref: string }) {
 
 export function OrderHero({
   orderNumber,
-  backHref,
-  trackingHref,
-  canTrack,
   heroSummary,
   stageLabel,
   stageIcon,
-  primaryActionLabel,
   dueAmount,
-  paymentLabel,
   placedAt,
   proofCount,
-  lineItemCount,
   totalUnits,
 }: {
   orderNumber: string;
-  backHref: string;
-  trackingHref?: string | null;
-  canTrack: boolean;
   heroSummary: string;
   stageLabel: string;
   stageIcon: IconName;
-  primaryActionLabel: string;
   dueAmount: string;
-  paymentLabel: string;
   placedAt: string;
   proofCount: number;
-  lineItemCount: number;
   totalUnits: number;
 }) {
   return (
     <section className={styles.heroShell}>
-      <div className={styles.heroTopRow}>
-        <Link href={backHref} className={styles.backLink}>
-          Back
-        </Link>
-
-        <div className={styles.heroActions}>
-          {canTrack && trackingHref ? (
-            <Link href={trackingHref} className={styles.secondaryAction}>
-              Track
-            </Link>
-          ) : null}
-        </div>
-      </div>
-
       <div className={styles.heroCard}>
         <div className={styles.heroMain}>
           <div className={styles.heroLabel}>Order</div>
@@ -75,27 +49,14 @@ export function OrderHero({
               <Icon name={stageIcon} size={16} strokeWidth={1.8} />
               <span>{stageLabel}</span>
             </div>
-            <div className={styles.subtlePill}>{primaryActionLabel}</div>
           </div>
         </div>
 
         <div className={styles.heroStats}>
-          <TopMetric label="Due" value={dueAmount} detail={paymentLabel} />
-          <TopMetric
-            label="Placed"
-            value={formatOrderTimestamp(placedAt)}
-            detail="Order date"
-          />
-          <TopMetric
-            label="Items"
-            value={`${totalUnits}`}
-            detail={`${lineItemCount} line item${lineItemCount === 1 ? "" : "s"}`}
-          />
-          <TopMetric
-            label="Proofs"
-            value={`${proofCount}`}
-            detail={proofCount > 0 ? "Received" : "Waiting"}
-          />
+          <TopMetric label="Due" value={dueAmount} />
+          <TopMetric label="Placed" value={formatOrderTimestamp(placedAt)} />
+          <TopMetric label="Items" value={`${totalUnits}`} />
+          <TopMetric label="Proofs" value={`${proofCount}`} />
         </div>
       </div>
     </section>
@@ -104,7 +65,6 @@ export function OrderHero({
 
 export function OrderPriorityStrip({
   stageLabel,
-  stageDetail,
   transferReference,
   transferDeadline,
   deliveryLine,
@@ -114,7 +74,6 @@ export function OrderPriorityStrip({
   isReviewFocused,
 }: {
   stageLabel: string;
-  stageDetail: string;
   transferReference: string;
   transferDeadline: string;
   deliveryLine: string;
@@ -128,25 +87,23 @@ export function OrderPriorityStrip({
       <QuietStat
         label="Stage"
         value={stageLabel}
-        detail={stageDetail}
         subdued={hasFocus && !isPaymentFocused && !isReturnFocused && !isReviewFocused}
       />
       <QuietStat
         label="Reference"
         value={transferReference}
-        detail="Transfer ref"
+        className={styles.priorityDesktopOnly}
         subdued={hasFocus && !isPaymentFocused}
       />
       <QuietStat
         label="Deadline"
         value={transferDeadline}
-        detail="Transfer window"
+        className={styles.priorityDesktopOnly}
         subdued={hasFocus && !isPaymentFocused}
       />
       <QuietStat
         label="Delivery"
         value={deliveryLine}
-        detail="Address"
         subdued={hasFocus && isPaymentFocused}
       />
     </section>

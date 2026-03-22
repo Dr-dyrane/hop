@@ -41,7 +41,7 @@ export function TaskIntro({
   icon,
 }: {
   title: string;
-  description: string;
+  description?: string;
   status?: string;
   icon?: IconName;
 }) {
@@ -49,7 +49,7 @@ export function TaskIntro({
     <div className={styles.taskIntro}>
       <div>
         <div className={styles.taskTitle}>{title}</div>
-        <div className={styles.taskDescription}>{description}</div>
+        {description ? <div className={styles.taskDescription}>{description}</div> : null}
       </div>
       {status ? (
         <div className={styles.inlineStatus}>
@@ -117,17 +117,19 @@ export function QuietStat({
   value,
   detail,
   subdued = false,
+  className,
 }: {
   label: string;
   value: string;
-  detail: string;
+  detail?: string;
   subdued?: boolean;
+  className?: string;
 }) {
   return (
-    <div className={cn(styles.quietStat, subdued && styles.dimmed)}>
+    <div className={cn(styles.quietStat, subdued && styles.dimmed, className)}>
       <div className={styles.quietStatLabel}>{label}</div>
       <div className={styles.quietStatValue}>{value}</div>
-      <div className={styles.quietStatDetail}>{detail}</div>
+      {detail ? <div className={styles.quietStatDetail}>{detail}</div> : null}
     </div>
   );
 }

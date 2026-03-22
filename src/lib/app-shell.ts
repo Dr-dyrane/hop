@@ -43,6 +43,7 @@ export type ShellHeaderRoute = {
   title: string;
   breadcrumbs?: ShellBreadcrumb[];
   mobileFab?: ShellFabAction;
+  headerAction?: ShellFabAction;
 };
 
 export type ShellHeaderContext = {
@@ -222,6 +223,18 @@ export const PORTAL_HEADER_ROUTES: ShellHeaderRoute[] = [
     pattern: "/account/orders/[orderId]",
     title: "Order Detail",
     breadcrumbs: [{ href: "/account/orders", label: "Orders" }],
+    mobileFab: {
+      label: "Track order",
+      icon: "delivery",
+      kind: "event",
+      eventName: "orders:track-current",
+    },
+    headerAction: {
+      label: "Track order",
+      icon: "delivery",
+      kind: "event",
+      eventName: "orders:track-current",
+    },
   },
   {
     pattern: "/account/tracking/[orderId]",

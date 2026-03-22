@@ -5,6 +5,7 @@ export const STAGE_ICONS: Record<string, IconName> = {
   awaiting_transfer: "credit-card",
   money_sent: "credit-card",
   preparing: "check-circle",
+  ready_for_dispatch: "package",
   out_for_delivery: "truck",
   delivered: "check-circle",
   cancelled: "history",

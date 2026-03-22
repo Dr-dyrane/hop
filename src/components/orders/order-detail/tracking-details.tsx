@@ -45,7 +45,7 @@ export function OrderSecondaryDetails({
           <p className={styles.detailsDescription}>
             {tracking.currentTime
               ? formatOrderTimestamp(tracking.currentTime)
-              : "Timeline updates appear here as your order progresses."}
+              : "No updates yet."}
           </p>
         </div>
 
@@ -87,7 +87,7 @@ export function OrderSecondaryDetails({
             <FocusPanel title="Map" variant="muted" className={styles.trackingMapPanel}>
               <div className={styles.trackingPanelEyebrow}>
                 <MapPinned size={14} strokeWidth={1.8} />
-                <span>Live location snapshot</span>
+                <span>Location snapshot</span>
               </div>
               <div className={styles.mapFrame}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}

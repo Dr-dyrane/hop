@@ -57,56 +57,46 @@ export function getOrderHeroSummary(args: {
   review: OrderReviewRow | null;
   returnCase: OrderReturnCaseRow | null;
 }) {
+  // Keep hero copy short and state-led. Rationale lives in code/docs, not UI prose.
   const { isRequestPending, order, proofs, review, returnCase } = args;
 
   if (isRequestPending) {
-    return "Your order is waiting for approval. Transfer details appear here after approval.";
+    return "Awaiting approval.";
   }
 
   if (
     order.status === "awaiting_transfer" ||
     order.paymentStatus === "awaiting_transfer"
   ) {
-    return proofs.length > 0
-      ? "Payment proof received. We will verify it and continue your order."
-      : "Send payment with the transfer details below, then upload proof to continue.";
+    return proofs.length > 0 ? "Proof submitted." : "Awaiting transfer.";
   }
 
   if (order.fulfillmentStatus === "out_for_delivery") {
-    return "Your order is on the way. Track delivery and keep your address details handy.";
+    return "Out for delivery.";
   }
 
   if (order.status === "delivered") {
+    const deliveredDate = order.deliveredAt
+      ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
+          new Date(order.deliveredAt)
+        )
+      : null;
+
+    const deliveredLead = deliveredDate
+      ? `Delivered - ${deliveredDate}.`
+      : "Delivered.";
+
     if (!returnCase && !review) {
-      return "Delivered. You can request a return or leave a rating below.";
+      return deliveredLead;
     }
     if (returnCase && !review) {
-      return "Delivered. Your return case is active and you can still leave a rating.";
+      return `${deliveredLead} Return in progress.`;
     }
     if (!returnCase && review) {
-      return "Delivered and rated. You can still request a return if needed.";
+      return `${deliveredLead} Rated.`;
     }
-    return "Delivered. Return and rating activity is available below.";
+    return `${deliveredLead} Return and rating recorded.`;
   }
 
-  return "Review your order status, payment progress, and delivery details below.";
-}
-
-export function getOrderPrimaryActionLabel(args: {
-  isRequestPending: boolean;
-  order: PortalOrderDetail;
-  proofs: PaymentProofRow[];
-}) {
-  const { isRequestPending, order, proofs } = args;
-
-  if (isRequestPending) return "Awaiting approval";
-  if (
-    order.status === "awaiting_transfer" ||
-    order.paymentStatus === "awaiting_transfer"
-  ) {
-    return proofs.length > 0 ? "Proof uploaded" : "Upload payment proof";
-  }
-  if (order.fulfillmentStatus === "out_for_delivery") return "Track delivery";
-  if (order.status === "delivered") return "After delivery";
-  return "Order overview";
+  return "Order in progress.";
 }

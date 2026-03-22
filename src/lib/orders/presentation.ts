@@ -6,6 +6,7 @@ export type OrderStagePresentation = {
     | "awaiting_transfer"
     | "money_sent"
     | "preparing"
+    | "ready_for_dispatch"
     | "out_for_delivery"
     | "delivered"
     | "cancelled"
@@ -23,7 +24,7 @@ const STATUS_LABELS: Record<string, string> = {
   payment_under_review: "Money sent",
   payment_confirmed: "Preparing order",
   preparing: "Preparing order",
-  ready_for_dispatch: "Preparing order",
+  ready_for_dispatch: "Ready for dispatch",
   out_for_delivery: "Out for delivery",
   delivered: "Delivered",
   cancelled: "Cancelled",
@@ -115,10 +116,10 @@ export function getOrderStagePresentation(input: {
 
   if (fulfillmentStatus === "ready_for_dispatch") {
     return {
-      key: "preparing",
-      label: "Preparing order",
-      detail: "Ready to send",
-      nextAction: "Send for delivery",
+      key: "ready_for_dispatch",
+      label: "Ready for dispatch",
+      detail: "Queued for rider assignment",
+      nextAction: "Dispatch to rider",
       tone: "default",
     };
   }

@@ -130,7 +130,7 @@ export function WorkspaceNotificationSheet({
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Notifications"
-        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-system-fill/72 text-label transition-colors duration-200 hover:bg-system-fill"
+        className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-system-fill/48 text-secondary-label transition-colors duration-200 hover:bg-system-fill/64 hover:text-label"
       >
         <Bell className="h-[18px] w-[18px]" strokeWidth={1.9} />
         {count > 0 ? (

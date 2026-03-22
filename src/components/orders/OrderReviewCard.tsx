@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
+import { useFeedback } from "@/components/providers/FeedbackProvider";
 import type { OrderReviewRequestRow, OrderReviewRow } from "@/lib/db/types";
 import { getClientErrorMessage } from "@/lib/orders/client-form";
 import { formatOrderStatusLabel } from "@/lib/orders/detail-view";
@@ -33,6 +34,7 @@ export function OrderReviewCard({
   review: OrderReviewRow | null;
 }) {
   const router = useRouter();
+  const feedback = useFeedback();
   const [stage, setStage] = useState<ReviewStage>(review ? "success" : "idle");
   const [rating, setRating] = useState<number>(review?.rating ?? 0);
   const [comment, setComment] = useState(review?.body ?? "");
@@ -45,9 +47,7 @@ export function OrderReviewCard({
     return (
       <div className={styles.infoCard}>
         <div className={styles.infoTitle}>Ratings open after delivery</div>
-        <div className={styles.infoText}>
-          You can rate this order once it has been delivered.
-        </div>
+        <div className={styles.infoText}>Available after delivery.</div>
       </div>
     );
   }
@@ -86,8 +86,10 @@ export function OrderReviewCard({
         }
 
         setStage("success");
+        feedback.success();
         router.refresh();
       } catch (submitError) {
+        feedback.blocked();
         setError(getClientErrorMessage(submitError, "Unable to submit rating."));
       }
     });
@@ -98,9 +100,7 @@ export function OrderReviewCard({
       <div className={styles.header}>
         <div>
           <h3 className={styles.title}>Order rating</h3>
-          <p className={styles.description}>
-            Start with stars first, then add an optional note.
-          </p>
+          <p className={styles.description}>Stars first. Comment optional.</p>
         </div>
         {review ? <div className={styles.statusPill}>Submitted</div> : null}
       </div>
@@ -118,7 +118,10 @@ export function OrderReviewCard({
             <button
               type="button"
               className={styles.primaryButton}
-              onClick={() => setStage("rate")}
+              onClick={() => {
+                feedback.selection();
+                setStage("rate");
+              }}
             >
               {review ? "View rating" : "Leave a rating"}
             </button>
@@ -142,6 +145,7 @@ export function OrderReviewCard({
                   type="button"
                   className={rating >= value ? styles.starActive : styles.starButton}
                   onClick={() => {
+                    feedback.tap();
                     setRating(value);
                     setError("");
                   }}
@@ -163,7 +167,10 @@ export function OrderReviewCard({
               <button
                 type="button"
                 className={styles.secondaryButton}
-                onClick={() => setStage("idle")}
+                onClick={() => {
+                  feedback.selection();
+                  setStage("idle");
+                }}
               >
                 Back
               </button>
@@ -171,7 +178,10 @@ export function OrderReviewCard({
                 type="button"
                 className={styles.primaryButton}
                 disabled={!rating}
-                onClick={() => setStage("comment")}
+                onClick={() => {
+                  feedback.selection();
+                  setStage("comment");
+                }}
               >
                 Continue
               </button>
@@ -194,7 +204,7 @@ export function OrderReviewCard({
               rows={4}
               value={comment}
               onChange={(event) => setComment(event.target.value)}
-              placeholder="Optional. Keep it brief."
+              placeholder="Optional comment"
             />
 
             {error ? <div className={styles.errorBanner}>{error}</div> : null}
@@ -203,14 +213,20 @@ export function OrderReviewCard({
               <button
                 type="button"
                 className={styles.secondaryButton}
-                onClick={() => setStage("rate")}
+                onClick={() => {
+                  feedback.selection();
+                  setStage("rate");
+                }}
               >
                 Back
               </button>
               <button
                 type="button"
                 className={styles.primaryButton}
-                onClick={() => void submitReview()}
+                onClick={() => {
+                  feedback.selection();
+                  void submitReview();
+                }}
                 disabled={isSubmitting || !rating}
               >
                 {isSubmitting ? "Submitting..." : "Submit rating"}
@@ -259,7 +275,10 @@ export function OrderReviewCard({
               <button
                 type="button"
                 className={styles.secondaryButton}
-                onClick={() => setStage("comment")}
+                onClick={() => {
+                  feedback.selection();
+                  setStage("comment");
+                }}
               >
                 Edit
               </button>

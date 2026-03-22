@@ -4,6 +4,7 @@ import { MetricRail } from "@/components/admin/MetricRail";
 import { requireAuthenticatedSession } from "@/lib/auth/guards";
 import { formatNgn } from "@/lib/commerce";
 import { listOrdersForPortal } from "@/lib/db/repositories/orders-repository";
+import { resolveOrderLedgerState } from "@/lib/orders/ledger-policy";
 import { getOrderStagePresentation } from "@/lib/orders/presentation";
 
 function formatTimestamp(value?: string | null) {
@@ -15,6 +16,46 @@ function formatTimestamp(value?: string | null) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function getOrderEntryAction(input: {
+  ledgerKey: ReturnType<typeof resolveOrderLedgerState>["key"];
+  fulfillmentStatus: string;
+}) {
+  const { ledgerKey, fulfillmentStatus } = input;
+
+  if (ledgerKey === "awaiting_transfer" || ledgerKey === "payment_submitted" || ledgerKey === "payment_under_review") {
+    return {
+      label: "Continue",
+      hrefKind: "detail" as const,
+    };
+  }
+
+  if (["ready_for_dispatch", "out_for_delivery"].includes(fulfillmentStatus)) {
+    return {
+      label: "Track",
+      hrefKind: "track" as const,
+    };
+  }
+
+  if (ledgerKey === "delivered") {
+    return {
+      label: "Review",
+      hrefKind: "detail" as const,
+    };
+  }
+
+  if (ledgerKey === "request_received") {
+    return {
+      label: "Awaiting",
+      hrefKind: "detail" as const,
+    };
+  }
+
+  return {
+    label: "Open",
+    hrefKind: "detail" as const,
+  };
 }
 
 export default async function OrdersPage() {
@@ -56,6 +97,19 @@ export default async function OrdersPage() {
           <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
             {orders.map((order) => {
               const stage = getOrderStagePresentation(order);
+              const ledger = resolveOrderLedgerState({
+                orderStatus: order.status,
+                paymentStatus: order.paymentStatus,
+                fulfillmentStatus: order.fulfillmentStatus,
+              });
+              const action = getOrderEntryAction({
+                ledgerKey: ledger.key,
+                fulfillmentStatus: order.fulfillmentStatus,
+              });
+              const orderHref =
+                action.hrefKind === "track"
+                  ? `/account/tracking/${order.orderId}`
+                  : `/account/orders/${order.orderId}`;
 
               return (
                 <article
@@ -106,10 +160,10 @@ export default async function OrdersPage() {
                         {order.active ? stage.label : "Completed"}
                       </span>
                       <Link
-                        href={`/account/orders/${order.orderId}`}
+                        href={orderHref}
                         className="button-secondary min-h-[40px] px-4 text-[10px] font-semibold uppercase tracking-headline"
                       >
-                        Open
+                        {action.label}
                       </Link>
                     </div>
                   </div>

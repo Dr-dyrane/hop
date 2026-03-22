@@ -54,15 +54,15 @@ function isStorageUnavailableError(message: string) {
 function getPaymentStateMessage(paymentStatus: string) {
   switch (paymentStatus) {
     case "submitted":
-      return "Money sent. Waiting for confirmation.";
+      return "Submitted.";
     case "under_review":
-      return "Payment is being checked.";
+      return "Under review.";
     case "confirmed":
-      return "Payment confirmed.";
+      return "Confirmed.";
     case "expired":
       return "Transfer window closed.";
     default:
-      return "Handled.";
+      return "Locked.";
   }
 }
 
@@ -112,10 +112,10 @@ export function PaymentProofUploadCard({
     }
 
     if (paymentStatus === "submitted") {
-      return "Proof submitted. You can review your selection below.";
+      return "Proof submitted.";
     }
 
-    return "Upload one clear proof file to help us verify your transfer quickly.";
+    return "Upload proof file.";
   }, [isLocked, paymentStatus]);
 
   if (!paymentId) {
@@ -254,8 +254,8 @@ export function PaymentProofUploadCard({
           tone: "success",
           text:
             selectedFile && !storagePayload
-              ? "Transfer confirmed. Add proof later when storage is available."
-              : "Proof uploaded. Your payment will be reviewed shortly.",
+              ? "Transfer confirmed. Add proof later."
+              : "Proof uploaded.",
         });
         setStep("success");
         paymentReceived();
@@ -312,7 +312,7 @@ export function PaymentProofUploadCard({
           >
             Upload proof
           </button>
-          <p className={styles.sceneHint}>One file. Screenshot, receipt, or transfer slip.</p>
+          <p className={styles.sceneHint}>One file only.</p>
         </div>
       ) : null}
 
@@ -372,7 +372,7 @@ export function PaymentProofUploadCard({
                 className={styles.textarea}
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
-                placeholder="Add a short note only if needed."
+                placeholder="Optional note"
                 rows={3}
               />
             </label>
@@ -411,9 +411,7 @@ export function PaymentProofUploadCard({
           >
             <div className={styles.successCard}>
               <div className={styles.successTitle}>Proof uploaded</div>
-              <div className={styles.successText}>
-                Your payment proof has been received and will be reviewed shortly.
-              </div>
+              <div className={styles.successText}>Received. Pending review.</div>
             </div>
 
             <div className={styles.actionsRow}>
@@ -444,16 +442,14 @@ export function PaymentProofUploadCard({
       {isLocked ? (
         <div className={styles.successCard}>
           <div className={styles.successTitle}>Payment already reviewed</div>
-          <div className={styles.successText}>
-            This proof flow is no longer editable for this payment state.
-          </div>
+          <div className={styles.successText}>Not editable for this status.</div>
         </div>
       ) : null}
 
       {!isLocked ? (
         <div className={styles.banner}>
           <Landmark className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-          <span>Payment reference is tied to this order and is reviewed in sequence.</span>
+          <span>Reference linked to this order.</span>
         </div>
       ) : null}
     </div>

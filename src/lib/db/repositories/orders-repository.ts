@@ -6,6 +6,7 @@ import {
   type DatabaseActorContext,
   withTransaction,
 } from "@/lib/db/client";
+import { getStoragePublicUrl } from "@/lib/storage/s3";
 import {
   getOrderInventoryAcceptanceReadiness,
   releaseInventoryReservationForOrder,
@@ -64,6 +65,22 @@ function buildTransferDeadlineAt(staleTransferWindowMinutes: number) {
   return new Date(
     Date.now() + staleTransferWindowMinutes * 60 * 1000
   ).toISOString();
+}
+
+function resolveOrderMediaUrl(storageKey: string | null) {
+  if (!storageKey) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(storageKey) || storageKey.startsWith("/")) {
+    return storageKey;
+  }
+
+  try {
+    return getStoragePublicUrl(storageKey);
+  } catch {
+    return null;
+  }
 }
 
 export async function expireStaleAwaitingTransferOrders() {
@@ -534,7 +551,9 @@ async function getOrderPaymentSummary(
 }
 
 async function listOrderItems(orderId: string, actor?: DatabaseActorContext) {
-  const itemsResult = await query<PortalOrderLine>(
+  const itemsResult = await query<
+    PortalOrderLine & { imageStorageKey: string | null }
+  >(
     `
       with prior_returns as (
         select
@@ -551,12 +570,33 @@ async function listOrderItems(orderId: string, actor?: DatabaseActorContext) {
         oi.id as "orderItemId",
         oi.title,
         oi.sku,
+        coalesce(oi.snapshot ->> 'productId', p.slug) as "productSlug",
+        image_media.storage_key as "imageStorageKey",
         oi.unit_price_ngn as "unitPriceNgn",
         oi.quantity,
         oi.line_total_ngn as "lineTotalNgn",
         coalesce(pr.returned_quantity, 0)::int as "returnedQuantity",
         greatest(oi.quantity - coalesce(pr.returned_quantity, 0), 0)::int as "returnableQuantity"
       from app.order_items oi
+      left join app.product_variants v
+        on v.id = oi.variant_id
+      left join app.products p
+        on p.id = v.product_id
+      left join lateral (
+        select pm.storage_key
+        from app.product_media pm
+        where (
+            (p.id is not null and pm.product_id = p.id)
+            or (v.id is not null and pm.variant_id = v.id)
+          )
+          and pm.media_type = 'image'
+        order by
+          case when v.id is not null and pm.variant_id = v.id then 0 else 1 end asc,
+          pm.is_primary desc,
+          pm.sort_order asc,
+          pm.created_at asc
+        limit 1
+      ) image_media on true
       left join prior_returns pr
         on pr.order_item_id = oi.id
       where oi.order_id = $1
@@ -566,7 +606,10 @@ async function listOrderItems(orderId: string, actor?: DatabaseActorContext) {
     { actor }
   );
 
-  return itemsResult.rows;
+  return itemsResult.rows.map(({ imageStorageKey, ...item }) => ({
+    ...item,
+    imageUrl: resolveOrderMediaUrl(imageStorageKey),
+  }));
 }
 
 async function buildOrderDetail(
