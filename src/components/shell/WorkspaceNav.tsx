@@ -169,17 +169,17 @@ export function WorkspaceNav({
             href={item.href}
             onClick={() => feedback.selection()}
             className={cn(
-              "motion-press-soft block rounded-[28px] transition-all duration-200",
-              isCompact ? "px-0 py-2" : "px-4 py-4 md:max-lg:px-0 md:max-lg:py-2",
+              "motion-press-soft block squircle transition-all duration-200",
+              isCompact ? "px-0 py-2" : "px-1 py-1 md:max-lg:px-0 md:max-lg:py-2",
               active
-                ? "bg-[var(--accent)] text-[var(--accent-label)] shadow-button"
+                ? "bg-muted text-[var(--accent-label)] shadow-button"
                 : "bg-system-fill/10 text-label hover:bg-system-fill/76"
             )}
           >
             <div className={cn("flex items-center gap-3", (isCompact || mode === "sidebar") && "md:max-lg:justify-center md:max-lg:gap-0", isCompact && "justify-center gap-0")}>
               <div
                 className={cn(
-                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                  "flex h-10 w-10 shrink-0 items-center justify-center squircle",
                   active ? "bg-white/12 text-[var(--accent-label)]" : "bg-system-background/78 text-label"
                 )}
               >
