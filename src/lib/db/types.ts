@@ -30,6 +30,19 @@ export type AdminOverviewMetrics = {
   homeVersionLabel: string | null;
 };
 
+export type AdminOverviewSnapshot = {
+  openOrders: number;
+  requestQueue: number;
+  paymentReviewQueue: number;
+  preparingQueue: number;
+  outForDeliveryQueue: number;
+  awaitingTransferAmountNgn: number;
+  reviewAmountNgn: number;
+  grossLast24hNgn: number;
+  grossLast7dNgn: number;
+  grossMonthNgn: number;
+};
+
 export type AdminCatalogProduct = {
   productId: string;
   productSlug: string;

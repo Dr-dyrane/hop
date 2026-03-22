@@ -29,8 +29,8 @@ function buildShell(input: {
       <div class="hop-email-shell">
       <div class="hop-email-inner">
         ${buildEmailBrandLockup()}
-        <div style="font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:#6b7280;font-weight:600;margin-bottom:12px;font-family:${EMAIL_FONT_STACK};">${input.eyebrow}</div>
-        <h1 style="margin:0 0 12px;font-size:34px;line-height:1.08;color:#111827;font-weight:700;letter-spacing:-0.024em;font-family:${EMAIL_FONT_STACK};">${input.title}</h1>
+        <div style="font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:#6b7280;font-weight:500;margin-bottom:12px;font-family:${EMAIL_FONT_STACK};">${input.eyebrow}</div>
+        <h1 style="margin:0 0 12px;font-size:34px;line-height:1.08;color:#111827;font-weight:600;letter-spacing:-0.024em;font-family:${EMAIL_FONT_STACK};">${input.title}</h1>
         <p style="margin:0 0 28px;font-size:15px;line-height:1.55;color:#4b5563;font-family:${EMAIL_FONT_STACK};">${input.intro}</p>
         ${input.bodyHtml}
         ${
@@ -58,41 +58,20 @@ function formatEmailTimestamp(value: string | null | undefined) {
   }).format(new Date(value));
 }
 
-function getEmailImageUrl(imageUrl: string | null | undefined) {
-  if (!imageUrl) {
-    return null;
-  }
-
-  if (/^https?:\/\//i.test(imageUrl)) {
-    return imageUrl;
-  }
-
-  if (imageUrl.startsWith("/")) {
-    return `${serverEnv.public.appUrl.replace(/\/$/, "")}${imageUrl}`;
-  }
-
-  return null;
-}
-
 function buildProductSpotlight(order: OrderNotificationSnapshot) {
   const firstItem = order.items[0];
-  const imageUrl = getEmailImageUrl(firstItem?.imageUrl);
 
-  if (!firstItem || !imageUrl) {
+  if (!firstItem) {
     return "";
   }
 
   return `
     <div style="margin-top:20px;border-radius:26px;background:#f4f2ea;padding:18px;">
-      <img
-        src="${imageUrl}"
-        alt="${firstItem.title}"
-        width="528"
-        height="240"
-        style="display:block;width:100%;height:240px;object-fit:contain;border-radius:20px;background:radial-gradient(circle at top,rgba(255,255,255,0.92),rgba(243,239,229,0.92) 62%,rgba(230,223,210,0.8) 100%);"
-      />
-      <div style="margin-top:16px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Featured in this order</div>
-      <div style="margin-top:8px;font-size:20px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${firstItem.title}</div>
+      <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:500;">Featured in this order</div>
+      <div style="margin-top:8px;font-size:20px;font-weight:500;color:#111827;font-family:${EMAIL_FONT_STACK};">${firstItem.title}</div>
+      <div style="margin-top:6px;font-size:13px;line-height:1.5;color:#4b5563;font-family:${EMAIL_FONT_STACK};">
+        ${firstItem.quantity} item${firstItem.quantity === 1 ? "" : "s"} at ${formatNgn(firstItem.unitPriceNgn)} each.
+      </div>
     </div>
   `;
 }
@@ -108,25 +87,16 @@ function buildOrderItems(order: OrderNotificationSnapshot) {
     <div style="margin-top:20px;border-radius:26px;background:#f4f2ea;padding:10px 12px;">
       ${visibleItems
         .map((item) => {
-          const imageUrl = getEmailImageUrl(item.imageUrl);
-
           return `
             <div style="margin:8px 0;border-radius:18px;background:#ffffff;padding:10px 12px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
                 <tr>
-                  <td style="width:${imageUrl ? "70px" : "0"};padding:0;vertical-align:middle;">
-                    ${
-                      imageUrl
-                        ? `<img src="${imageUrl}" alt="${item.title}" width="54" height="54" style="display:block;width:54px;height:54px;object-fit:cover;border-radius:16px;background:#ffffff;" />`
-                        : ""
-                    }
-                  </td>
-                  <td style="padding:0 ${imageUrl ? "14px" : "0"} 0 0;vertical-align:middle;">
-                    <div style="font-size:15px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${item.title}</div>
+                  <td style="padding:0 10px 0 0;vertical-align:middle;">
+                    <div style="font-size:15px;font-weight:500;color:#111827;font-family:${EMAIL_FONT_STACK};">${item.title}</div>
                     <div style="margin-top:4px;font-size:12px;color:#6b7280;font-family:${EMAIL_FONT_STACK};">${item.quantity} &times; ${formatNgn(item.unitPriceNgn)}</div>
                   </td>
                   <td style="padding:0;vertical-align:middle;text-align:right;">
-                    <div style="font-size:15px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatNgn(item.lineTotalNgn)}</div>
+                    <div style="font-size:15px;font-weight:500;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatNgn(item.lineTotalNgn)}</div>
                   </td>
                 </tr>
               </table>
@@ -147,22 +117,22 @@ function buildOrderFacts(order: OrderNotificationSnapshot) {
   return `
     <div style="display:grid;gap:14px;">
       <div style="border-radius:26px;background:#f3f1e9;padding:22px;border:1px solid rgba(0,0,0,0.02);">
-        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#6b7280;font-weight:700;margin-bottom:6px;">Order</div>
-        <div style="font-size:28px;font-weight:700;color:#111827;letter-spacing:-0.03em;font-family:${EMAIL_FONT_STACK};">#${order.orderNumber}</div>
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#6b7280;font-weight:500;margin-bottom:6px;">Order</div>
+        <div style="font-size:28px;font-weight:600;color:#111827;letter-spacing:-0.03em;font-family:${EMAIL_FONT_STACK};">#${order.orderNumber}</div>
       </div>
       
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:10px 0;margin:0 -10px;">
         <tr>
           <td width="50%" style="padding:0 10px;vertical-align:top;">
             <div style="border-radius:20px;background:#f8f7f2;padding:15px 16px;border:1px solid rgba(0,0,0,0.01);">
-              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:700;margin-bottom:4px;">Total</div>
-              <div style="font-size:17px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatNgn(order.totalNgn)}</div>
+              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:500;margin-bottom:4px;">Total</div>
+              <div style="font-size:17px;font-weight:500;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatNgn(order.totalNgn)}</div>
             </div>
           </td>
           <td width="50%" style="padding:0 10px;vertical-align:top;">
             <div style="border-radius:20px;background:#f8f7f2;padding:15px 16px;border:1px solid rgba(0,0,0,0.01);">
-              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:700;margin-bottom:4px;">Items</div>
-              <div style="font-size:17px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${order.itemCount}</div>
+              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:500;margin-bottom:4px;">Items</div>
+              <div style="font-size:17px;font-weight:500;color:#111827;font-family:${EMAIL_FONT_STACK};">${order.itemCount}</div>
             </div>
           </td>
         </tr>
@@ -172,14 +142,14 @@ function buildOrderFacts(order: OrderNotificationSnapshot) {
         <tr>
           <td width="50%" style="padding:0 10px;vertical-align:top;">
             <div style="border-radius:20px;background:#f8f7f2;padding:15px 16px;border:1px solid rgba(0,0,0,0.01);">
-              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:700;margin-bottom:4px;">Reference</div>
-              <div style="font-size:15px;font-weight:600;color:#111827;word-break:break-all;font-family:${EMAIL_FONT_STACK};">${order.transferReference}</div>
+              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:500;margin-bottom:4px;">Reference</div>
+              <div style="font-size:15px;font-weight:500;color:#111827;word-break:break-all;font-family:${EMAIL_FONT_STACK};">${order.transferReference}</div>
             </div>
           </td>
           <td width="50%" style="padding:0 10px;vertical-align:top;">
             <div style="border-radius:20px;background:#f8f7f2;padding:15px 16px;border:1px solid rgba(0,0,0,0.01);">
-              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:700;margin-bottom:4px;">Placed</div>
-              <div style="font-size:14px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatEmailTimestamp(order.placedAt)}</div>
+              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:500;margin-bottom:4px;">Placed</div>
+              <div style="font-size:14px;font-weight:500;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatEmailTimestamp(order.placedAt)}</div>
             </div>
           </td>
         </tr>
@@ -194,7 +164,7 @@ function buildOrderFacts(order: OrderNotificationSnapshot) {
 function buildActionLink(label: string, href: string) {
   return `
     <div style="margin-top:18px;">
-      <a href="${href}" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:#0f3d2e;color:#ffffff;text-decoration:none;font-size:12px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;font-family:${EMAIL_FONT_STACK};">
+      <a href="${href}" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:#0f3d2e;color:#ffffff;text-decoration:none;font-size:12px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;font-family:${EMAIL_FONT_STACK};">
         ${label}
       </a>
     </div>
@@ -346,10 +316,10 @@ export async function sendOrderPlacedNotifications(input: {
     order.bankName && order.accountName && order.accountNumber
       ? `
         <div style="margin-top:18px;border-radius:24px;background:#f4f2ea;padding:18px;">
-          <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Transfer details</div>
-          <div style="margin-top:8px;font-size:18px;font-weight:600;color:#111827;">${order.bankName}</div>
+          <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:500;">Transfer details</div>
+          <div style="margin-top:8px;font-size:18px;font-weight:500;color:#111827;">${order.bankName}</div>
           <div style="margin-top:4px;font-size:15px;color:#374151;">${order.accountName}</div>
-          <div style="margin-top:4px;font-size:24px;font-weight:700;color:#111827;">${order.accountNumber}</div>
+          <div style="margin-top:4px;font-size:24px;font-weight:600;color:#111827;">${order.accountNumber}</div>
           ${
             order.instructions
               ? `<div style="margin-top:10px;font-size:13px;line-height:1.6;color:#6b7280;">${order.instructions}</div>`
@@ -413,8 +383,8 @@ export async function sendOrderPlacedNotifications(input: {
           : `${order.customerName} just placed an order and is waiting for transfer instructions.`,
         bodyHtml: `${buildOrderFacts(order)}
           <div style="margin-top:18px;border-radius:24px;background:#f4f2ea;padding:18px;">
-            <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Customer</div>
-            <div style="margin-top:8px;font-size:18px;font-weight:600;color:#111827;">${order.customerName}</div>
+            <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:500;">Customer</div>
+            <div style="margin-top:8px;font-size:18px;font-weight:500;color:#111827;">${order.customerName}</div>
             <div style="margin-top:4px;font-size:15px;color:#374151;">${order.customerPhone}</div>
           </div>
           ${buildActionLink("Open order", adminHref)}`,
@@ -531,10 +501,10 @@ export async function sendTransferReminderNotification(input: {
       intro: "Your order is still open. Complete the transfer before the window closes.",
       bodyHtml: `${buildOrderFacts(order)}
         <div style="margin-top:18px;border-radius:24px;background:#f4f2ea;padding:18px;">
-          <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Transfer details</div>
-          <div style="margin-top:8px;font-size:18px;font-weight:600;color:#111827;">${order.bankName ?? "Pending"}</div>
+          <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:500;">Transfer details</div>
+          <div style="margin-top:8px;font-size:18px;font-weight:500;color:#111827;">${order.bankName ?? "Pending"}</div>
           <div style="margin-top:4px;font-size:15px;color:#374151;">${order.accountName ?? "Pending"}</div>
-          <div style="margin-top:4px;font-size:24px;font-weight:700;color:#111827;">${order.accountNumber ?? "Pending"}</div>
+          <div style="margin-top:4px;font-size:24px;font-weight:600;color:#111827;">${order.accountNumber ?? "Pending"}</div>
         </div>
         ${buildActionLink("Open order", orderHref)}`,
       footer: "Once the transfer is sent, tap the confirmation button from the order page.",
@@ -781,7 +751,7 @@ export async function sendDeliveryStatusNotification(input: {
       intro: copy.intro,
       bodyHtml: `${buildOrderFacts(order)}
         <div style="margin-top:18px;border-radius:24px;background:#f4f2ea;padding:18px;">
-          <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Drop</div>
+          <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:500;">Drop</div>
           <div style="margin-top:8px;font-size:15px;color:#111827;">${order.deliveryAddress}</div>
         </div>
         ${buildActionLink(input.status === "delivered" ? "Rate order" : "Open order", orderHref)}`,
@@ -1050,12 +1020,12 @@ export async function sendOrderRefundedNotification(input: {
       bodyHtml: `${buildOrderFacts(order)}
         <div style="margin-top:18px;display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr));">
           <div style="border-radius:22px;background:#f4f2ea;padding:14px 16px;">
-            <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Refund</div>
-            <div style="margin-top:6px;font-size:18px;font-weight:600;color:#111827;">${formatNgn(input.refundAmountNgn ?? order.totalNgn)}</div>
+            <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:500;">Refund</div>
+            <div style="margin-top:6px;font-size:18px;font-weight:500;color:#111827;">${formatNgn(input.refundAmountNgn ?? order.totalNgn)}</div>
           </div>
           <div style="border-radius:22px;background:#f4f2ea;padding:14px 16px;">
-            <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Reference</div>
-            <div style="margin-top:6px;font-size:18px;font-weight:600;color:#111827;">${input.refundReference ?? "Pending"}</div>
+            <div style="font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:500;">Reference</div>
+            <div style="margin-top:6px;font-size:18px;font-weight:500;color:#111827;">${input.refundReference ?? "Pending"}</div>
           </div>
         </div>
         ${

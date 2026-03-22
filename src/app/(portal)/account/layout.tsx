@@ -24,6 +24,8 @@ export default async function PortalLayout({ children }: { children: ReactNode }
           navItems={PORTAL_NAV_ITEMS}
           headerRoutes={PORTAL_HEADER_ROUTES}
           mobileNav
+          visualStyle="native"
+          containMainSurface
           sessionEmail={session.email}
           sessionRoleLabel="Signed in"
           notifications={notifications}

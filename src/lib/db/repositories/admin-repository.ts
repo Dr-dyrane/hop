@@ -14,6 +14,7 @@ import type {
   AdminLayoutSection,
   AdminLayoutSummary,
   AdminOverviewMetrics,
+  AdminOverviewSnapshot,
   BankAccountRow,
   SiteSettingRow,
 } from "@/lib/db/types";
@@ -91,6 +92,94 @@ export async function getAdminOverviewMetrics() {
           select ph.label
           from published_home ph
         ) as "homeVersionLabel"
+    `
+  );
+
+  return result.rows[0];
+}
+
+export async function getAdminOverviewSnapshot() {
+  if (!isDatabaseConfigured()) {
+    return {
+      openOrders: 0,
+      requestQueue: 0,
+      paymentReviewQueue: 0,
+      preparingQueue: 0,
+      outForDeliveryQueue: 0,
+      awaitingTransferAmountNgn: 0,
+      reviewAmountNgn: 0,
+      grossLast24hNgn: 0,
+      grossLast7dNgn: 0,
+      grossMonthNgn: 0,
+    } satisfies AdminOverviewSnapshot;
+  }
+
+  await expireStaleAwaitingTransferOrders();
+
+  const result = await query<AdminOverviewSnapshot>(
+    `
+      select
+        (
+          select count(*)::int
+          from app.orders o
+          where o.status not in ('delivered', 'cancelled', 'expired')
+        ) as "openOrders",
+        (
+          select count(*)::int
+          from app.orders o
+          where o.status = 'checkout_draft'
+        ) as "requestQueue",
+        (
+          select count(*)::int
+          from app.payments p
+          where p.status in ('submitted', 'under_review')
+        ) as "paymentReviewQueue",
+        (
+          select count(*)::int
+          from app.orders o
+          where (
+            o.fulfillment_status in ('preparing', 'ready_for_dispatch')
+            or o.status in ('preparing', 'ready_for_dispatch', 'payment_confirmed')
+          )
+            and o.status not in ('cancelled', 'expired')
+        ) as "preparingQueue",
+        (
+          select count(*)::int
+          from app.orders o
+          where (
+            o.fulfillment_status = 'out_for_delivery'
+            or o.status = 'out_for_delivery'
+          )
+            and o.status not in ('cancelled', 'expired')
+        ) as "outForDeliveryQueue",
+        (
+          select coalesce(sum(p.expected_amount_ngn), 0)::int
+          from app.payments p
+          where p.status = 'awaiting_transfer'
+        ) as "awaitingTransferAmountNgn",
+        (
+          select coalesce(sum(coalesce(p.submitted_amount_ngn, p.expected_amount_ngn)), 0)::int
+          from app.payments p
+          where p.status in ('submitted', 'under_review')
+        ) as "reviewAmountNgn",
+        (
+          select coalesce(sum(o.total_ngn), 0)::int
+          from app.orders o
+          where o.placed_at >= timezone('utc', now()) - interval '24 hours'
+            and o.status not in ('cancelled', 'expired')
+        ) as "grossLast24hNgn",
+        (
+          select coalesce(sum(o.total_ngn), 0)::int
+          from app.orders o
+          where o.placed_at >= timezone('utc', now()) - interval '7 days'
+            and o.status not in ('cancelled', 'expired')
+        ) as "grossLast7dNgn",
+        (
+          select coalesce(sum(o.total_ngn), 0)::int
+          from app.orders o
+          where o.placed_at >= date_trunc('month', timezone('utc', now()))
+            and o.status not in ('cancelled', 'expired')
+        ) as "grossMonthNgn"
     `
   );
 

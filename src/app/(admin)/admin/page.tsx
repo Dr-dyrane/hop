@@ -1,51 +1,51 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Clock3, CreditCard, Layers3, Sparkles } from "lucide-react";
+import {
+  CircleAlert,
+  Clock3,
+  Landmark,
+  PackageCheck,
+  Truck,
+} from "lucide-react";
 import { MetricRail } from "@/components/admin/MetricRail";
 import { requireAdminSession } from "@/lib/auth/guards";
+import { formatNgn } from "@/lib/commerce";
 import {
-  getAdminHomeLayoutSummary,
+  getAdminOverviewSnapshot,
   getAdminOverviewMetrics,
 } from "@/lib/db/repositories/admin-repository";
 import { listAllAdminCatalogProducts } from "@/lib/db/repositories/catalog-admin-repository";
-import {
-  listOrdersForAdmin,
-  listPaymentsForAdmin,
-} from "@/lib/db/repositories/orders-repository";
+import { listOrdersForAdmin } from "@/lib/db/repositories/orders-repository";
 import { getOrderStagePresentation } from "@/lib/orders/presentation";
 
 export default async function AdminPage() {
   const session = await requireAdminSession("/admin");
-  const [metrics, layoutSummary, products, orders, payments] = await Promise.all([
+  const [metrics, snapshot, products, orders] = await Promise.all([
     getAdminOverviewMetrics(),
-    getAdminHomeLayoutSummary(),
+    getAdminOverviewSnapshot(),
     listAllAdminCatalogProducts(),
-    listOrdersForAdmin(12, session.email),
-    listPaymentsForAdmin(12, session.email),
+    listOrdersForAdmin(20, session.email),
   ]);
 
-  const activeOrders = orders.filter(
-    (order) => !["delivered", "cancelled", "expired"].includes(order.status)
-  ).length;
-  const paymentAttention = payments.filter((payment) =>
-    ["submitted", "under_review"].includes(payment.status)
-  ).length;
-  const featuredProducts = products.filter(
+  const activeOrders = snapshot.openOrders;
+  const paymentReviewQueue = snapshot.paymentReviewQueue;
+  const requestQueue = snapshot.requestQueue;
+  const preparingQueue = snapshot.preparingQueue;
+  const outForDeliveryQueue = snapshot.outForDeliveryQueue;
+  const needsActionCount =
+    requestQueue + paymentReviewQueue + preparingQueue + outForDeliveryQueue;
+  const awaitingTransferAmountNgn = snapshot.awaitingTransferAmountNgn;
+  const reviewAmountNgn = snapshot.reviewAmountNgn;
+  const queueValueNgn = awaitingTransferAmountNgn + reviewAmountNgn;
+  const liveCatalogCount = products.filter((product) => product.isAvailable).length;
+  const featuredCount = products.filter(
     (product) => product.merchandisingState === "featured"
-  );
-  const urgentOrders = orders.filter((order) =>
-    [
-      "checkout_draft",
-      "awaiting_transfer",
-      "payment_under_review",
-      "ready_for_dispatch",
-    ].includes(order.status)
-  );
+  ).length;
 
   return (
     <div className="space-y-8 pb-20 md:space-y-10">
       <section className="space-y-5">
-        <div className="workspace-surface rounded-[24px] bg-system-fill/32 p-1.5 shadow-[0_10px_24px_rgba(15,23,42,0.05)] md:inline-flex">
+        <div className="squircle bg-system-fill/42 p-1.5 shadow-[0_10px_24px_rgba(15,23,42,0.04)] md:inline-flex">
           <div className="grid grid-cols-3 gap-1.5">
             <QuickLink href="/admin/orders" label="Orders" />
             <QuickLink href="/admin/payments" label="Payments" />
@@ -56,125 +56,138 @@ export default async function AdminPage() {
         <MetricRail
           items={[
             {
-              label: "Active",
+              label: "Needs action",
+              value: `${needsActionCount}`,
+              detail: "Priority queue",
+              icon: CircleAlert,
+            },
+            {
+              label: "Open orders",
               value: `${activeOrders}`,
-              detail: "Moving",
+              detail: "In motion",
               icon: Clock3,
             },
             {
-              label: "Payments",
-              value: `${paymentAttention}`,
-              detail: "Review",
-              icon: CreditCard,
+              label: "Preparing",
+              value: `${preparingQueue}`,
+              detail: "Ready to send",
+              icon: PackageCheck,
             },
             {
-              label: "Featured",
-              value: `${metrics.featuredProducts}`,
-              detail: "Picks",
-              icon: Sparkles,
-            },
-            {
-              label: "Live",
-              value: `${metrics.enabledHomeSections}`,
-              detail: layoutSummary.versionLabel ?? "No live version",
-              icon: Layers3,
+              label: "Out",
+              value: `${outForDeliveryQueue}`,
+              detail: "On delivery",
+              icon: Truck,
             },
           ]}
           columns={4}
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr_0.85fr]">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[1.15fr_0.85fr_0.85fr]">
         <OverviewPanel
-          title="Attention"
-          badge={urgentOrders.length.toString()}
-          emptyLabel="Clear"
+          title="Needs Action"
+          badge={needsActionCount.toString()}
+          emptyLabel="No active queue."
         >
-          {urgentOrders.length > 0 ? (
-            urgentOrders.slice(0, 5).map((order) => {
-              const stage = getOrderStagePresentation(order);
+          <QueueRow
+            href="/admin/orders"
+            label="Requests"
+            detail="Waiting approval"
+            value={`${requestQueue}`}
+          />
+          <QueueRow
+            href="/admin/payments"
+            label="Payments"
+            detail="Waiting review"
+            value={`${paymentReviewQueue}`}
+          />
+          <QueueRow
+            href="/admin/delivery"
+            label="Dispatch"
+            detail="Preparing and out"
+            value={`${preparingQueue + outForDeliveryQueue}`}
+          />
+          {needsActionCount > 0 ? (
+            orders
+              .filter((order) =>
+                ["checkout_draft", "payment_submitted", "payment_under_review"].includes(
+                  order.status
+                )
+              )
+              .slice(0, 2)
+              .map((order) => {
+                const stage = getOrderStagePresentation(order);
 
-              return (
-                <Link
-                  key={order.orderId}
-                  href={`/admin/orders/${order.orderId}`}
-                  className="motion-press-soft flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
-                >
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-label">#{order.orderNumber}</div>
-                    <div className="mt-1 truncate text-xs text-secondary-label">
-                      {order.customerName}
+                return (
+                  <Link
+                    key={order.orderId}
+                    href={`/admin/orders/${order.orderId}`}
+                    className="motion-press-soft flex items-center justify-between gap-3 squircle bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-label">#{order.orderNumber}</div>
+                      <div className="mt-1 truncate text-xs text-secondary-label">
+                        {stage.label}
+                      </div>
                     </div>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
-                    {stage.label}
-                  </span>
-                </Link>
-              );
-            })
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+                      Open
+                    </span>
+                  </Link>
+                );
+              })
           ) : null}
         </OverviewPanel>
 
         <OverviewPanel
-          title="Merchandising"
-          badge={featuredProducts.length.toString()}
-          emptyLabel="Nothing featured"
+          title="Cash"
+          badge="Live"
+          emptyLabel="No open queue value."
         >
-          {featuredProducts.length > 0 ? (
-            featuredProducts.slice(0, 5).map((product) => (
-              <Link
-                key={product.productId}
-                href={`/admin/catalog/products/${product.productId}`}
-                className="motion-press-soft flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
-              >
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-label">
-                    {product.productMarketingName ?? product.productName}
-                  </div>
-                  <div className="mt-1 truncate text-xs text-secondary-label">
-                    {product.isAvailable ? "Live" : "Hidden"}
-                  </div>
-                </div>
-                <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
-                  Open
-                </span>
-              </Link>
-            ))
-          ) : null}
+          <StatRow label="Last 7d gross" value={formatNgn(snapshot.grossLast7dNgn)} />
+          <StatRow label="Last 24h gross" value={formatNgn(snapshot.grossLast24hNgn)} />
+          <StatRow label="Queue value" value={formatNgn(queueValueNgn)} />
+          <StatRow
+            label="Awaiting transfer"
+            value={formatNgn(awaitingTransferAmountNgn)}
+          />
+          <StatRow label="In review" value={formatNgn(reviewAmountNgn)} />
+          <Link
+            href="/admin/payments"
+            className="motion-press-soft flex items-center justify-between gap-3 squircle bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
+          >
+            <span className="text-sm font-semibold text-label">Open payments</span>
+            <Landmark className="h-4 w-4 text-secondary-label" />
+          </Link>
         </OverviewPanel>
 
         <OverviewPanel
-          title="Layout"
-          badge={layoutSummary.enabledSectionCount.toString()}
-          emptyLabel="No live layout"
+          title="Control"
+          badge={`${activeOrders}`}
+          emptyLabel="No controls available."
         >
-          <div className="grid gap-3">
-            <div className="rounded-[24px] bg-system-fill/42 px-4 py-4">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
-                Version
-              </div>
-              <div className="mt-1 text-sm font-semibold text-label">
-                {layoutSummary.versionLabel ?? "No live version"}
-              </div>
-            </div>
-            <div className="rounded-[24px] bg-system-fill/42 px-4 py-4">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
-                Bindings
-              </div>
-              <div className="mt-1 text-sm font-semibold text-label">
-                {metrics.homeBindingCount} active
-              </div>
-            </div>
-            <Link
-              href="/admin/layout"
-              className="motion-press-soft flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
-            >
-              <span className="text-sm font-semibold text-label">Open layout</span>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
-                Edit
-              </span>
-            </Link>
-          </div>
+          <StatRow label="Catalog live" value={`${liveCatalogCount} available`} />
+          <StatRow label="Featured" value={`${featuredCount} picks`} />
+          <StatRow label="Home sections" value={`${metrics.enabledHomeSections} live`} />
+          <Link
+            href="/admin/catalog"
+            className="motion-press-soft flex items-center justify-between gap-3 squircle bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
+          >
+            <span className="text-sm font-semibold text-label">Open catalog</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+              Manage
+            </span>
+          </Link>
+          <Link
+            href="/admin/layout"
+            className="motion-press-soft flex items-center justify-between gap-3 squircle bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
+          >
+            <span className="text-sm font-semibold text-label">Open layout</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+              Edit
+            </span>
+          </Link>
         </OverviewPanel>
       </section>
     </div>
@@ -195,7 +208,7 @@ function OverviewPanel({
   const hasChildren = Array.isArray(children) ? children.length > 0 : Boolean(children);
 
   return (
-    <section className="workspace-surface rounded-[32px] bg-system-background/92 p-5 shadow-[0_16px_36px_rgba(15,23,42,0.07)]">
+    <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-lg font-semibold tracking-tight text-label">{title}</h2>
         <span className="rounded-full bg-system-fill px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
@@ -205,7 +218,7 @@ function OverviewPanel({
 
       <div className="mt-4 grid gap-3">
         {hasChildren ? children : (
-          <div className="rounded-[24px] bg-system-fill/32 px-4 py-4 text-sm text-secondary-label">
+          <div className="squircle bg-system-fill/32 px-4 py-4 text-sm text-secondary-label">
             {emptyLabel}
           </div>
         )}
@@ -218,9 +231,45 @@ function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="motion-press-soft flex min-h-[40px] items-center justify-center rounded-[18px] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label transition-colors duration-200 hover:bg-system-background"
+      className="flex min-h-[40px] items-center justify-center rounded-[18px] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label transition-colors duration-200 hover:bg-system-background hover:shadow-soft"
     >
       {label}
     </Link>
+  );
+}
+
+function QueueRow({
+  href,
+  label,
+  detail,
+  value,
+}: {
+  href: string;
+  label: string;
+  detail: string;
+  value: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between gap-3 squircle bg-system-fill/42 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/58"
+    >
+      <div className="min-w-0">
+        <div className="text-sm font-semibold text-label">{label}</div>
+        <div className="mt-1 truncate text-xs text-secondary-label">{detail}</div>
+      </div>
+      <span className="text-sm font-semibold text-label">{value}</span>
+    </Link>
+  );
+}
+
+function StatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="squircle bg-system-fill/42 px-4 py-4">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+        {label}
+      </div>
+      <div className="mt-1 text-sm font-semibold text-label">{value}</div>
+    </div>
   );
 }

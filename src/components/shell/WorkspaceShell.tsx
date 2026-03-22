@@ -19,6 +19,7 @@ export function WorkspaceShell({
   children,
   mobileNav = false,
   visualStyle = "glass",
+  containMainSurface = false,
   sessionEmail,
   sessionRoleLabel,
   notifications = [],
@@ -31,6 +32,7 @@ export function WorkspaceShell({
   children: ReactNode;
   mobileNav?: boolean;
   visualStyle?: "glass" | "native";
+  containMainSurface?: boolean;
   sessionEmail?: string;
   sessionRoleLabel?: string;
   notifications?: WorkspaceNotification[];
@@ -106,7 +108,24 @@ export function WorkspaceShell({
           </div>
         </aside>
 
-        <div className="min-w-0">
+        <div
+          className={cn(
+            "min-w-0",
+            containMainSurface && "relative overflow-x-clip"
+          )}
+        >
+          {containMainSurface ? (
+            <div
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute inset-0",
+                nativeMode
+                  ? "bg-system-background/88"
+                  : "bg-system-background/72"
+              )}
+            />
+          ) : null}
+
           <header className="z-layer-header sticky top-0 px-2.5 pt-[calc(env(safe-area-inset-top)+0.5rem)] md:px-6 md:pt-6">
             <div
               className={cn(
@@ -139,7 +158,7 @@ export function WorkspaceShell({
             </div>
           </header>
 
-          <main className="w-full px-2.5 pb-32 pt-2.5 md:px-6 md:pb-12 md:pt-8">
+          <main className="relative z-[1] w-full px-2.5 pb-32 pt-2.5 md:px-6 md:pb-12 md:pt-8">
             {children}
           </main>
         </div>

@@ -173,7 +173,7 @@ export function WorkspaceNav({
               isCompact ? "px-0 py-2" : "px-4 py-4 md:max-lg:px-0 md:max-lg:py-2",
               active
                 ? "bg-[var(--accent)] text-[var(--accent-label)] shadow-button"
-                : "glass-morphism bg-system-fill/56 text-label hover:bg-system-fill/76"
+                : "bg-system-fill/10 text-label hover:bg-system-fill/76"
             )}
           >
             <div className={cn("flex items-center gap-3", (isCompact || mode === "sidebar") && "md:max-lg:justify-center md:max-lg:gap-0", isCompact && "justify-center gap-0")}>

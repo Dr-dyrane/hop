@@ -1,7 +1,5 @@
 import "server-only";
 
-import { serverEnv } from "../config/server";
-
 /**
  * Email-safe typography stack aligned with app usage and Apple system fonts.
  */
@@ -27,7 +25,7 @@ export function buildEmailThemeStyles() {
         margin: 0 auto;
         background: #ffffff;
         border-radius: 30px;
-        box-shadow: 0 18px 54px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 14px 38px rgba(15, 23, 42, 0.08);
       }
       .hop-email-inner {
         padding: 34px;
@@ -62,34 +60,17 @@ export function buildEmailThemeStyles() {
 }
 
 /**
- * Builds a refined email header using PNG assets for broad client support.
+ * Builds a typography-first lockup for stable rendering in restrictive email clients.
  */
 export function buildEmailBrandLockup() {
-  const appUrl = serverEnv.public.appUrl.replace(/\/$/, "");
-  const markUrl = `${appUrl}/images/icon.png`;
-  const brandUrl = `${appUrl}/images/prax_brand.png`;
-
   return `
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;border-collapse:collapse;">
-      <tr>
-        <td style="padding:0 12px 0 0;vertical-align:middle;width:34px;">
-          <img 
-            src="${markUrl}" 
-            alt="H" 
-            width="30" 
-            height="30" 
-            style="display:block;width:30px;height:30px;border-radius:9px;" 
-          />
-        </td>
-        <td style="vertical-align:middle;">
-          <img
-            src="${brandUrl}"
-            alt="House of Prax"
-            width="148"
-            style="display:block;width:148px;height:auto;max-width:100%;"
-          />
-        </td>
-      </tr>
-    </table>
+    <div style="margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid rgba(15,23,42,0.08);font-family:${EMAIL_FONT_STACK};">
+      <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#6b7280;font-weight:500;">
+        House of Prax
+      </div>
+      <div style="margin-top:7px;font-size:20px;line-height:1.2;letter-spacing:-0.01em;color:#111827;font-weight:500;">
+        Official updates
+      </div>
+    </div>
   `;
 }
