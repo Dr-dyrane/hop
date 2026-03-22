@@ -8,6 +8,7 @@ import { WorkspaceNav } from "@/components/shell/WorkspaceNav";
 import { WorkspaceNotificationSheet } from "@/components/shell/WorkspaceNotificationSheet";
 import type { ShellHeaderRoute, ShellNavItem } from "@/lib/app-shell";
 import type { WorkspaceNotification } from "@/lib/db/types";
+import { cn } from "@/lib/utils";
 
 export function WorkspaceShell({
   eyebrow,
@@ -17,6 +18,7 @@ export function WorkspaceShell({
   headerRoutes,
   children,
   mobileNav = false,
+  visualStyle = "glass",
   sessionEmail,
   sessionRoleLabel,
   notifications = [],
@@ -28,14 +30,29 @@ export function WorkspaceShell({
   headerRoutes: ShellHeaderRoute[];
   children: ReactNode;
   mobileNav?: boolean;
+  visualStyle?: "glass" | "native";
   sessionEmail?: string;
   sessionRoleLabel?: string;
   notifications?: WorkspaceNotification[];
 }) {
+  const nativeMode = visualStyle === "native";
+
   return (
-    <div className="min-h-svh bg-[radial-gradient(circle_at_top,rgba(15,61,46,0.08),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,242,234,0.9)_100%)] dark:bg-[radial-gradient(circle_at_top,rgba(215,197,163,0.09),transparent_38%),linear-gradient(180deg,rgba(18,22,18,0.98)_0%,rgba(10,12,10,1)_100%)]">
+    <div
+      className={cn(
+        "min-h-svh",
+        nativeMode
+          ? "workspace-shell-native"
+          : "bg-[radial-gradient(circle_at_top,rgba(15,61,46,0.08),transparent_42%),linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,242,234,0.9)_100%)] dark:bg-[radial-gradient(circle_at_top,rgba(215,197,163,0.09),transparent_38%),linear-gradient(180deg,rgba(18,22,18,0.98)_0%,rgba(10,12,10,1)_100%)]"
+      )}
+    >
       <div className="min-h-svh w-full md:grid md:grid-cols-[80px_minmax(0,1fr)] lg:grid-cols-[300px_minmax(0,1fr)] transition-all duration-300">
-        <aside className="hidden bg-system-background/48 px-3 py-6 md:sticky md:top-0 md:flex md:h-svh md:flex-col md:self-start md:overflow-hidden lg:px-6">
+        <aside
+          className={cn(
+            "hidden px-3 py-6 md:sticky md:top-0 md:flex md:h-svh md:flex-col md:self-start md:overflow-hidden lg:px-6",
+            nativeMode ? "bg-system-background/68" : "bg-system-background/48"
+          )}
+        >
           <Link href="/" className="inline-flex items-center justify-center lg:justify-start">
             <Logo showWordmark={false} className="lg:hidden" />
             <Logo showWordmark={true} className="hidden lg:flex" />
@@ -59,9 +76,16 @@ export function WorkspaceShell({
             <WorkspaceNav items={navItems} />
           </div>
 
-          <div className="glass-morphism squircle bg-system-fill/56 px-2 py-3 shadow-soft lg:px-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="md:max-lg:hidden">
+          <div
+            className={cn(
+              "squircle px-2 py-3 lg:px-4",
+              nativeMode
+                ? "workspace-surface bg-system-fill/42 shadow-[0_12px_28px_rgba(15,23,42,0.08)]"
+                : "glass-morphism bg-system-fill/56 shadow-soft"
+            )}
+          >
+            <div className="hidden items-start justify-between gap-4 lg:flex">
+              <div>
                 <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
                   {sessionRoleLabel ?? "Appearance"}
                 </div>
@@ -70,17 +94,28 @@ export function WorkspaceShell({
                 </div>
               </div>
 
-              <div className="flex flex-1 items-center justify-center gap-2 lg:flex-none">
+              <div className="flex items-center justify-center gap-2">
                 {sessionEmail ? <SignOutButton /> : null}
                 {/* <ThemeToggle /> */}
               </div>
+            </div>
+
+            <div className="flex items-center justify-center lg:hidden">
+              {sessionEmail ? <SignOutButton compact /> : null}
             </div>
           </div>
         </aside>
 
         <div className="min-w-0">
           <header className="z-layer-header sticky top-0 px-2.5 pt-[calc(env(safe-area-inset-top)+0.5rem)] md:px-6 md:pt-6">
-            <div className="glass-morphism squircle bg-system-background/84 px-3 py-2.5 shadow-soft md:rounded-[30px] md:px-5 md:py-4">
+            <div
+              className={cn(
+                "squircle px-3 py-2.5 md:rounded-[30px] md:px-5 md:py-4",
+                nativeMode
+                  ? "workspace-surface bg-system-background/94 shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
+                  : "glass-morphism bg-system-background/84 shadow-soft"
+              )}
+            >
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <WorkspaceHeaderTitle

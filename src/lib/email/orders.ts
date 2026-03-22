@@ -2,7 +2,11 @@ import "server-only";
 
 import { formatNgn } from "@/lib/commerce";
 import { serverEnv } from "@/lib/config/server";
-import { buildEmailBrandLockup } from "@/lib/email/brand";
+import {
+  EMAIL_FONT_STACK,
+  buildEmailBrandLockup,
+  buildEmailThemeStyles,
+} from "@/lib/email/brand";
 import { sendResendEmail } from "@/lib/email/resend";
 import { sendWorkspacePushToEmails } from "@/lib/push/web-push";
 import {
@@ -20,20 +24,23 @@ function buildShell(input: {
   footer?: string;
 }) {
   return `
-    <div style="background:#f7f4ec;padding:48px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#161616;margin:0;">
-      <div style="max-width:540px;margin:0 auto;background:#ffffff;border-radius:32px;padding:40px;box-shadow:0 24px 60px rgba(15,23,42,0.06);">
+    ${buildEmailThemeStyles()}
+    <div class="hop-email-root">
+      <div class="hop-email-shell">
+      <div class="hop-email-inner">
         ${buildEmailBrandLockup()}
-        <div style="font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:#6b7280;font-weight:700;margin-bottom:12px;">${input.eyebrow}</div>
-        <h1 style="margin:0 0 12px;font-size:36px;line-height:1.05;color:#111827;font-weight:900;letter-spacing:-0.02em;">${input.title}</h1>
-        <p style="margin:0 0 28px;font-size:16px;line-height:1.5;color:#4b5563;">${input.intro}</p>
+        <div style="font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:#6b7280;font-weight:600;margin-bottom:10px;font-family:${EMAIL_FONT_STACK};">${input.eyebrow}</div>
+        <h1 style="margin:0 0 10px;font-size:34px;line-height:1.08;color:#111827;font-weight:700;letter-spacing:-0.024em;font-family:${EMAIL_FONT_STACK};">${input.title}</h1>
+        <p style="margin:0 0 24px;font-size:15px;line-height:1.55;color:#4b5563;font-family:${EMAIL_FONT_STACK};">${input.intro}</p>
         ${input.bodyHtml}
         ${
           input.footer
-            ? `<div style="margin-top:32px;padding-top:24px;border-top:1px solid #f3f4f6;font-size:13px;line-height:1.6;color:#9ca3af;">${input.footer}</div>`
+            ? `<div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(0,0,0,0.06);font-size:13px;line-height:1.6;color:#8b93a0;font-family:${EMAIL_FONT_STACK};">${input.footer}</div>`
             : ""
         }
       </div>
-      <div style="max-width:540px;margin:24px auto 0;text-align:center;font-size:12px;color:#9ca3af;">
+      </div>
+      <div class="hop-email-legal">
         &copy; ${new Date().getFullYear()} House of Prax. All rights reserved.
       </div>
     </div>
@@ -85,7 +92,7 @@ function buildProductSpotlight(order: OrderNotificationSnapshot) {
         style="display:block;width:100%;height:240px;object-fit:contain;border-radius:20px;background:radial-gradient(circle at top,rgba(255,255,255,0.92),rgba(243,239,229,0.92) 62%,rgba(230,223,210,0.8) 100%);"
       />
       <div style="margin-top:14px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#6b7280;font-weight:600;">Featured in this order</div>
-      <div style="margin-top:6px;font-size:20px;font-weight:700;color:#111827;">${firstItem.title}</div>
+      <div style="margin-top:6px;font-size:20px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${firstItem.title}</div>
     </div>
   `;
 }
@@ -114,11 +121,11 @@ function buildOrderItems(order: OrderNotificationSnapshot) {
                   }
                 </td>
                 <td style="padding:0 ${imageUrl ? "14px" : "0"} 0 0;vertical-align:middle;">
-                  <div style="font-size:15px;font-weight:600;color:#111827;">${item.title}</div>
-                  <div style="margin-top:4px;font-size:12px;color:#6b7280;">${item.quantity} × ${formatNgn(item.unitPriceNgn)}</div>
+                  <div style="font-size:15px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${item.title}</div>
+                  <div style="margin-top:4px;font-size:12px;color:#6b7280;font-family:${EMAIL_FONT_STACK};">${item.quantity} &times; ${formatNgn(item.unitPriceNgn)}</div>
                 </td>
                 <td style="padding:0;vertical-align:middle;text-align:right;">
-                  <div style="font-size:15px;font-weight:600;color:#111827;">${formatNgn(item.lineTotalNgn)}</div>
+                  <div style="font-size:15px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatNgn(item.lineTotalNgn)}</div>
                 </td>
               </tr>
             </table>
@@ -139,7 +146,7 @@ function buildOrderFacts(order: OrderNotificationSnapshot) {
     <div style="display:grid;gap:12px;">
       <div style="border-radius:24px;background:#f3f1e9;padding:20px;border:1px solid rgba(0,0,0,0.02);">
         <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#6b7280;font-weight:700;margin-bottom:6px;">Order</div>
-        <div style="font-size:28px;font-weight:900;color:#111827;letter-spacing:-0.03em;">#${order.orderNumber}</div>
+        <div style="font-size:28px;font-weight:700;color:#111827;letter-spacing:-0.03em;font-family:${EMAIL_FONT_STACK};">#${order.orderNumber}</div>
       </div>
       
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:12px 0;margin:0 -12px;">
@@ -147,13 +154,13 @@ function buildOrderFacts(order: OrderNotificationSnapshot) {
           <td width="50%" style="padding:0 12px;vertical-align:top;">
             <div style="border-radius:20px;background:#f8f7f2;padding:14px 16px;border:1px solid rgba(0,0,0,0.01);">
               <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:700;margin-bottom:4px;">Total</div>
-              <div style="font-size:17px;font-weight:700;color:#111827;">${formatNgn(order.totalNgn)}</div>
+              <div style="font-size:17px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatNgn(order.totalNgn)}</div>
             </div>
           </td>
           <td width="50%" style="padding:0 12px;vertical-align:top;">
             <div style="border-radius:20px;background:#f8f7f2;padding:14px 16px;border:1px solid rgba(0,0,0,0.01);">
               <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:700;margin-bottom:4px;">Items</div>
-              <div style="font-size:17px;font-weight:700;color:#111827;">${order.itemCount}</div>
+              <div style="font-size:17px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${order.itemCount}</div>
             </div>
           </td>
         </tr>
@@ -164,13 +171,13 @@ function buildOrderFacts(order: OrderNotificationSnapshot) {
           <td width="50%" style="padding:0 12px;vertical-align:top;">
             <div style="border-radius:20px;background:#f8f7f2;padding:14px 16px;border:1px solid rgba(0,0,0,0.01);">
               <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:700;margin-bottom:4px;">Reference</div>
-              <div style="font-size:15px;font-weight:700;color:#111827;word-break:break-all;">${order.transferReference}</div>
+              <div style="font-size:15px;font-weight:600;color:#111827;word-break:break-all;font-family:${EMAIL_FONT_STACK};">${order.transferReference}</div>
             </div>
           </td>
           <td width="50%" style="padding:0 12px;vertical-align:top;">
             <div style="border-radius:20px;background:#f8f7f2;padding:14px 16px;border:1px solid rgba(0,0,0,0.01);">
               <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#9ca3af;font-weight:700;margin-bottom:4px;">Placed</div>
-              <div style="font-size:14px;font-weight:700;color:#111827;">${formatEmailTimestamp(order.placedAt)}</div>
+              <div style="font-size:14px;font-weight:600;color:#111827;font-family:${EMAIL_FONT_STACK};">${formatEmailTimestamp(order.placedAt)}</div>
             </div>
           </td>
         </tr>
@@ -185,7 +192,7 @@ function buildOrderFacts(order: OrderNotificationSnapshot) {
 function buildActionLink(label: string, href: string) {
   return `
     <div style="margin-top:18px;">
-      <a href="${href}" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:#0f3d2e;color:#ffffff;text-decoration:none;font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;">
+      <a href="${href}" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:#0f3d2e;color:#ffffff;text-decoration:none;font-size:12px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;font-family:${EMAIL_FONT_STACK};">
         ${label}
       </a>
     </div>

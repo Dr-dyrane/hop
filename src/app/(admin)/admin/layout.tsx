@@ -15,6 +15,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       navItems={ADMIN_NAV_ITEMS}
       headerRoutes={ADMIN_HEADER_ROUTES}
       mobileNav
+      visualStyle="native"
       sessionEmail={session.email}
       sessionRoleLabel="Administrator"
       notifications={notifications}

@@ -292,6 +292,38 @@ canvas {
   transition: background-color var(--duration-base) var(--ease-premium);
 }
 
+.workspace-shell-native {
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--accent) 6%, transparent) 0%, transparent 46%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--system-background) 97%, var(--surface-alt) 3%) 0%,
+      color-mix(in srgb, var(--system-background) 92%, var(--surface-alt) 8%) 100%
+    );
+}
+
+.workspace-surface {
+  background: color-mix(in srgb, var(--system-background) 92%, var(--surface-alt) 8%);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+  isolation: isolate;
+}
+
+.dark .workspace-surface {
+  background: color-mix(in srgb, var(--system-background) 94%, var(--surface-alt) 6%);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+}
+
+@supports ((-webkit-hyphens: none) and (not (overflow: clip))) {
+  .workspace-shell-native {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--system-background) 97%, var(--surface-alt) 3%) 0%,
+        color-mix(in srgb, var(--system-background) 92%, var(--surface-alt) 8%) 100%
+      );
+  }
+}
+
 .z-layer-raised {
   z-index: var(--z-raised);
 }

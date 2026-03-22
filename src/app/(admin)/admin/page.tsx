@@ -45,7 +45,7 @@ export default async function AdminPage() {
   return (
     <div className="space-y-8 pb-20 md:space-y-10">
       <section className="space-y-5">
-        <div className="rounded-[24px] bg-system-fill/42 p-1.5 shadow-[0_10px_24px_rgba(15,23,42,0.04)] md:inline-flex">
+        <div className="workspace-surface rounded-[24px] bg-system-fill/32 p-1.5 shadow-[0_10px_24px_rgba(15,23,42,0.05)] md:inline-flex">
           <div className="grid grid-cols-3 gap-1.5">
             <QuickLink href="/admin/orders" label="Orders" />
             <QuickLink href="/admin/payments" label="Payments" />
@@ -98,7 +98,7 @@ export default async function AdminPage() {
                 <Link
                   key={order.orderId}
                   href={`/admin/orders/${order.orderId}`}
-                  className="flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/42 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/58"
+                  className="motion-press-soft flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
                 >
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-label">#{order.orderNumber}</div>
@@ -125,7 +125,7 @@ export default async function AdminPage() {
               <Link
                 key={product.productId}
                 href={`/admin/catalog/products/${product.productId}`}
-                className="flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/42 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/58"
+                className="motion-press-soft flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
               >
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold text-label">
@@ -167,7 +167,7 @@ export default async function AdminPage() {
             </div>
             <Link
               href="/admin/layout"
-              className="flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/42 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/58"
+              className="motion-press-soft flex items-center justify-between gap-3 rounded-[24px] bg-system-fill/34 px-4 py-4 transition-colors duration-200 hover:bg-system-fill/48"
             >
               <span className="text-sm font-semibold text-label">Open layout</span>
               <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
@@ -195,7 +195,7 @@ function OverviewPanel({
   const hasChildren = Array.isArray(children) ? children.length > 0 : Boolean(children);
 
   return (
-    <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+    <section className="workspace-surface rounded-[32px] bg-system-background/92 p-5 shadow-[0_16px_36px_rgba(15,23,42,0.07)]">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-lg font-semibold tracking-tight text-label">{title}</h2>
         <span className="rounded-full bg-system-fill px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
@@ -205,7 +205,7 @@ function OverviewPanel({
 
       <div className="mt-4 grid gap-3">
         {hasChildren ? children : (
-          <div className="rounded-[24px] bg-system-fill/42 px-4 py-4 text-sm text-secondary-label">
+          <div className="rounded-[24px] bg-system-fill/32 px-4 py-4 text-sm text-secondary-label">
             {emptyLabel}
           </div>
         )}
@@ -218,7 +218,7 @@ function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="flex min-h-[40px] items-center justify-center rounded-[18px] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label transition-colors duration-200 hover:bg-system-background hover:shadow-soft"
+      className="motion-press-soft flex min-h-[40px] items-center justify-center rounded-[18px] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label transition-colors duration-200 hover:bg-system-background"
     >
       {label}
     </Link>
