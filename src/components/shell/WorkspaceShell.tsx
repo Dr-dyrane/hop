@@ -131,8 +131,8 @@ export function WorkspaceShell({
               className={cn(
                 "squircle px-3 py-2.5 md:rounded-[30px] md:px-5 md:py-4",
                 nativeMode
-                  ? "workspace-surface bg-system-background/94 shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
-                  : "glass-morphism bg-system-background/84 shadow-soft"
+                  ? "backdrop-blur-md shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
+                  : "shadow-soft"
               )}
             >
               <div className="flex items-center justify-between gap-4">

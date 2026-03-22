@@ -95,7 +95,7 @@ export function WorkspaceNav({
         <nav
           aria-label="Section navigation"
           className={cn(
-            "z-layer-mobile-nav fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-3 w-[calc(100vw-5.75rem)] max-w-[24rem] rounded-[28px] bg-[color:var(--system-background)]/88 p-1.5 shadow-[0_20px_48px_rgba(15,23,42,0.14)] backdrop-blur-xl md:hidden",
+            "z-layer-mobile-nav fixed bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] left-3 w-[calc(100vw-5.75rem)] max-w-[24rem] rounded-[28px] bg-[color:var(--surface)]/20 p-1.5 shadow-[0_20px_48px_rgba(15,23,42,0.14)] backdrop-blur-xl md:hidden",
             hasActiveOverlay && "pointer-events-none translate-y-4 opacity-0"
           )}
         >
