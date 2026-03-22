@@ -400,11 +400,20 @@ Status:
 
 ### Wave 4. Messaging and sensory layer
 
+Status:
+
+- complete for the current code scope
+
 1. redesign lifecycle emails
 2. add deterministic push plan
 3. add sound, motion, and feedback system
 
 ### Wave 5. Native icon and platform polish
+
+Status:
+
+- complete for the current code scope
+- Lucide remains the runtime icon system; no direct SF Symbols asset migration is required
 
 1. build SF Symbols mapping registry
 2. replace or realign icon semantics across app surfaces

@@ -8,6 +8,10 @@ For local verification against a running dev server, use:
 
 - `npm run flow:verify`
 
+For scripted deployed verification with matching env and base URL, use:
+
+- `FLOW_VERIFY_ENV=production FLOW_VERIFY_BASE_URL=https://www.houseofprax.shop npm run flow:verify`
+
 The goal is not exhaustive QA.
 
 The goal is to prove that the core business loop works:

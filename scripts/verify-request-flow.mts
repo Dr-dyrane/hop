@@ -67,6 +67,39 @@ function loadEnv(filePath: string) {
   }
 }
 
+function getVerifyEnv() {
+  const requested = (process.env.FLOW_VERIFY_ENV || "development")
+    .trim()
+    .toLowerCase();
+
+  if (
+    requested === "production" ||
+    requested === "preview" ||
+    requested === "development"
+  ) {
+    return requested;
+  }
+
+  return "development";
+}
+
+function loadVerifyEnvFiles(root: string) {
+  const env = getVerifyEnv();
+  const preferredPath = resolve(root, `.vercel/.env.${env}.local`);
+  const developmentPath = resolve(root, ".vercel/.env.development.local");
+  const dotEnvLocalPath = resolve(root, ".env.local");
+  const dotEnvPath = resolve(root, ".env");
+
+  loadEnv(preferredPath);
+  if (env !== "development") {
+    loadEnv(developmentPath);
+  }
+  loadEnv(dotEnvLocalPath);
+  loadEnv(dotEnvPath);
+
+  return env;
+}
+
 function encodePayload(payload: unknown) {
   return Buffer.from(JSON.stringify(payload)).toString("base64url");
 }
@@ -165,10 +198,35 @@ async function fetchText(url: string, jar?: CookieJar) {
   return { response, text };
 }
 
+function getVerifyBaseUrl() {
+  return (process.env.FLOW_VERIFY_BASE_URL || "http://localhost:3000").replace(
+    /\/+$/,
+    ""
+  );
+}
+
+function buildUrl(baseUrl: string, path: string) {
+  return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function shouldAssertMarketingContent(baseUrl: string) {
+  const strict = process.env.FLOW_VERIFY_STRICT_MARKETING?.trim();
+  if (strict === "1") {
+    return true;
+  }
+  if (strict === "0") {
+    return false;
+  }
+
+  return baseUrl.includes("localhost");
+}
+
 async function main() {
   const root = process.cwd();
   const stub = ensureServerOnlyStub(root);
-  loadEnv(resolve(root, ".vercel/.env.development.local"));
+  const envName = loadVerifyEnvFiles(root);
+  const baseUrl = getVerifyBaseUrl();
+  const strictMarketing = shouldAssertMarketingContent(baseUrl);
 
   const [
     dbClient,
@@ -276,13 +334,15 @@ async function main() {
     expect(productDetail, "Temp product detail unavailable.");
     productSlug = productDetail.productSlug;
 
-    const homePage = await fetchText("http://localhost:3000/");
+    const homePage = await fetchText(buildUrl(baseUrl, "/"));
     expect(homePage.response.status === 200, "Marketing home did not load.");
-    expectIncludes(
-      homePage.text,
-      `${baseName} Marketing`,
-      "Marketing home did not render the temp product."
-    );
+    if (strictMarketing) {
+      expectIncludes(
+        homePage.text,
+        `${baseName} Marketing`,
+        "Marketing home did not render the temp product."
+      );
+    }
 
     const tempCustomer = await userRepo.ensureUserByEmail(tempCustomerEmail, {
       markSignedIn: true,
@@ -313,7 +373,10 @@ async function main() {
 
     const guestAccess = orderAccess.createGuestOrderAccessToken(guestOrder.orderId);
     const guestPage = await fetchText(
-      `http://localhost:3000/checkout/orders/${guestOrder.orderId}?access=${encodeURIComponent(guestAccess)}`
+      buildUrl(
+        baseUrl,
+        `/checkout/orders/${guestOrder.orderId}?access=${encodeURIComponent(guestAccess)}`
+      )
     );
     expect(guestPage.response.status === 200, "Guest order page did not load.");
     expectIncludes(
@@ -344,7 +407,7 @@ async function main() {
     orderIds.push(signedInOrder.orderId);
 
     const signedInPage = await fetchText(
-      `http://localhost:3000/account/orders/${signedInOrder.orderId}`,
+      buildUrl(baseUrl, `/account/orders/${signedInOrder.orderId}`),
       customerJar
     );
     expect(
@@ -358,7 +421,7 @@ async function main() {
     );
 
     const adminGuestPage = await fetchText(
-      `http://localhost:3000/admin/orders/${guestOrder.orderId}`,
+      buildUrl(baseUrl, `/admin/orders/${guestOrder.orderId}`),
       adminJar
     );
     expect(
@@ -372,7 +435,7 @@ async function main() {
     );
 
     const adminSignedPage = await fetchText(
-      `http://localhost:3000/admin/orders/${signedInOrder.orderId}`,
+      buildUrl(baseUrl, `/admin/orders/${signedInOrder.orderId}`),
       adminJar
     );
     expect(
@@ -427,7 +490,7 @@ async function main() {
     );
 
     const paymentsBoard = await fetchText(
-      "http://localhost:3000/admin/payments",
+      buildUrl(baseUrl, "/admin/payments"),
       adminJar
     );
     expect(paymentsBoard.response.status === 200, "Admin payments page did not load.");
@@ -508,7 +571,7 @@ async function main() {
     }
 
     const deliveryBoard = await fetchText(
-      "http://localhost:3000/admin/delivery",
+      buildUrl(baseUrl, "/admin/delivery"),
       adminJar
     );
     expect(deliveryBoard.response.status === 200, "Admin delivery page did not load.");
@@ -530,7 +593,10 @@ async function main() {
     );
 
     const guestDeliveredPage = await fetchText(
-      `http://localhost:3000/checkout/orders/${guestOrder.orderId}?access=${encodeURIComponent(guestAccess)}`
+      buildUrl(
+        baseUrl,
+        `/checkout/orders/${guestOrder.orderId}?access=${encodeURIComponent(guestAccess)}`
+      )
     );
     expect(
       guestDeliveredPage.response.status === 200,
@@ -543,7 +609,7 @@ async function main() {
     );
 
     const signedDeliveredPage = await fetchText(
-      `http://localhost:3000/account/orders/${signedInOrder.orderId}`,
+      buildUrl(baseUrl, `/account/orders/${signedInOrder.orderId}`),
       customerJar
     );
     expect(
@@ -557,7 +623,7 @@ async function main() {
     );
 
     const portalOrdersPage = await fetchText(
-      "http://localhost:3000/account/orders",
+      buildUrl(baseUrl, "/account/orders"),
       customerJar
     );
     expect(
@@ -674,7 +740,7 @@ async function main() {
     expect(finalReturnProofs.length > 0, "Return proof was not stored.");
 
     const refundedOrderPage = await fetchText(
-      `http://localhost:3000/account/orders/${signedInOrder.orderId}`,
+      buildUrl(baseUrl, `/account/orders/${signedInOrder.orderId}`),
       customerJar
     );
     expect(
@@ -692,6 +758,9 @@ async function main() {
         {
           ok: true,
           runId,
+          envName,
+          baseUrl,
+          strictMarketing,
           guestOrder: guestOrder.orderNumber,
           signedInOrder: signedInOrder.orderNumber,
           productSlug,

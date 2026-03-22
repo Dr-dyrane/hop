@@ -272,7 +272,7 @@ export default async function AdminOrderDetailPage({
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)]">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)]">
         <div className="space-y-4">
           {requestReadiness ? (
             <DetailSurface

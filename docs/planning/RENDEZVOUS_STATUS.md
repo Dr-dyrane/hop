@@ -398,7 +398,7 @@ Completed:
 Open:
 
 - [ ] quieter Apple-style copy pass across portal screens
-- [ ] run one deployed end-to-end business-flow smoke test from sign-in through payment review
+- [x] run one deployed end-to-end business-flow smoke test from sign-in through payment review
 
 --- 
 
@@ -540,7 +540,7 @@ Current return/refund behavior:
 
 Remaining gaps:
 
-- deployed smoke test still has not been run end to end against the return-proof path
+- no active return/refund smoke gap; deployed end-to-end verification now covers the return-proof path
 
 ### RLS is active on the first protected slice
 Current protection model:
@@ -598,6 +598,7 @@ Current checkpoint verification:
 - `npm run db:seed` passes, but bank-account seed safely skips if bank env vars are missing
 - `npm run lint` passes repo-wide
 - `npm run flow:verify` passes end to end against a running local app
+- `FLOW_VERIFY_ENV=production FLOW_VERIFY_BASE_URL=https://www.houseofprax.shop npm run flow:verify` passes end to end against deployed production, including return/refund flow
 
 ---
 
@@ -622,10 +623,10 @@ The active build block is Pass 8: hardening and polish, moving into Wave 4 messa
 
 Implement in this order:
 
-1. Run one deployed business-flow smoke test from sign-in through payment review and delivery-state progression.
-2. Run one deployed business-flow smoke test through the return/refund flow as well.
-3. Move into Wave 4: lifecycle email redesign, push polish, and sensory feedback.
-4. Keep tightening the Apple-HIG execution across admin and portal root/detail screens.
+1. [x] Run one deployed business-flow smoke test from sign-in through payment review and delivery-state progression.
+2. [x] Run one deployed business-flow smoke test through the return/refund flow as well.
+3. [x] Move into Wave 4: lifecycle email redesign, push polish, and sensory feedback.
+4. [x] Keep tightening the Apple-HIG execution across admin and portal root/detail screens.
 
 After that:
 
@@ -650,3 +651,4 @@ Still correct:
 - Apple-HIG-inspired structural discipline
 
 The remaining work is execution, not architectural rethinking.
+

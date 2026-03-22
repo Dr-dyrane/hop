@@ -131,12 +131,12 @@ export function OrderDetailView({
   const coords = getTrackingCoords(order.deliveryAddressSnapshot);
   const mapSrc = coords
     ? buildStaticMapUrl({
-        latitude: coords.lat,
-        longitude: coords.lng,
-        width: 600,
-        height: 300,
-        zoom: 14,
-      })
+      latitude: coords.lat,
+      longitude: coords.lng,
+      width: 600,
+      height: 300,
+      zoom: 14,
+    })
     : null;
   const stage = getOrderStagePresentation(order);
   const paymentState = getPaymentStatusPresentation(order.payment?.status ?? order.paymentStatus);
@@ -218,8 +218,8 @@ export function OrderDetailView({
               value: isRequestPending
                 ? "Pending"
                 : order.transferDeadlineAt
-                ? formatTimestamp(order.transferDeadlineAt)
-                : "Open",
+                  ? formatTimestamp(order.transferDeadlineAt)
+                  : "Open",
             },
             {
               label: "Items",
@@ -236,7 +236,7 @@ export function OrderDetailView({
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)]">
         <div className="space-y-4">
           <OrderSurface
             title="Transfer"
@@ -353,6 +353,23 @@ export function OrderDetailView({
               ))}
             </div>
           </OrderSurface>
+          <OrderSurface title="Updates">
+            <div className="grid gap-2 text-sm text-secondary-label">
+              {timeline.length === 0 ? (
+                <div>Waiting.</div>
+              ) : (
+                timeline.map((event) => (
+                  <div
+                    key={event.eventId}
+                    className="flex items-center justify-between gap-4 rounded-[22px] bg-system-fill/36 px-4 py-3"
+                  >
+                    <span className="text-label">{formatFlowStatusLabel(event.toStatus)}</span>
+                    <span>{formatTimestamp(event.createdAt)}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </OrderSurface>
         </div>
 
         <div className="space-y-4">
@@ -360,9 +377,9 @@ export function OrderDetailView({
             title="Delivery Address"
             action={
               trackingHref &&
-              ["ready_for_dispatch", "out_for_delivery", "delivered"].includes(
-                order.fulfillmentStatus
-              ) ? (
+                ["ready_for_dispatch", "out_for_delivery", "delivered"].includes(
+                  order.fulfillmentStatus
+                ) ? (
                 <Link
                   href={trackingHref}
                   className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
@@ -423,23 +440,6 @@ export function OrderDetailView({
             </OrderSurface>
           ) : null}
 
-          <OrderSurface title="Updates">
-            <div className="grid gap-2 text-sm text-secondary-label">
-              {timeline.length === 0 ? (
-                <div>Waiting.</div>
-              ) : (
-                timeline.map((event) => (
-                  <div
-                    key={event.eventId}
-                    className="flex items-center justify-between gap-4 rounded-[22px] bg-system-fill/36 px-4 py-3"
-                  >
-                    <span className="text-label">{formatFlowStatusLabel(event.toStatus)}</span>
-                    <span>{formatTimestamp(event.createdAt)}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </OrderSurface>
 
           {mapSrc ? (
             <OrderSurface title="Map">
