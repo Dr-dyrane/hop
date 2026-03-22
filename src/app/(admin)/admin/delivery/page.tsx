@@ -44,7 +44,7 @@ function formatStatusLabel(value: string) {
 
 function StageChip({ value }: { value: string }) {
   return (
-    <span className="rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+    <span className="rounded-full bg-[color:var(--surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
       {formatStatusLabel(value)}
     </span>
   );
@@ -86,7 +86,7 @@ function DeliveryControls({
             <select
               name="riderId"
               defaultValue={riders[0]?.riderId ?? ""}
-              className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-label"
+              className="rounded-full bg-[color:var(--surface)] px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-label"
             >
               {riders.map((rider) => (
                 <option key={rider.riderId} value={rider.riderId}>
@@ -122,7 +122,7 @@ function DeliveryControls({
               <input type="hidden" name="nextStatus" value="unassigned" />
               <button
                 type="submit"
-                className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
+                className="rounded-full bg-[color:var(--surface)] px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
               >
                 Remove
               </button>
@@ -137,7 +137,7 @@ function DeliveryControls({
             <input type="hidden" name="nextStatus" value="returned" />
             <button
               type="submit"
-              className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
+              className="rounded-full bg-[color:var(--surface)] px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
             >
               Return
             </button>
@@ -171,7 +171,7 @@ function DeliveryControls({
           <input type="hidden" name="nextStatus" value="assigned" />
           <button
             type="submit"
-            className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
+            className="rounded-full bg-[color:var(--surface)] px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
           >
             Back
           </button>
@@ -200,7 +200,7 @@ function DeliveryControls({
           <input type="hidden" name="nextStatus" value="failed" />
           <button
             type="submit"
-            className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
+            className="rounded-full bg-[color:var(--surface)] px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
           >
             Failed
           </button>
@@ -217,7 +217,7 @@ function DeliveryControls({
           <select
             name="riderId"
             defaultValue={riders[0]?.riderId ?? ""}
-            className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-label"
+            className="rounded-full bg-[color:var(--surface)] px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-label"
           >
             {riders.map((rider) => (
               <option key={rider.riderId} value={rider.riderId}>
@@ -238,7 +238,7 @@ function DeliveryControls({
           <input type="hidden" name="nextStatus" value="returned" />
           <button
             type="submit"
-            className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
+            className="rounded-full bg-[color:var(--surface)] px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:text-label"
           >
             Return
           </button>
@@ -352,7 +352,7 @@ function StageCard({
   riders: AdminDeliveryRider[];
 }) {
   return (
-    <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+    <section className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
       <div className="flex items-center justify-between gap-4">
         <h3 className="text-lg font-semibold tracking-tight text-label">{title}</h3>
         <span className="rounded-full bg-system-fill px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
@@ -377,7 +377,7 @@ function StageCard({
 
 function RiderRoster({ riders }: { riders: AdminDeliveryRider[] }) {
   return (
-    <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+    <section className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
       <div className="flex items-center justify-between gap-4">
         <h3 className="text-lg font-semibold tracking-tight text-label">Riders</h3>
         <span className="rounded-full bg-system-fill px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
@@ -425,7 +425,7 @@ function RiderRoster({ riders }: { riders: AdminDeliveryRider[] }) {
                 {rider.vehicleType ? <div>{rider.vehicleType}</div> : null}
               </div>
               <div className="text-right">
-                <div className="rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+                <div className="rounded-full bg-[color:var(--surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
                   {rider.activeAssignmentCount === 0 ? "Free" : "Busy"}
                 </div>
                 {rider.activeOrderNumber ? (

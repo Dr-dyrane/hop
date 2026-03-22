@@ -59,7 +59,7 @@ function QuickLink({
   return (
     <Link
       href={href}
-      className="flex min-h-[40px] items-center justify-center gap-2 rounded-[18px] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label transition-colors duration-200 hover:bg-system-background hover:shadow-soft"
+      className="flex min-h-[40px] items-center justify-center gap-2 rounded-[18px] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label transition-colors duration-200 hover:bg-[color:var(--surface)] hover:shadow-soft"
     >
       <Icon size={15} />
       <span>{label}</span>

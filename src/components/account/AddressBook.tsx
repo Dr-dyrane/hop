@@ -158,6 +158,7 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
           step="01"
           title={editingId ? "Edit" : "New"}
           summary={[draft.label, draft.recipientName].filter(Boolean).join(" / ") || "Place"}
+          className="glass-morphism bg-[color:var(--surface)]/88"
           open={activeStep === "who"}
           onOpenChange={(open) => setActiveStep(open ? "who" : "where")}
           actions={
@@ -221,6 +222,7 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
               .filter(Boolean)
               .join(" / ") || "Pin"
           }
+          className="glass-morphism bg-[color:var(--surface)]/88"
           open={activeStep === "where"}
           onOpenChange={(open) => setActiveStep(open ? "where" : "finish")}
           actions={
@@ -339,6 +341,7 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
           step="03"
           title="Finish"
           summary={draft.isDefault ? "Default" : draft.deliveryNotes ? "Notes" : "Ready"}
+          className="glass-morphism bg-[color:var(--surface)]/88"
           open={activeStep === "finish"}
           onOpenChange={(open) => setActiveStep(open ? "finish" : "finish")}
           actions={
@@ -403,16 +406,16 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
         </div>
       </form>
 
-      <div className="space-y-3">
+      <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
         {addresses.length === 0 ? (
-          <div className="rounded-[28px] bg-system-background/86 px-5 py-6 text-sm text-secondary-label shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+          <div className="rounded-[28px] bg-[color:var(--surface)]/88 px-5 py-6 text-sm text-secondary-label shadow-[0_18px_40px_rgba(15,23,42,0.06)] sm:col-span-2 2xl:col-span-3">
             No addresses yet.
           </div>
         ) : (
           addresses.map((address) => (
             <article
               key={address.addressId}
-              className="rounded-[28px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
+              className="rounded-[28px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
             >
               <div className="flex flex-col gap-3 min-[920px]:flex-row min-[920px]:items-start min-[920px]:justify-between">
                 <div className="min-w-0">
@@ -497,7 +500,7 @@ export function AddressBook({ addresses }: { addresses: PortalAddress[] }) {
           <button
             type="button"
             onClick={() => loadDraft()}
-            className="flex min-h-[40px] items-center rounded-[18px] bg-system-background px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label"
+            className="flex min-h-[40px] items-center rounded-[18px] bg-[color:var(--surface)] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label"
           >
             New
           </button>

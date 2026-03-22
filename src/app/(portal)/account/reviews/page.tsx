@@ -62,11 +62,11 @@ export default async function ReviewsPage() {
           Pending
         </div>
         {pendingReviews.length === 0 ? (
-          <div className="glass-morphism rounded-[32px] bg-system-background/80 p-6 text-sm text-secondary-label shadow-soft">
+          <div className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-6 text-sm text-secondary-label shadow-soft">
             Nothing to rate.
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
             {pendingReviews.map((request) => (
               <PortalReviewComposer
                 key={request.requestId}
@@ -84,15 +84,15 @@ export default async function ReviewsPage() {
           Sent
         </div>
         {reviews.length === 0 ? (
-          <div className="glass-morphism rounded-[32px] bg-system-background/80 p-6 text-sm text-secondary-label shadow-soft">
+          <div className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-6 text-sm text-secondary-label shadow-soft">
             No reviews yet.
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
             {reviews.map((review) => (
               <article
                 key={review.reviewId}
-                className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]"
+                className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>

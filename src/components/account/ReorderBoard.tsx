@@ -81,7 +81,7 @@ export function ReorderBoard({ orders }: { orders: PortalOrderListRow[] }) {
 
   if (orders.length === 0) {
     return (
-      <div className="rounded-[28px] bg-system-background/86 px-5 py-6 text-sm text-secondary-label shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+      <div className="rounded-[28px] bg-[color:var(--surface)]/86 px-5 py-6 text-sm text-secondary-label shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
         No orders yet.
       </div>
     );
@@ -92,7 +92,7 @@ export function ReorderBoard({ orders }: { orders: PortalOrderListRow[] }) {
       {orders.map((order) => (
         <article
           key={order.orderId}
-          className="rounded-[28px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
+          className="rounded-[28px] bg-[color:var(--surface)]/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
         >
           <div className="flex flex-col gap-4 min-[920px]:flex-row min-[920px]:items-center min-[920px]:justify-between">
             <div className="min-w-0">
@@ -153,7 +153,7 @@ export function ReorderBoard({ orders }: { orders: PortalOrderListRow[] }) {
           </p>
           <Link
             href="/"
-            className="flex min-h-[40px] items-center rounded-[18px] bg-system-background px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label"
+            className="flex min-h-[40px] items-center rounded-[18px] bg-[color:var(--surface)] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label"
           >
             Store
           </Link>

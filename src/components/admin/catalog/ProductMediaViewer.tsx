@@ -136,7 +136,7 @@ export function ProductMediaPreviewSurface({
       type="button"
       onClick={onOpen}
       className={cn(
-        "group relative overflow-hidden rounded-[18px] bg-system-background/72 text-left transition-transform duration-200 hover:-translate-y-[1px]",
+        "group relative overflow-hidden rounded-[18px] bg-[color:var(--surface)]/88 text-left transition-transform duration-200 hover:-translate-y-[1px]",
         className
       )}
       aria-label={`View ${getMediaLabel(item.mediaType)} preview`}
@@ -157,14 +157,14 @@ export function ProductMediaPreviewSurface({
             preload="metadata"
             className="h-full w-full object-cover"
           />
-          <span className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-system-background/78 text-label shadow-soft">
+          <span className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--surface)]/88 text-label shadow-soft">
             <Play size={16} fill="currentColor" />
           </span>
         </div>
       ) : (
         <ModelViewport url={item.publicUrl} className="aspect-square h-full w-full" />
       )}
-      <span className="absolute left-3 top-3 rounded-full bg-system-background/78 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-label shadow-soft">
+      <span className="absolute left-3 top-3 rounded-full bg-[color:var(--surface)]/88 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-label shadow-soft">
         {getMediaLabel(item.mediaType)}
       </span>
     </button>
@@ -208,13 +208,13 @@ export function ProductMediaViewer({
 
   return (
     <div
-      className="z-layer-modal fixed inset-0 flex items-center justify-center bg-system-background/54 px-4 py-6 backdrop-blur-2xl"
+      className="z-layer-modal fixed inset-0 flex items-center justify-center bg-[color:var(--surface)]/54 px-4 py-6 backdrop-blur-2xl"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="glass-morphism max-h-[90vh] w-full max-w-[min(980px,100%)] overflow-y-auto rounded-[36px] bg-system-background/84 p-4 shadow-[0_32px_80px_rgba(15,23,42,0.16)] md:p-5"
+        className="glass-morphism max-h-[90vh] w-full max-w-[min(980px,100%)] overflow-y-auto rounded-[36px] bg-[color:var(--surface)]/84 p-4 shadow-[0_32px_80px_rgba(15,23,42,0.16)] md:p-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -298,7 +298,7 @@ export function ProductMediaTypeBadge({
   const Icon = mediaType === "video" ? Play : mediaType === "image" ? ImageIcon : null;
 
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+    <span className="inline-flex items-center gap-2 rounded-full bg-[color:var(--surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
       {Icon ? <Icon size={12} /> : null}
       {getMediaLabel(mediaType)}
     </span>

@@ -44,7 +44,7 @@ export function AdminDeliveryLiveSurface({
 
   return (
     <div className="space-y-4">
-      <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+      <section className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-lg font-semibold tracking-tight text-label">Map</h3>
           <span className="rounded-full bg-system-fill px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">

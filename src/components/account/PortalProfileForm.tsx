@@ -59,6 +59,7 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
         step="01"
         title="Identity"
         summary={[draft.fullName, draft.preferredPhone].filter(Boolean).join(" / ") || profile.email}
+        className="glass-morphism bg-[color:var(--surface)]/88"
         open={activeStep === "identity"}
         onOpenChange={(open) => setActiveStep(open ? "identity" : "updates")}
         actions={
@@ -127,6 +128,7 @@ export function PortalProfileForm({ profile }: { profile: PortalProfile }) {
             .filter(Boolean)
             .join(" / ") || "Quiet"
         }
+        className="glass-morphism bg-[color:var(--surface)]/88"
         open={activeStep === "updates"}
         onOpenChange={(open) => setActiveStep(open ? "updates" : "updates")}
         actions={

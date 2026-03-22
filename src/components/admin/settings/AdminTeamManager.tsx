@@ -75,7 +75,7 @@ export function AdminTeamManager({ users }: { users: AdminUserSummary[] }) {
                     setSheetMode("edit");
                   }}
                   className={cn(
-                    "glass-morphism w-full rounded-[30px] bg-system-background/78 p-4 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition-colors duration-200 md:p-5",
+                    "glass-morphism w-full rounded-[30px] bg-[color:var(--surface)]/88 p-4 text-left shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition-colors duration-200 md:p-5",
                     selected && "bg-accent text-accent-label"
                   )}
                 >
@@ -85,7 +85,7 @@ export function AdminTeamManager({ users }: { users: AdminUserSummary[] }) {
                         <span
                           className={cn(
                             "flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-system-fill/52",
-                            selected && "bg-black/10"
+                            selected && "bg-[color:var(--surface)]/56"
                           )}
                         >
                           {user.isAdmin ? (
@@ -101,7 +101,7 @@ export function AdminTeamManager({ users }: { users: AdminUserSummary[] }) {
                           <div
                             className={cn(
                               "mt-0.5 truncate text-sm",
-                              selected ? "text-black/70 dark:text-black/70" : "text-secondary-label"
+                              selected ? "text-accent-label/72" : "text-secondary-label"
                             )}
                           >
                             {user.email}
@@ -124,7 +124,7 @@ export function AdminTeamManager({ users }: { users: AdminUserSummary[] }) {
                     <div
                       className={cn(
                         "rounded-full bg-system-fill/42 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]",
-                        selected ? "bg-black/10 text-black" : "text-secondary-label"
+                        selected ? "bg-[color:var(--surface)]/56 text-accent-label" : "text-secondary-label"
                       )}
                     >
                       {user.orderCount} orders
@@ -135,7 +135,7 @@ export function AdminTeamManager({ users }: { users: AdminUserSummary[] }) {
             })}
 
             {filteredUsers.length === 0 ? (
-              <div className="glass-morphism rounded-[30px] bg-system-background/78 p-5 text-sm text-secondary-label shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+              <div className="glass-morphism rounded-[30px] bg-[color:var(--surface)]/88 p-5 text-sm text-secondary-label shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
                 No teammates match this view.
               </div>
             ) : null}
@@ -193,7 +193,7 @@ function FilterBar({
   onCreate: () => void;
 }) {
   return (
-    <div className="glass-morphism rounded-[32px] bg-system-background/72 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+    <div className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
       <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto]">
         <label className="grid gap-2">
           <span className="ml-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
@@ -360,7 +360,7 @@ function TeamDetailPanel({
         });
       }}
       className={cn(
-        "glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6",
+        "glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6",
         compact && "shadow-none"
       )}
     >
@@ -509,7 +509,7 @@ function TeamSheet({
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          className="glass-morphism flex max-h-[calc(100svh-1.5rem)] w-full max-w-[40rem] flex-col overflow-hidden rounded-[32px] bg-system-background/92 shadow-[0_28px_80px_rgba(15,23,42,0.22)]"
+          className="glass-morphism flex max-h-[calc(100svh-1.5rem)] w-full max-w-[40rem] flex-col overflow-hidden rounded-[32px] bg-[color:var(--surface)]/92 shadow-[0_28px_80px_rgba(15,23,42,0.22)]"
         >
           <div className="flex items-center justify-between gap-3 px-5 py-4 sm:px-6">
             <div>
@@ -541,7 +541,7 @@ function EmptyStatePanel({
   detail: string;
 }) {
   return (
-    <div className="glass-morphism rounded-[32px] bg-system-background/78 p-6 text-sm text-secondary-label shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+    <div className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-6 text-sm text-secondary-label shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
       <div className="text-lg font-semibold tracking-tight text-label">{title}</div>
       <div className="mt-2 leading-relaxed">{detail}</div>
     </div>
@@ -559,7 +559,9 @@ function StatusPill({
     <span
       className={cn(
         "rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]",
-        selected ? "bg-black/10 text-black" : "bg-system-fill/42 text-secondary-label"
+        selected
+          ? "bg-[color:var(--surface)]/56 text-accent-label"
+          : "bg-system-fill/42 text-secondary-label"
       )}
     >
       {label}

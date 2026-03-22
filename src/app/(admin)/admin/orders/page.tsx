@@ -98,7 +98,7 @@ export default async function AdminOrdersPage() {
             {openReturns.map((returnCase) => (
               <article
                 key={returnCase.returnCaseId}
-                className="glass-morphism rounded-[28px] bg-system-background/72 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)]"
+                className="glass-morphism rounded-[28px] bg-[color:var(--surface)]/88 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)]"
               >
                 <div className="flex flex-col gap-3 min-[980px]:flex-row min-[980px]:items-start min-[980px]:justify-between">
                   <div className="min-w-0">
@@ -162,7 +162,7 @@ export default async function AdminOrdersPage() {
           return (
             <article
               key={order.orderId}
-              className="glass-morphism rounded-[32px] bg-system-background/72 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]"
+              className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]"
             >
               <div className="flex flex-col gap-4 min-[980px]:flex-row min-[980px]:items-start min-[980px]:justify-between">
                 <div className="min-w-0">
@@ -224,7 +224,7 @@ function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="flex min-h-[40px] items-center justify-center rounded-[18px] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label transition-colors duration-200 hover:bg-system-background hover:shadow-soft"
+      className="flex min-h-[40px] items-center justify-center rounded-[18px] px-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-label transition-colors duration-200 hover:bg-[color:var(--surface)] hover:shadow-soft"
     >
       {label}
     </Link>

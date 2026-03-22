@@ -9,7 +9,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-8 pb-20 md:space-y-10">
-      <div className="rounded-[24px] bg-system-fill/40 px-4 py-4 md:hidden">
+      <div className="rounded-[24px] bg-[color:var(--surface)]/88 px-4 py-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)] md:hidden">
         <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
           Profile
         </div>
@@ -27,7 +27,9 @@ export default async function ProfilePage() {
         />
       </div>
 
-      <PortalProfileForm profile={profile} />
+      <div className="max-w-5xl">
+        <PortalProfileForm profile={profile} />
+      </div>
     </div>
   );
 }

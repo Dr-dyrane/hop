@@ -55,7 +55,7 @@ export function AdminCustomerCRM({ customer }: { customer: AdminCustomerDetail }
 
   return (
     <div className="space-y-4">
-      <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
+      <section className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
@@ -97,7 +97,7 @@ export function AdminCustomerCRM({ customer }: { customer: AdminCustomerDetail }
         </div>
       </section>
 
-      <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
+      <section className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
@@ -133,7 +133,7 @@ export function AdminCustomerCRM({ customer }: { customer: AdminCustomerDetail }
         </div>
       </section>
 
-      <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
+      <section className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:p-6">
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
@@ -542,7 +542,7 @@ function CustomerSheet({
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          className="glass-morphism flex max-h-[calc(100svh-1.5rem)] w-full max-w-[42rem] flex-col overflow-hidden rounded-[32px] bg-system-background/92 shadow-[0_28px_80px_rgba(15,23,42,0.22)]"
+          className="glass-morphism flex max-h-[calc(100svh-1.5rem)] w-full max-w-[42rem] flex-col overflow-hidden rounded-[32px] bg-[color:var(--surface)]/92 shadow-[0_28px_80px_rgba(15,23,42,0.22)]"
         >
           <div className="flex items-center justify-between gap-3 px-5 py-4 sm:px-6">
             <div>

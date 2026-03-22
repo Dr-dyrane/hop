@@ -49,7 +49,7 @@ export default async function AdminProductDetailPage({
                 {product.variantName}
               </div>
             </div>
-            <div className="rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-label">
+            <div className="rounded-full bg-[color:var(--surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-label">
               {product.isAvailable ? "Live" : "Hidden"}
             </div>
           </div>
@@ -142,7 +142,7 @@ function CompactCatalogStat({
   value: string;
 }) {
   return (
-    <div className="rounded-[18px] bg-system-background/80 px-3 py-3">
+    <div className="rounded-[18px] bg-[color:var(--surface)]/88 px-3 py-3">
       <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
         {label}
       </div>

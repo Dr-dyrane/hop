@@ -306,7 +306,7 @@ function SettingsCard({
   pending: boolean;
 }) {
   return (
-    <form action={formAction} className="glass-morphism rounded-[32px] bg-system-background/72 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:p-6">
+    <form action={formAction} className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:p-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">

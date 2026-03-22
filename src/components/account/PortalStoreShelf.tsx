@@ -154,7 +154,7 @@ export function PortalStoreShelf({
         )}
       >
         {activeProduct ? (
-          <section className="pointer-events-auto glass-morphism w-full max-w-[1120px] rounded-[38px] bg-system-background/94 p-4 shadow-[0_30px_120px_rgba(0,0,0,0.22)] sm:p-6">
+          <section className="pointer-events-auto glass-morphism w-full max-w-[1120px] rounded-[38px] bg-[color:var(--surface)]/94 p-4 shadow-[0_30px_120px_rgba(0,0,0,0.22)] sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-2xl font-semibold tracking-tight text-label sm:text-3xl">
                 {getProductTitle(activeProduct)}

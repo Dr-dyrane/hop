@@ -102,7 +102,7 @@ export default async function AdminOrderDetailPage({
 
   if (!order) {
     return (
-      <div className="glass-morphism rounded-[32px] bg-system-background/80 p-6 text-sm text-secondary-label shadow-soft">
+      <div className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-6 text-sm text-secondary-label shadow-soft">
         Order not found.
         <div className="mt-4">
           <Link
@@ -157,7 +157,7 @@ export default async function AdminOrderDetailPage({
                 {order.customerName}
               </div>
             </div>
-            <div className="rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-label">
+            <div className="rounded-full bg-[color:var(--surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-headline text-label">
               {stage.label}
             </div>
           </div>
@@ -689,7 +689,7 @@ function CompactAdminStat({
   value: string;
 }) {
   return (
-    <div className="rounded-[18px] bg-system-background/80 px-3 py-3">
+    <div className="rounded-[18px] bg-[color:var(--surface)]/88 px-3 py-3">
       <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
         {label}
       </div>
@@ -708,7 +708,7 @@ function DetailSurface({
   children: ReactNode;
 }) {
   return (
-    <section className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:p-6">
+    <section className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:p-6">
       <div className="flex items-center justify-between gap-4">
         <p className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
           {title}

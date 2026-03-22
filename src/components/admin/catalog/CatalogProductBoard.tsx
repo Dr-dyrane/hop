@@ -20,7 +20,7 @@ import {
 
 const statusTone = {
   active: "bg-accent/14 text-accent",
-  draft: "bg-system-background/76 text-label",
+  draft: "bg-[color:var(--surface)]/76 text-label",
   archived: "bg-system-fill/76 text-secondary-label",
 } as const;
 
@@ -95,49 +95,48 @@ export function CatalogProductBoard({
                 key={product.productId}
                 type="button"
                 onClick={() => setActiveProductId(product.productId)}
-                className="group relative aspect-[0.82] overflow-hidden rounded-[32px] bg-system-fill/20 text-left transition-all duration-500 hover:shadow-[0_24px_48px_rgba(0,0,0,0.12)] hover:-translate-y-1"
+                className="group relative aspect-[0.82] overflow-hidden rounded-[28px] text-left transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(15,23,42,0.12)]"
               >
-                {/* Main Image Layer */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.98),rgba(243,239,229,0.90)_58%,rgba(230,223,210,0.72)_100%)] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),rgba(14,17,14,0.94)_58%,rgba(8,10,8,1)_100%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(15,61,46,0.08),transparent_65%)] dark:bg-[radial-gradient(circle_at_center,rgba(215,197,163,0.10),transparent_70%)]" />
+                <div className="absolute left-1/2 top-6 h-24 w-24 -translate-x-1/2 rounded-full bg-white/75 blur-3xl dark:bg-white/10 sm:top-8 sm:h-36 sm:w-36" />
+                <div className="absolute inset-x-5 bottom-12 h-9 rounded-full bg-black/10 blur-2xl dark:bg-black/45 sm:inset-x-8 sm:bottom-14 sm:h-10" />
+
                 {product.imageUrl ? (
                   <img
                     src={product.imageUrl}
                     alt={name}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="absolute inset-0 h-full w-full object-contain px-2 py-3 transition-transform duration-700 group-hover:scale-[1.04] sm:px-4 sm:py-5"
                   />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-system-fill/40 to-system-fill/10" />
-                )}
-
-                {/* Glass Overlay for Text Legibility (Vignette) */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-80 transition-opacity group-hover:opacity-90" />
-
-                {/* Top Section: Header & Price */}
-                <div className="absolute inset-x-0 top-0 z-10 flex items-start justify-between p-5">
-                  <div className="min-w-0 drop-shadow-md">
-                    <div className="truncate text-lg font-bold tracking-tight text-white">
-                      {name}
-                    </div>
-                    <div className="mt-0.5 truncate text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
-                      {product.variantName}
-                    </div>
-                  </div>
-
-                  <div className="shrink-0 rounded-full px-3 py-2 text-[11px] font-bold backdrop-blur-md text-white shadow-xl">
-                    {formatNgn(product.priceNgn)}
-                  </div>
-                </div>
-
-                {/* Center Placeholder (If no image) */}
-                {!product.imageUrl && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-xl border border-white/30 text-white">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 border border-white/30 backdrop-blur-xl text-white">
                       <Icon name="tag" size={24} />
                     </div>
                   </div>
                 )}
 
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-white/96 via-white/56 to-transparent dark:from-black/58 dark:via-black/18 sm:h-28" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-24 bg-gradient-to-t from-white/98 via-white/42 to-transparent dark:from-black/78 dark:via-black/24 sm:h-28" />
+
+                {/* Top Section: Header & Price */}
+                <div className="absolute inset-x-0 top-0 z-20 flex items-start justify-between p-4 sm:p-5">
+                  <div className="min-w-0 text-label dark:text-white">
+                    <div className="truncate text-[0.92rem] font-semibold tracking-[-0.02em] sm:text-[1rem]">
+                      {name}
+                    </div>
+                    <div className="mt-0.5 truncate text-[10px] font-semibold uppercase tracking-[0.2em] text-label/60 dark:text-white/62">
+                      {product.variantName}
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 text-[0.76rem] font-medium tracking-[-0.01em] text-label/80 dark:text-white/88 sm:text-[0.85rem]">
+                    {formatNgn(product.priceNgn)}
+                  </div>
+                </div>
+
                 {/* Bottom Section: KPIs & Status */}
-                <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between p-5">
+                <div className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between p-4 sm:p-5">
                   <div className="flex flex-wrap gap-1.5">
                     <OverlayKpi label="STK" value={availableUnits} />
                     <OverlayKpi label="MED" value={product.mediaCount} />
@@ -157,7 +156,7 @@ export function CatalogProductBoard({
                     </span>
 
                     {product.merchandisingState === "featured" && (
-                      <span className="rounded-full bg-accent px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white shadow-lg animate-pulse">
+                      <span className="rounded-full bg-accent px-3 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--accent-label)] shadow-lg">
                       Featured
                       </span>
                     )}
@@ -212,11 +211,11 @@ function OverlayKpi({
   value: string | number;
 }) {
   return (
-    <div className="squircle bg-black/40 px-3 py-1.5 backdrop-blur-md dark:bg-black/36">
-      <div className="text-[9px] font-semibold uppercase tracking-[0.16em] text-white/62">
+    <div className="squircle bg-[color:var(--surface)]/56 px-3 py-1.5 backdrop-blur-md">
+      <div className="text-[9px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
         {label}
       </div>
-      <div className="mt-0.5 text-sm font-semibold tracking-tight text-white">{value}</div>
+      <div className="mt-0.5 text-sm font-semibold tracking-tight text-label">{value}</div>
     </div>
   );
 }
@@ -297,7 +296,7 @@ function CatalogProductModal({
           role="dialog"
           aria-modal="true"
           aria-label={name}
-          className="glass-morphism max-h-[92vh] w-full max-w-[min(1120px,100%)] overflow-y-auto rounded-[40px] bg-system-background/92 p-4 shadow-[0_32px_120px_rgba(0,0,0,0.22)] md:p-5"
+          className="glass-morphism max-h-[92vh] w-full max-w-[min(1120px,100%)] overflow-y-auto rounded-[40px] bg-[color:var(--surface)]/92 p-4 shadow-[0_32px_120px_rgba(0,0,0,0.22)] md:p-5"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-4">
@@ -359,7 +358,7 @@ function CatalogProductModal({
                     />
                   ) : (
                     <div className="flex h-[420px] items-center justify-center">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-system-background/72 text-accent shadow-soft">
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--surface)]/88 text-accent shadow-soft">
                         <Icon name="tag" size={36} />
                       </div>
                     </div>
@@ -402,7 +401,7 @@ function CatalogProductModal({
             </div>
 
             <div className="space-y-4">
-              <section className="rounded-[32px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+              <section className="rounded-[32px] bg-[color:var(--surface)]/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
                 <div className="grid grid-cols-2 gap-3">
                   <MetricCell label="Price" value={formatNgn(product.priceNgn)} />
                   <MetricCell label="Stock" value={`${availableUnits}`} />
@@ -411,7 +410,7 @@ function CatalogProductModal({
                 </div>
               </section>
 
-              <section className="rounded-[32px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+              <section className="rounded-[32px] bg-[color:var(--surface)]/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
                 <div className="grid grid-cols-2 gap-3">
                   <MetaCell label="Category" value={product.categoryName ?? "Unsorted"} />
                   <MetaCell label="SKU" value={product.sku} />
@@ -423,7 +422,7 @@ function CatalogProductModal({
                 </p>
               </section>
 
-              <section className="rounded-[32px] bg-system-background/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+              <section className="rounded-[32px] bg-[color:var(--surface)]/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
                 <div className="grid gap-2 sm:grid-cols-2">
                   <QuickActionButton
                     icon={product.isAvailable ? "info" : "search"}

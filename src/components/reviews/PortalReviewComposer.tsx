@@ -29,7 +29,7 @@ export function PortalReviewComposer({
   return (
     <form
       action={formAction}
-      className="rounded-[28px] bg-system-fill/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
+      className="glass-morphism rounded-[28px] bg-[color:var(--surface)]/88 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]"
     >
       <input type="hidden" name="orderId" value={orderId} />
 
@@ -43,7 +43,7 @@ export function PortalReviewComposer({
         <select
           name="rating"
           defaultValue="5"
-          className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-label"
+          className="rounded-full bg-system-fill/56 px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-label"
         >
           <option value="5">5 stars</option>
           <option value="4">4 stars</option>
@@ -58,13 +58,13 @@ export function PortalReviewComposer({
           type="text"
           name="title"
           placeholder="Title"
-          className="w-full rounded-[22px] bg-system-background px-4 py-3 text-sm text-label placeholder:text-secondary-label"
+          className="w-full rounded-[22px] bg-system-fill/56 px-4 py-3 text-sm text-label placeholder:text-secondary-label"
         />
         <textarea
           name="body"
           rows={3}
           placeholder="Optional note"
-          className="w-full rounded-[22px] bg-system-background px-4 py-3 text-sm text-label placeholder:text-secondary-label"
+          className="w-full rounded-[22px] bg-system-fill/56 px-4 py-3 text-sm text-label placeholder:text-secondary-label"
         />
       </div>
 

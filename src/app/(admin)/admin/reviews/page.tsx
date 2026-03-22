@@ -56,14 +56,14 @@ export default async function AdminReviewsPage() {
 
       <section className="space-y-4">
         {reviews.length === 0 ? (
-          <div className="glass-morphism rounded-[32px] bg-system-background/80 p-6 text-sm text-secondary-label shadow-soft">
+          <div className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-6 text-sm text-secondary-label shadow-soft">
             No reviews yet.
           </div>
         ) : (
           reviews.map((review) => (
             <article
               key={review.reviewId}
-              className="glass-morphism rounded-[32px] bg-system-background/78 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]"
+              className="glass-morphism rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)]"
             >
               <div className="flex flex-col gap-4 min-[980px]:flex-row min-[980px]:items-start min-[980px]:justify-between">
                 <div className="min-w-0">

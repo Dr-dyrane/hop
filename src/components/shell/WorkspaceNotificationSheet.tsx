@@ -171,7 +171,7 @@ export function WorkspaceNotificationSheet({
                     : "translate-y-full sm:translate-x-full sm:translate-y-0"
                 )}
               >
-                <div className="flex h-full max-h-[inherit] flex-col overflow-hidden rounded-t-[34px] bg-[color:var(--system-background)] p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_-22px_60px_rgba(0,0,0,0.18)] sm:rounded-l-[36px] sm:rounded-tr-none sm:p-5 sm:shadow-[0_32px_120px_rgba(0,0,0,0.22)]">
+                <div className="flex h-full max-h-[inherit] flex-col overflow-hidden rounded-t-[34px] bg-[color:var(--surface)]/92 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_-22px_60px_rgba(0,0,0,0.18)] sm:rounded-l-[36px] sm:rounded-tr-none sm:p-5 sm:shadow-[0_32px_120px_rgba(0,0,0,0.22)]">
                   <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-system-fill/90 sm:hidden" />
 
                   <div className="flex items-start justify-between gap-4 px-1 pb-4 pt-1 sm:pb-5 sm:pt-2">
@@ -246,7 +246,7 @@ export function WorkspaceNotificationSheet({
                                 setIsOpen(false);
                               }}
                               className={cn(
-                                "block rounded-[28px] bg-system-background/86 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition-transform duration-200 hover:-translate-y-[1px]",
+                                "block rounded-[28px] bg-[color:var(--surface)]/86 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] transition-transform duration-200 hover:-translate-y-[1px]",
                                 notification.isRead && "opacity-72"
                               )}
                             >

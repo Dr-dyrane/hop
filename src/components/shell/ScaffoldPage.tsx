@@ -32,7 +32,7 @@ export function ScaffoldPage({
 }) {
   return (
     <div className="space-y-8">
-      <section className="glass-morphism overflow-hidden rounded-[36px] bg-system-background/78 p-6 shadow-[0_28px_90px_rgba(15,23,42,0.08)] sm:p-8">
+      <section className="glass-morphism overflow-hidden rounded-[36px] bg-[color:var(--surface)]/88 p-6 shadow-[0_28px_90px_rgba(15,23,42,0.08)] sm:p-8">
         <div className="inline-flex rounded-full bg-accent/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-headline text-accent dark:bg-accent/15">
           {badge}
         </div>
@@ -95,7 +95,7 @@ export function ScaffoldPage({
               "glass-morphism rounded-[32px] p-6 shadow-[0_18px_50px_rgba(15,23,42,0.05)]",
               index === 0
                 ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(244,242,234,0.9)_100%)] dark:bg-[linear-gradient(180deg,rgba(21,24,21,0.96)_0%,rgba(11,13,11,0.96)_100%)]"
-                : "bg-system-background/78"
+                : "bg-[color:var(--surface)]/88"
             )}
           >
             <h3 className="text-xl font-semibold tracking-title text-label">

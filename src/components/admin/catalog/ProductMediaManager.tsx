@@ -187,7 +187,7 @@ export function ProductMediaManager({
           ref={inputRef}
           type="file"
           accept={getAcceptValue(mediaType)}
-          className="min-w-0 rounded-[20px] bg-system-fill/42 px-4 py-3 text-sm text-label file:mr-3 file:rounded-full file:bg-system-background file:px-3 file:py-2 file:text-[10px] file:font-semibold file:text-label"
+          className="min-w-0 rounded-[20px] bg-system-fill/42 px-4 py-3 text-sm text-label file:mr-3 file:rounded-full file:bg-[color:var(--surface)] file:px-3 file:py-2 file:text-[10px] file:font-semibold file:text-label"
         />
         <input
           type="text"
@@ -325,11 +325,11 @@ function MediaRow({
         <div className="min-w-0 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <ProductMediaTypeBadge mediaType={item.mediaType} />
-            <span className="rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
+            <span className="rounded-full bg-[color:var(--surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label">
               {item.targetLabel}
             </span>
             {item.isPrimary ? (
-              <span className="rounded-full bg-system-background px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
+              <span className="rounded-full bg-[color:var(--surface)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
                 Primary
               </span>
             ) : null}
@@ -349,14 +349,14 @@ function MediaRow({
               value={altText}
               onChange={(event) => setAltText(event.target.value)}
               placeholder="Alt text"
-              className="min-h-[44px] rounded-[18px] bg-system-background/72 px-4 text-sm text-label outline-none transition-all placeholder:text-tertiary-label focus:bg-system-background"
+              className="min-h-[44px] rounded-[18px] bg-[color:var(--surface)]/88 px-4 text-sm text-label outline-none transition-all placeholder:text-tertiary-label focus:bg-[color:var(--surface)]"
             />
             <input
               type="number"
               min={0}
               value={sortOrder}
               onChange={(event) => setSortOrder(event.target.value)}
-              className="min-h-[44px] rounded-[18px] bg-system-background/72 px-4 text-sm text-label outline-none transition-all focus:bg-system-background"
+              className="min-h-[44px] rounded-[18px] bg-[color:var(--surface)]/88 px-4 text-sm text-label outline-none transition-all focus:bg-[color:var(--surface)]"
             />
           </div>
 
@@ -390,7 +390,7 @@ function MediaRow({
             type="button"
             onClick={handleDelete}
             disabled={isPending}
-            className="rounded-full bg-system-background px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label transition-colors duration-300 hover:text-label"
+            className="rounded-full bg-[color:var(--surface)] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary-label transition-colors duration-300 hover:text-label"
           >
             <Trash2 size={14} />
           </button>

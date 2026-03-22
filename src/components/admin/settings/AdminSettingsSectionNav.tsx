@@ -19,7 +19,7 @@ export function AdminSettingsSectionNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="glass-morphism rounded-[30px] bg-system-background/72 p-2 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+    <nav className="glass-morphism rounded-[30px] bg-[color:var(--surface)]/88 p-2 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
       <div className="flex flex-wrap gap-2">
         {SETTINGS_SECTIONS.map((section) => {
           const active =

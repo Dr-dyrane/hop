@@ -52,7 +52,7 @@ export function WorkspaceShell({
         <aside
           className={cn(
             "hidden px-3 py-6 md:sticky md:top-0 md:flex md:h-svh md:flex-col md:self-start md:overflow-hidden lg:px-6",
-            nativeMode ? "bg-system-background/68" : "bg-system-background/48"
+            nativeMode ? "bg-[color:var(--surface)]/68" : "bg-[color:var(--surface)]/48"
           )}
         >
           <Link href="/" className="inline-flex items-center justify-center lg:justify-start">
@@ -120,8 +120,8 @@ export function WorkspaceShell({
               className={cn(
                 "pointer-events-none absolute inset-0",
                 nativeMode
-                  ? "bg-system-background/88"
-                  : "bg-system-background/72"
+                  ? "bg-[color:var(--surface)]/88"
+                  : "bg-[color:var(--surface)]/88"
               )}
             />
           ) : null}
@@ -130,9 +130,7 @@ export function WorkspaceShell({
             <div
               className={cn(
                 "squircle px-3 py-2.5 md:rounded-[30px] md:px-5 md:py-4",
-                nativeMode
-                  ? "backdrop-blur-md shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
-                  : "shadow-soft"
+                "bg-[color:var(--surface)]/20 shadow-[0_20px_48px_rgba(15,23,42,0.14)] backdrop-blur-xl"
               )}
             >
               <div className="flex items-center justify-between gap-4">

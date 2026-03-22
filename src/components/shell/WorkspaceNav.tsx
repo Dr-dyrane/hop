@@ -120,7 +120,7 @@ export function WorkspaceNav({
                       active
                         ? {
                             backgroundColor:
-                              "color-mix(in srgb, var(--accent) 16%, var(--system-background) 84%)",
+                              "color-mix(in srgb, var(--accent) 16%, var(--surface) 84%)",
                           }
                         : undefined
                     }
@@ -180,7 +180,7 @@ export function WorkspaceNav({
               <div
                 className={cn(
                   "flex h-10 w-10 shrink-0 items-center justify-center squircle",
-                  active ? "bg-white/12 text-[var(--accent-label)]" : "bg-system-background/78 text-label"
+                  active ? "bg-white/12 text-[var(--accent-label)]" : "bg-[color:var(--surface)]/88 text-label"
                 )}
               >
                 <Icon name={NAV_ICON_MAP[item.icon]} className="h-[18px] w-[18px]" strokeWidth={1.8} />

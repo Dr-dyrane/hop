@@ -31,7 +31,7 @@ export function WorkspaceContextPanel({
   actions?: ReactNode;
 }) {
   return (
-    <section className="rounded-[28px] bg-system-background/82 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:rounded-[30px] md:px-6 md:py-6">
+    <section className="rounded-[28px] bg-[color:var(--surface)]/82 px-4 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)] md:rounded-[30px] md:px-6 md:py-6">
       <div className="flex flex-col gap-4 min-[980px]:flex-row min-[980px]:items-start min-[980px]:justify-between">
         <div className="min-w-0">
           {tags.length > 0 ? (
