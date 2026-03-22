@@ -3,24 +3,10 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Upload } from "lucide-react";
-
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Try again.";
-}
-
-async function readJsonPayload<T>(response: Response): Promise<T | null> {
-  const text = await response.text();
-
-  if (!text.trim()) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return null;
-  }
-}
+import {
+  getClientErrorMessage,
+  readJsonPayload,
+} from "@/lib/orders/client-form";
 
 export function OrderReturnProofUploadCard({
   orderId,
@@ -131,7 +117,7 @@ export function OrderReturnProofUploadCard({
         setMessage("Added.");
         router.refresh();
       } catch (error) {
-        setMessage(getErrorMessage(error));
+        setMessage(getClientErrorMessage(error));
       }
     });
   }

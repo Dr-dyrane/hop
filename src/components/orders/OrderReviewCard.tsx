@@ -1,30 +1,23 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import type {
-  OrderReviewRequestRow,
-  OrderReviewRow,
-} from "@/lib/db/types";
+import { Star } from "lucide-react";
+import type { OrderReviewRequestRow, OrderReviewRow } from "@/lib/db/types";
+import { getClientErrorMessage } from "@/lib/orders/client-form";
+import { formatOrderStatusLabel } from "@/lib/orders/detail-view";
+import { cn } from "@/lib/utils";
+import styles from "./order-detail/order-task-cards.module.css";
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Try again.";
-}
+type ReviewStage = "idle" | "rate" | "comment" | "success";
 
-function formatTimestamp(value?: string | null) {
-  if (!value) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function formatStatusLabel(value: string) {
-  return value.replace(/_/g, " ");
-}
+const SCENE_MOTION = {
+  initial: { opacity: 0, y: 8, filter: "blur(6px)" },
+  animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+  exit: { opacity: 0, y: -6, filter: "blur(4px)" },
+  transition: { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] as const },
+};
 
 export function OrderReviewCard({
   orderId,
@@ -40,27 +33,34 @@ export function OrderReviewCard({
   review: OrderReviewRow | null;
 }) {
   const router = useRouter();
-  const [rating, setRating] = useState("5");
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const ratingOptions = ["1", "2", "3", "4", "5"];
+  const [stage, setStage] = useState<ReviewStage>(review ? "success" : "idle");
+  const [rating, setRating] = useState<number>(review?.rating ?? 0);
+  const [comment, setComment] = useState(review?.body ?? "");
+  const [error, setError] = useState("");
+  const [isSubmitting, startTransition] = useTransition();
 
-  const canSubmit = orderStatus === "delivered" && !!reviewRequest && !review;
+  const canReview = orderStatus === "delivered" || Boolean(reviewRequest);
 
-  if (!canSubmit && !review) {
+  if (!canReview && !review) {
     return (
-      <div className="rounded-[22px] bg-system-fill/36 px-4 py-3 text-sm text-secondary-label">
-        Available after delivery.
+      <div className={styles.infoCard}>
+        <div className={styles.infoTitle}>Ratings open after delivery</div>
+        <div className={styles.infoText}>
+          You can rate this order once it has been delivered.
+        </div>
       </div>
     );
   }
 
-  async function handleSubmit() {
+  async function submitReview() {
+    if (!rating) {
+      setError("Choose a star rating first.");
+      return;
+    }
+
     startTransition(async () => {
       try {
-        setMessage(null);
+        setError("");
 
         const response = await fetch("/api/order-reviews", {
           method: "POST",
@@ -71,9 +71,8 @@ export function OrderReviewCard({
           body: JSON.stringify({
             orderId,
             accessToken,
-            rating: Number(rating),
-            title,
-            body,
+            rating,
+            body: comment.trim(),
           }),
         });
 
@@ -83,103 +82,191 @@ export function OrderReviewCard({
         };
 
         if (!response.ok || !payload.ok) {
-          throw new Error(payload.error || "Try again.");
+          throw new Error(payload.error || "Unable to submit rating.");
         }
 
-        setTitle("");
-        setBody("");
-        setMessage("Saved.");
+        setStage("success");
         router.refresh();
-      } catch (error) {
-        setMessage(getErrorMessage(error));
+      } catch (submitError) {
+        setError(getClientErrorMessage(submitError, "Unable to submit rating."));
       }
     });
   }
 
-  if (review) {
-    return (
-      <div className="space-y-3">
-        <div className="rounded-[22px] bg-system-fill/36 px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="text-2xl font-semibold tracking-tight text-label">
-              {review.rating}/5
-            </div>
-            <div className="text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
-              {formatStatusLabel(review.status)}
-            </div>
-          </div>
-          {review.title ? (
-            <div className="mt-3 text-sm font-medium text-label">{review.title}</div>
-          ) : null}
-          {review.body ? (
-            <div className="mt-2 text-sm text-secondary-label">{review.body}</div>
-          ) : null}
-        </div>
-
-        <div className="rounded-[22px] bg-system-fill/36 px-4 py-3 text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
-          {formatTimestamp(review.createdAt)}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-3">
-      <div className="rounded-[22px] bg-system-fill/36 px-4 py-3 text-sm text-secondary-label">
-        Delivered. Rate it.
-      </div>
-
-      <div className="grid grid-cols-5 gap-2">
-        {ratingOptions.map((value) => {
-          const active = rating === value;
-
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setRating(value)}
-              className={
-                active
-                  ? "min-h-[48px] rounded-[20px] bg-[var(--accent)] text-[var(--accent-label)] text-sm font-semibold"
-                  : "min-h-[48px] rounded-[20px] bg-system-fill/52 text-sm font-semibold text-label"
-              }
-            >
-              {value}
-            </button>
-          );
-        })}
-      </div>
-
-      <input
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        placeholder="Title"
-        className="min-h-[44px] w-full rounded-[22px] bg-system-fill/52 px-4 text-sm text-label placeholder:text-tertiary-label focus:outline-none"
-      />
-
-      <textarea
-        value={body}
-        onChange={(event) => setBody(event.target.value)}
-        placeholder="Optional note"
-        rows={4}
-        className="w-full resize-none rounded-[24px] bg-system-fill/52 px-4 py-3 text-sm text-label placeholder:text-tertiary-label focus:outline-none"
-      />
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <button
-          type="button"
-          onClick={() => void handleSubmit()}
-          disabled={isPending}
-          className="button-secondary min-h-[44px] w-full justify-center text-xs font-semibold uppercase tracking-headline sm:w-auto"
-        >
-          {isPending ? "Saving" : "Send"}
-        </button>
-        {message ? (
-          <p className="rounded-[18px] bg-system-fill/32 px-3 py-2 text-xs text-secondary-label">
-            {message}
+    <div className={styles.card}>
+      <div className={styles.header}>
+        <div>
+          <h3 className={styles.title}>Order rating</h3>
+          <p className={styles.description}>
+            Start with stars first, then add an optional note.
           </p>
-        ) : null}
+        </div>
+        {review ? <div className={styles.statusPill}>Submitted</div> : null}
       </div>
+
+      <AnimatePresence mode="wait" initial={false}>
+        {stage === "idle" ? (
+          <motion.section
+            key="review-idle"
+            className={styles.scene}
+            initial={SCENE_MOTION.initial}
+            animate={SCENE_MOTION.animate}
+            exit={SCENE_MOTION.exit}
+            transition={SCENE_MOTION.transition}
+          >
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={() => setStage("rate")}
+            >
+              {review ? "View rating" : "Leave a rating"}
+            </button>
+          </motion.section>
+        ) : null}
+
+        {stage === "rate" ? (
+          <motion.section
+            key="review-rate"
+            className={styles.scene}
+            initial={SCENE_MOTION.initial}
+            animate={SCENE_MOTION.animate}
+            exit={SCENE_MOTION.exit}
+            transition={SCENE_MOTION.transition}
+          >
+            <div className={styles.sceneTitle}>How was this order?</div>
+            <div className={styles.starRow}>
+              {[1, 2, 3, 4, 5].map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={rating >= value ? styles.starActive : styles.starButton}
+                  onClick={() => {
+                    setRating(value);
+                    setError("");
+                  }}
+                  aria-label={`Rate ${value} star${value > 1 ? "s" : ""}`}
+                >
+                  <Star
+                    size={18}
+                    strokeWidth={2}
+                    className={cn(
+                      styles.ratingStarIcon,
+                      rating >= value && styles.ratingStarIconFilled
+                    )}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.actionsRow}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => setStage("idle")}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className={styles.primaryButton}
+                disabled={!rating}
+                onClick={() => setStage("comment")}
+              >
+                Continue
+              </button>
+            </div>
+          </motion.section>
+        ) : null}
+
+        {stage === "comment" ? (
+          <motion.section
+            key="review-comment"
+            className={styles.scene}
+            initial={SCENE_MOTION.initial}
+            animate={SCENE_MOTION.animate}
+            exit={SCENE_MOTION.exit}
+            transition={SCENE_MOTION.transition}
+          >
+            <div className={styles.sceneTitle}>Anything else to add?</div>
+            <textarea
+              className={styles.textarea}
+              rows={4}
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              placeholder="Optional. Keep it brief."
+            />
+
+            {error ? <div className={styles.errorBanner}>{error}</div> : null}
+
+            <div className={styles.actionsRow}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => setStage("rate")}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className={styles.primaryButton}
+                onClick={() => void submitReview()}
+                disabled={isSubmitting || !rating}
+              >
+                {isSubmitting ? "Submitting..." : "Submit rating"}
+              </button>
+            </div>
+          </motion.section>
+        ) : null}
+
+        {stage === "success" ? (
+          <motion.section
+            key="review-success"
+            className={styles.scene}
+            initial={SCENE_MOTION.initial}
+            animate={SCENE_MOTION.animate}
+            exit={SCENE_MOTION.exit}
+            transition={SCENE_MOTION.transition}
+          >
+            <div className={styles.successCard}>
+              <div className={styles.successTitle}>Rating submitted</div>
+              <div className={styles.ratingStarsRow}>
+                {Array.from({ length: 5 }).map((_, index) => {
+                  const active = index < Math.max(0, Math.min(5, rating || review?.rating || 0));
+
+                  return (
+                    <Star
+                      key={`review-star-${index}`}
+                      size={18}
+                      strokeWidth={2}
+                      className={cn(
+                        styles.ratingStarIcon,
+                        active && styles.ratingStarIconFilled
+                      )}
+                    />
+                  );
+                })}
+              </div>
+              {(comment.trim() || review?.body) ? (
+                <div className={styles.successText}>{comment.trim() || review?.body}</div>
+              ) : null}
+              {review?.status ? (
+                <div className={styles.infoText}>{formatOrderStatusLabel(review.status)}</div>
+              ) : null}
+            </div>
+
+            <div className={styles.actionsRow}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => setStage("comment")}
+              >
+                Edit
+              </button>
+            </div>
+          </motion.section>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

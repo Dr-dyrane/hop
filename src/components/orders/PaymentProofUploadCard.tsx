@@ -1,30 +1,54 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import {
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type ChangeEvent,
+} from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Landmark, Paperclip, Upload } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, Landmark } from "lucide-react";
 import { useFeedback } from "@/components/providers/FeedbackProvider";
+import {
+  getClientErrorMessage,
+  readJsonPayload,
+  validateUploadFile,
+} from "@/lib/orders/client-form";
+import { cn } from "@/lib/utils";
+import styles from "./order-detail/order-task-cards.module.css";
 
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Try again.";
+type PaymentStep = "idle" | "pick" | "confirm" | "success";
+
+type FeedbackState = {
+  tone: "success" | "error";
+  text: string;
+};
+
+const MAX_FILE_MB = 8;
+const RECEIPT_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+];
+
+const SCENE_MOTION = {
+  initial: { opacity: 0, y: 8, filter: "blur(6px)" },
+  animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+  exit: { opacity: 0, y: -6, filter: "blur(4px)" },
+  transition: { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] as const },
+};
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function isStorageUnavailableError(message: string) {
   return message.toLowerCase().includes("storage bucket is not configured");
-}
-
-async function readJsonPayload<T>(response: Response): Promise<T | null> {
-  const text = await response.text();
-
-  if (!text.trim()) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return null;
-  }
 }
 
 function getPaymentStateMessage(paymentStatus: string) {
@@ -42,6 +66,21 @@ function getPaymentStateMessage(paymentStatus: string) {
   }
 }
 
+function getStepLabel(step: PaymentStep) {
+  switch (step) {
+    case "idle":
+      return "Ready";
+    case "pick":
+      return "Choose";
+    case "confirm":
+      return "Confirm";
+    case "success":
+      return "Done";
+    default:
+      return "Ready";
+  }
+}
+
 export function PaymentProofUploadCard({
   orderId,
   paymentId,
@@ -55,30 +94,70 @@ export function PaymentProofUploadCard({
 }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [showReceiptField, setShowReceiptField] = useState(false);
+  const [step, setStep] = useState<PaymentStep>("idle");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [note, setNote] = useState("");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState<FeedbackState | null>(null);
+  const [isSubmitting, startTransition] = useTransition();
   const { tap, paymentReceived, blocked } = useFeedback();
-  const [isPending, startTransition] = useTransition();
+
+  const isLocked =
+    typeof paymentStatus === "string" &&
+    !["awaiting_transfer", "rejected"].includes(paymentStatus);
+
+  const helperText = useMemo(() => {
+    if (isLocked) {
+      return getPaymentStateMessage(paymentStatus ?? "submitted");
+    }
+
+    if (paymentStatus === "submitted") {
+      return "Proof submitted. You can review your selection below.";
+    }
+
+    return "Upload one clear proof file to help us verify your transfer quickly.";
+  }, [isLocked, paymentStatus]);
 
   if (!paymentId) {
     return null;
   }
 
-  if (paymentStatus && !["awaiting_transfer", "rejected"].includes(paymentStatus)) {
-    return (
-      <div className="mt-4 flex items-center gap-3 rounded-[22px] bg-system-fill/36 px-4 py-3 text-sm text-secondary-label">
-        <CheckCircle2 className="h-4 w-4 shrink-0 text-label" strokeWidth={1.8} />
-        <span>{getPaymentStateMessage(paymentStatus)}</span>
-      </div>
-    );
+  function openPicker() {
+    if (isLocked) return;
+    inputRef.current?.click();
   }
 
-  async function handleUpload() {
-    const file = inputRef.current?.files?.[0];
+  function onFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+
+    if (!file) {
+      return;
+    }
+
+    const validationError = validateUploadFile(file, RECEIPT_TYPES, MAX_FILE_MB);
+    if (validationError) {
+      setSelectedFile(null);
+      setError(validationError);
+      setStep("pick");
+      return;
+    }
+
+    setError("");
+    setSelectedFile(file);
+    setStep("confirm");
+  }
+
+  async function submitProof() {
+    if (!selectedFile) {
+      setError("Choose a file before submitting.");
+      setStep("pick");
+      return;
+    }
 
     startTransition(async () => {
       try {
         setMessage(null);
+        setError("");
 
         let storagePayload:
           | {
@@ -88,60 +167,58 @@ export function PaymentProofUploadCard({
             }
           | null = null;
 
-        if (file) {
-          const presignResponse = await fetch("/api/payment-proofs/presign", {
-            method: "POST",
-            credentials: "same-origin",
+        const presignResponse = await fetch("/api/payment-proofs/presign", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderId,
+            paymentId,
+            accessToken,
+            fileName: selectedFile.name,
+            contentType: selectedFile.type || "application/octet-stream",
+          }),
+        });
+
+        const presignPayload = await readJsonPayload<{
+          ok: boolean;
+          error?: string;
+          data?: {
+            uploadUrl: string;
+            storageKey: string;
+            publicUrl: string;
+            contentType: string;
+          };
+        }>(presignResponse);
+
+        if (!presignResponse.ok || !presignPayload?.ok || !presignPayload.data) {
+          const presignError = presignPayload?.error || "Try again.";
+
+          if (!presignResponse.ok && isStorageUnavailableError(presignError)) {
+            storagePayload = null;
+          } else {
+            throw new Error(presignError);
+          }
+        } else {
+          const uploadResponse = await fetch(presignPayload.data.uploadUrl, {
+            method: "PUT",
             headers: {
-              "Content-Type": "application/json",
+              "Content-Type": presignPayload.data.contentType,
             },
-            body: JSON.stringify({
-              orderId,
-              paymentId,
-              accessToken,
-              fileName: file.name,
-              contentType: file.type || "application/octet-stream",
-            }),
+            body: selectedFile,
           });
 
-          const presignPayload = await readJsonPayload<{
-            ok: boolean;
-            error?: string;
-            data?: {
-              uploadUrl: string;
-              storageKey: string;
-              publicUrl: string;
-              contentType: string;
-            };
-          }>(presignResponse);
-
-          if (!presignResponse.ok || !presignPayload?.ok || !presignPayload.data) {
-            const presignError = presignPayload?.error || "Try again.";
-
-            if (!presignResponse.ok && isStorageUnavailableError(presignError)) {
-              storagePayload = null;
-            } else {
-              throw new Error(presignError);
-            }
-          } else {
-            const uploadResponse = await fetch(presignPayload.data.uploadUrl, {
-              method: "PUT",
-              headers: {
-                "Content-Type": presignPayload.data.contentType,
-              },
-              body: file,
-            });
-
-            if (!uploadResponse.ok) {
-              throw new Error("Try again.");
-            }
-
-            storagePayload = {
-              storageKey: presignPayload.data.storageKey,
-              publicUrl: presignPayload.data.publicUrl,
-              contentType: presignPayload.data.contentType,
-            };
+          if (!uploadResponse.ok) {
+            throw new Error("Upload failed. Please try again.");
           }
+
+          storagePayload = {
+            storageKey: presignPayload.data.storageKey,
+            publicUrl: presignPayload.data.publicUrl,
+            contentType: presignPayload.data.contentType,
+          };
         }
 
         const commitResponse = await fetch("/api/payment-proofs/commit", {
@@ -173,69 +250,213 @@ export function PaymentProofUploadCard({
           inputRef.current.value = "";
         }
 
-        setMessage(
-          file && !storagePayload ? "Money sent. Add proof later." : "Money sent."
-        );
+        setMessage({
+          tone: "success",
+          text:
+            selectedFile && !storagePayload
+              ? "Transfer confirmed. Add proof later when storage is available."
+              : "Proof uploaded. Your payment will be reviewed shortly.",
+        });
+        setStep("success");
         paymentReceived();
         router.refresh();
-      } catch (error) {
-        setMessage(getErrorMessage(error));
+      } catch (submitError) {
+        setError(getClientErrorMessage(submitError));
+        setMessage({
+          tone: "error",
+          text: getClientErrorMessage(submitError),
+        });
         blocked();
       }
     });
   }
 
-  return (
-    <div className="mt-4 space-y-3">
-      <div className="rounded-[22px] bg-system-fill/36 px-4 py-3 text-sm text-secondary-label">
-        <div className="flex items-start gap-3">
-          <Landmark className="mt-0.5 h-4 w-4 shrink-0 text-label" strokeWidth={1.8} />
-          <div className="space-y-1">
-            <div className="text-label">Send the transfer, then tap once for confirmation.</div>
-            <div>Receipt is optional.</div>
-          </div>
-        </div>
-      </div>
-      <div className="space-y-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <button
-            type="button"
-            onClick={() => void handleUpload()}
-            disabled={isPending}
-            className="button-primary min-h-[48px] flex-1 justify-center text-xs font-semibold uppercase tracking-headline disabled:translate-y-0 disabled:shadow-none"
-          >
-            <Upload className="h-4 w-4" strokeWidth={1.8} />
-            {isPending ? "Sending" : "I sent the money"}
-          </button>
+  function resetFlow() {
+    setSelectedFile(null);
+    setNote("");
+    setError("");
+    setStep("pick");
 
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className={styles.card}>
+      <input
+        ref={inputRef}
+        type="file"
+        className={styles.hiddenInput}
+        accept=".png,.jpg,.jpeg,.webp,.pdf"
+        onChange={onFileChange}
+      />
+
+      <div className={styles.header}>
+        <div>
+          <h3 className={styles.title}>Payment proof</h3>
+          <p className={styles.description}>{helperText}</p>
+        </div>
+        <div className={styles.statusPill}>{isLocked ? "Locked" : getStepLabel(step)}</div>
+      </div>
+
+      {!isLocked && step === "idle" ? (
+        <div className={styles.compactScene}>
           <button
             type="button"
+            className={styles.primaryButton}
             onClick={() => {
               tap();
-              setShowReceiptField((current) => !current);
+              setStep("pick");
             }}
-            className="flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-system-fill/46 px-4 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-300 hover:bg-system-fill/70 hover:text-label sm:w-auto"
           >
-            <Paperclip className="h-4 w-4" strokeWidth={1.8} />
-            {showReceiptField ? "Hide receipt" : "Add receipt"}
+            Upload proof
           </button>
+          <p className={styles.sceneHint}>One file. Screenshot, receipt, or transfer slip.</p>
         </div>
+      ) : null}
 
-        {showReceiptField ? (
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*,application/pdf"
-            className="min-w-0 w-full rounded-[24px] bg-system-fill/70 px-3 py-3 text-xs text-label file:mr-3 file:rounded-full file:bg-system-background file:px-3 file:py-2 file:text-[10px] file:font-semibold file:text-label"
-          />
+      <AnimatePresence mode="wait" initial={false}>
+        {step === "pick" && !isLocked ? (
+          <motion.section
+            key="pick"
+            className={styles.scene}
+            initial={SCENE_MOTION.initial}
+            animate={SCENE_MOTION.animate}
+            exit={SCENE_MOTION.exit}
+            transition={SCENE_MOTION.transition}
+          >
+            <button type="button" className={styles.dropZone} onClick={openPicker}>
+              <span className={styles.dropZoneTitle}>Choose a file</span>
+              <span className={styles.dropZoneText}>
+                PNG, JPG, WEBP, or PDF up to {MAX_FILE_MB} MB
+              </span>
+            </button>
+
+            {error ? <div className={styles.errorBanner}>{error}</div> : null}
+
+            <div className={styles.actionsRow}>
+              <button type="button" className={styles.primaryButton} onClick={openPicker}>
+                Browse files
+              </button>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => setStep("idle")}
+              >
+                Cancel
+              </button>
+            </div>
+          </motion.section>
         ) : null}
 
-        {message ? (
-          <p className="rounded-[18px] bg-system-fill/32 px-3 py-2 text-xs text-secondary-label">
-            {message}
-          </p>
+        {step === "confirm" && selectedFile && !isLocked ? (
+          <motion.section
+            key="confirm"
+            className={styles.scene}
+            initial={SCENE_MOTION.initial}
+            animate={SCENE_MOTION.animate}
+            exit={SCENE_MOTION.exit}
+            transition={SCENE_MOTION.transition}
+          >
+            <div className={styles.fileCard}>
+              <div className={styles.fileName}>{selectedFile.name}</div>
+              <div className={styles.fileMeta}>
+                {selectedFile.type || "Unknown type"} - {formatFileSize(selectedFile.size)}
+              </div>
+            </div>
+
+            <label className={styles.field}>
+              <span className={styles.label}>Optional note</span>
+              <textarea
+                className={styles.textarea}
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Add a short note only if needed."
+                rows={3}
+              />
+            </label>
+
+            {error ? <div className={styles.errorBanner}>{error}</div> : null}
+
+            <div className={styles.actionsRow}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={resetFlow}
+                disabled={isSubmitting}
+              >
+                Replace
+              </button>
+              <button
+                type="button"
+                className={styles.primaryButton}
+                onClick={() => void submitProof()}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Uploading..." : "Submit proof"}
+              </button>
+            </div>
+          </motion.section>
         ) : null}
-      </div>
+
+        {step === "success" ? (
+          <motion.section
+            key="success"
+            className={styles.scene}
+            initial={SCENE_MOTION.initial}
+            animate={SCENE_MOTION.animate}
+            exit={SCENE_MOTION.exit}
+            transition={SCENE_MOTION.transition}
+          >
+            <div className={styles.successCard}>
+              <div className={styles.successTitle}>Proof uploaded</div>
+              <div className={styles.successText}>
+                Your payment proof has been received and will be reviewed shortly.
+              </div>
+            </div>
+
+            <div className={styles.actionsRow}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={resetFlow}
+              >
+                Upload another file
+              </button>
+            </div>
+          </motion.section>
+        ) : null}
+      </AnimatePresence>
+
+      {message ? (
+        <div
+          className={cn(
+            styles.banner,
+            message.tone === "success" ? styles.bannerSuccess : styles.bannerError
+          )}
+        >
+          <CheckCircle2 className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+          <span>{message.text}</span>
+        </div>
+      ) : null}
+
+      {isLocked ? (
+        <div className={styles.successCard}>
+          <div className={styles.successTitle}>Payment already reviewed</div>
+          <div className={styles.successText}>
+            This proof flow is no longer editable for this payment state.
+          </div>
+        </div>
+      ) : null}
+
+      {!isLocked ? (
+        <div className={styles.banner}>
+          <Landmark className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+          <span>Payment reference is tied to this order and is reviewed in sequence.</span>
+        </div>
+      ) : null}
     </div>
   );
 }
+

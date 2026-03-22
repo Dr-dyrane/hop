@@ -375,50 +375,9 @@ export default async function AdminOrderDetailPage({
               </div>
             )}
           </DetailSurface>
-
-          <DetailSurface title="Timeline">
-            <div className="grid gap-2 text-sm text-secondary-label">
-              {orderEvents.length === 0 ? (
-                <div className="rounded-[22px] bg-system-fill/36 px-4 py-3">Waiting.</div>
-              ) : (
-                orderEvents.map((event) => (
-                  <div
-                    key={event.eventId}
-                    className="flex items-center justify-between gap-4 rounded-[22px] bg-system-fill/36 px-4 py-3"
-                  >
-                    <span className="text-label">{formatFlowStatusLabel(event.toStatus)}</span>
-                    <span>{formatTimestamp(event.createdAt)}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </DetailSurface>
         </div>
 
         <div className="space-y-4">
-          <DetailSurface title="Payment checks">
-            <div className="grid gap-2 text-sm text-secondary-label">
-              {paymentReviews.length === 0 ? (
-                <div className="rounded-[22px] bg-system-fill/36 px-4 py-3">Quiet.</div>
-              ) : (
-                paymentReviews.map((review) => (
-                  <div
-                    key={review.eventId}
-                    className="rounded-[22px] bg-system-fill/36 px-4 py-3"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-label">{formatPaymentReviewActionLabel(review.action)}</span>
-                      <span>{formatTimestamp(review.createdAt)}</span>
-                    </div>
-                    {review.note ? (
-                      <div className="mt-1 text-xs text-secondary-label">{review.note}</div>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </div>
-          </DetailSurface>
-
           <DetailSurface title="Customer rating">
             {customerReview ? (
               <div className="space-y-3">
@@ -677,6 +636,11 @@ export default async function AdminOrderDetailPage({
           </DetailSurface>
         </div>
       </div>
+
+      <AdminSecondaryDetails
+        orderEvents={orderEvents}
+        paymentReviews={paymentReviews}
+      />
     </div>
   );
 }
@@ -757,5 +721,69 @@ function InventoryStatusPill({
     >
       {label}
     </span>
+  );
+}
+
+function AdminSecondaryDetails({
+  orderEvents,
+  paymentReviews,
+}: {
+  orderEvents: Awaited<ReturnType<typeof listOrderStatusEvents>>;
+  paymentReviews: Awaited<ReturnType<typeof listPaymentReviewEvents>>;
+}) {
+  if (orderEvents.length === 0 && paymentReviews.length === 0) {
+    return null;
+  }
+
+  return (
+    <details className="rounded-[32px] bg-[color:var(--surface)]/88 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:p-6">
+      <summary className="cursor-pointer list-none text-[10px] font-semibold uppercase tracking-headline text-secondary-label">
+        More details
+      </summary>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <DetailSurface title="Timeline">
+          <div className="grid gap-2 text-sm text-secondary-label">
+            {orderEvents.length === 0 ? (
+              <div className="rounded-[22px] bg-system-fill/36 px-4 py-3">Waiting.</div>
+            ) : (
+              orderEvents.map((event) => (
+                <div
+                  key={event.eventId}
+                  className="flex items-center justify-between gap-4 rounded-[22px] bg-system-fill/36 px-4 py-3"
+                >
+                  <span className="text-label">{formatFlowStatusLabel(event.toStatus)}</span>
+                  <span>{formatTimestamp(event.createdAt)}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </DetailSurface>
+
+        <DetailSurface title="Payment checks">
+          <div className="grid gap-2 text-sm text-secondary-label">
+            {paymentReviews.length === 0 ? (
+              <div className="rounded-[22px] bg-system-fill/36 px-4 py-3">Quiet.</div>
+            ) : (
+              paymentReviews.map((review) => (
+                <div
+                  key={review.eventId}
+                  className="rounded-[22px] bg-system-fill/36 px-4 py-3"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-label">
+                      {formatPaymentReviewActionLabel(review.action)}
+                    </span>
+                    <span>{formatTimestamp(review.createdAt)}</span>
+                  </div>
+                  {review.note ? (
+                    <div className="mt-1 text-xs text-secondary-label">{review.note}</div>
+                  ) : null}
+                </div>
+              ))
+            )}
+          </div>
+        </DetailSurface>
+      </div>
+    </details>
   );
 }

@@ -1,0 +1,590 @@
+.card {
+  --task-surface-strong: color-mix(in srgb, var(--surface) 94%, transparent);
+  --task-surface-mid: color-mix(in srgb, var(--surface) 86%, transparent);
+  --task-surface-soft: color-mix(in srgb, var(--surface-alt) 42%, var(--system-background) 58%);
+  --task-surface-inset: color-mix(in srgb, var(--system-background) 88%, var(--surface-alt) 12%);
+  --task-surface-accent: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
+  --task-surface-selection: color-mix(in srgb, var(--selection) 78%, var(--surface) 22%);
+  --task-surface-muted: color-mix(in srgb, var(--surface-alt) 68%, transparent);
+  --task-shadow-soft: var(--shadow-soft);
+  --task-shadow-card: var(--shadow-card);
+  --task-shadow-float: var(--shadow-float);
+
+  display: grid;
+  gap: 0.875rem;
+  color: var(--label);
+}
+
+.card :where(*) {
+  border: 0 !important;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.title,
+.sceneTitle,
+.summaryTitle,
+.infoTitle,
+.statusTitle,
+.historyTitle,
+.successTitle,
+.dropZoneTitle,
+.choiceTitle {
+  margin: 0;
+  color: var(--label);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+  line-height: var(--leading-tight);
+}
+
+.description,
+.infoText,
+.statusText,
+.successText,
+.footerHint,
+.sceneHint,
+.choiceMeta,
+.fileMeta,
+.historyItem,
+.summaryNote,
+.metaValue,
+.banner,
+.link,
+.summaryRow,
+.fieldLabel,
+.label {
+  color: var(--secondary-label);
+  font-size: 0.88rem;
+  line-height: var(--leading-loose);
+}
+
+.description,
+.sceneHint,
+.footerHint,
+.infoText,
+.statusText,
+.successText,
+.summaryNote,
+.banner {
+  margin: 0;
+}
+
+.stepPill,
+.statusPill {
+  min-height: 34px;
+  padding-inline: 0.75rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--surface-alt) 72%, transparent);
+  color: var(--secondary-label);
+  box-shadow: var(--task-shadow-soft);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+  white-space: nowrap;
+}
+
+.infoCard,
+.statusCard,
+.successCard,
+.summaryCard,
+.historyCard,
+.fileCard,
+.metaPill,
+.banner,
+.dropZone,
+.choiceCard,
+.reasonCard,
+.textarea,
+.inputLike,
+.summaryRow {
+  border-radius: 22px;
+  border: 0;
+}
+
+.infoCard,
+.statusCard,
+.successCard,
+.summaryCard,
+.historyCard,
+.fileCard,
+.metaPill,
+.banner,
+.summaryRow {
+  padding: 0.9rem;
+  background: var(--task-surface-mid);
+  box-shadow: var(--task-shadow-soft);
+  backdrop-filter: blur(14px) saturate(140%) brightness(1.02);
+  -webkit-backdrop-filter: blur(14px) saturate(140%) brightness(1.02);
+}
+
+.statusCard {
+  background: var(--task-surface-strong);
+  box-shadow: var(--task-shadow-card);
+}
+
+.successCard {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 10%, var(--surface) 90%) 0%,
+    color-mix(in srgb, var(--accent) 6%, var(--surface) 94%) 100%
+  );
+}
+
+.successInline {
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.bannerSuccess {
+  background: var(--task-surface-accent);
+}
+
+.bannerError {
+  background: var(--task-surface-selection);
+}
+
+.compactScene,
+.scene,
+.choiceList,
+.reasonGrid,
+.historyBlock,
+.historyList,
+.fieldStack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.scene {
+  background: var(--task-surface-strong);
+  border-radius: 28px;
+  padding: 0.95rem;
+  box-shadow: var(--task-shadow-card);
+}
+
+.dropZone {
+  min-height: 148px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 1.25rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 90%, transparent) 0%,
+    color-mix(in srgb, var(--surface-alt) 82%, transparent) 100%
+  );
+  box-shadow: var(--task-shadow-soft);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-premium),
+    box-shadow var(--duration-base) var(--ease-premium),
+    background-color var(--duration-base) var(--ease-premium);
+}
+
+.dropZone:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--task-shadow-card);
+}
+
+.dropZoneText {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--secondary-label);
+  font-size: 0.82rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.fieldLabel,
+.label,
+.metaLabel {
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+  color: var(--tertiary-label);
+}
+
+.textarea,
+.inputLike {
+  width: 100%;
+  border: 0;
+  outline: none;
+  color: var(--label);
+  background: var(--task-surface-inset);
+  font: inherit;
+  box-shadow: var(--task-shadow-soft);
+}
+
+.textarea {
+  min-height: 112px;
+  resize: vertical;
+  padding: 0.875rem 0.95rem;
+}
+
+.inputLike {
+  min-height: 44px;
+  padding-inline: 0.9rem;
+}
+
+.actionsRow,
+.footerBar,
+.choiceControls,
+.starRow {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.actionsRow,
+.footerBar {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton,
+.iconButton,
+.reasonCard,
+.starButton,
+.starActive {
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  transition:
+    transform var(--duration-fast) var(--ease-premium),
+    box-shadow var(--duration-fast) var(--ease-premium),
+    background-color var(--duration-fast) var(--ease-premium),
+    color var(--duration-fast) var(--ease-premium),
+    opacity var(--duration-fast) var(--ease-premium);
+}
+
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1rem;
+  background: var(--accent);
+  color: var(--accent-label);
+  box-shadow: var(--shadow-button);
+}
+
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 1rem;
+  background: color-mix(in srgb, var(--surface-alt) 70%, transparent);
+  color: var(--label);
+  box-shadow: var(--task-shadow-soft);
+}
+
+.primaryButton:hover,
+.secondaryButton:hover,
+.reasonCard:hover,
+.choiceCard:hover,
+.iconButton:hover,
+.starButton:hover,
+.starActive:hover,
+.link:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton:active,
+.secondaryButton:active,
+.iconButton:active,
+.reasonCard:active,
+.choiceCard:active,
+.starButton:active,
+.starActive:active {
+  transform: scale(0.985);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled,
+.iconButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.choiceCard {
+  width: 100%;
+  padding: 0.95rem;
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+  box-shadow: var(--task-shadow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.choiceCardActive {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
+  box-shadow: var(--task-shadow-card);
+}
+
+.choiceControls {
+  justify-content: flex-end;
+}
+
+.choiceValue {
+  min-width: 34px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--label);
+}
+
+.iconButton {
+  min-width: 40px;
+  width: 40px;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--surface-alt) 76%, transparent);
+  color: var(--label);
+  box-shadow: var(--task-shadow-soft);
+}
+
+.reasonGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.reasonCard {
+  justify-content: center;
+  padding-inline: 0.95rem;
+  background: color-mix(in srgb, var(--surface-alt) 74%, transparent);
+  color: var(--secondary-label);
+  box-shadow: var(--task-shadow-soft);
+}
+
+.reasonCardActive {
+  background: var(--accent);
+  color: var(--accent-label);
+  box-shadow: var(--shadow-button);
+}
+
+.summaryCard {
+  background: var(--task-surface-strong);
+}
+
+.summaryTitle {
+  margin-bottom: 0.25rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--secondary-label);
+  font-size: 0.86rem;
+}
+
+.summaryNote {
+  background: var(--task-surface-soft);
+  border-radius: 18px;
+  padding: 0.8rem;
+  box-shadow: var(--task-shadow-soft);
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+.metaGridThree {
+  display: grid;
+  gap: 0.625rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.metaPill {
+  background: var(--task-surface-soft);
+}
+
+.fileName {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--label);
+}
+
+.fileMeta {
+  margin-top: 0.2rem;
+}
+
+.errorBanner {
+  border-radius: 18px;
+  border: 0;
+  padding: 0.8rem;
+  background: var(--task-surface-selection);
+  color: var(--label);
+  box-shadow: var(--task-shadow-soft);
+  font-size: 0.84rem;
+}
+
+.historyCard {
+  background: var(--task-surface-soft);
+}
+
+.historyList {
+  margin-top: 0.3rem;
+}
+
+.link {
+  text-decoration: none;
+  box-shadow: var(--task-shadow-soft);
+  background: var(--task-surface-mid);
+  border-radius: 16px;
+  padding: 0.625rem 0.75rem;
+}
+
+.starRow {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.starButton,
+.starActive {
+  width: 48px;
+  height: 48px;
+  line-height: 1;
+  font-size: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.starButton {
+  background: color-mix(in srgb, var(--surface-alt) 78%, transparent);
+  color: var(--tertiary-label);
+  box-shadow: var(--task-shadow-soft);
+}
+
+.starActive {
+  background: var(--accent);
+  color: var(--accent-label);
+  box-shadow: var(--shadow-button);
+}
+
+.ratingReadout {
+  margin-top: 0.4rem;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  color: var(--label);
+}
+
+.ratingStarsRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 0.4rem;
+}
+
+.ratingStarIcon {
+  color: var(--tertiary-label);
+  fill: transparent;
+}
+
+.ratingStarIconFilled {
+  color: var(--accent);
+  fill: currentColor;
+}
+
+.starActive .ratingStarIconFilled {
+  color: var(--accent-label);
+}
+
+:global(.dark) .card {
+  --task-shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.16);
+  --task-shadow-card: 0 6px 14px rgba(0, 0, 0, 0.22);
+  --task-shadow-float: 0 8px 18px rgba(0, 0, 0, 0.24);
+}
+
+:global(.dark) .scene,
+:global(.dark) .infoCard,
+:global(.dark) .statusCard,
+:global(.dark) .successCard,
+:global(.dark) .summaryCard,
+:global(.dark) .historyCard,
+:global(.dark) .fileCard,
+:global(.dark) .metaPill,
+:global(.dark) .banner,
+:global(.dark) .summaryRow {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.dropZone:focus-visible,
+.starButton:focus-visible,
+.starActive:focus-visible,
+.choiceCard:focus-visible,
+.reasonCard:focus-visible,
+.textarea:focus-visible,
+.inputLike:focus-visible,
+.link:focus-visible,
+.iconButton:focus-visible {
+  outline: none;
+  box-shadow:
+    var(--shadow-button),
+    0 0 0 6px color-mix(in srgb, var(--ring) 26%, transparent);
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stepPill,
+  .statusPill {
+    align-self: flex-start;
+  }
+}
+
+@media (min-width: 640px) {
+  .metaGridThree {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropZone,
+  .primaryButton,
+  .secondaryButton,
+  .reasonCard,
+  .choiceCard,
+  .iconButton,
+  .starButton,
+  .starActive,
+  .link {
+    transition: none !important;
+  }
+}

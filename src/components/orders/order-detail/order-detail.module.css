@@ -1,0 +1,919 @@
+.page {
+  --order-ease: var(--ease-premium, cubic-bezier(0.22, 1, 0.36, 1));
+  --order-fast: var(--duration-fast, 180ms);
+  --order-med: var(--duration-base, 320ms);
+  --order-slow: 420ms;
+
+  --order-surface-hero: color-mix(in srgb, var(--surface) 92%, var(--system-background) 8%);
+  --order-surface-primary: color-mix(in srgb, var(--surface) 86%, var(--system-background) 14%);
+  --order-surface-secondary: color-mix(in srgb, var(--surface) 76%, var(--system-background) 24%);
+  --order-surface-muted: color-mix(in srgb, var(--surface) 68%, var(--system-background) 32%);
+  --order-surface-overlay: color-mix(in srgb, var(--surface) 95%, var(--system-background) 5%);
+  --order-surface-inline: color-mix(in srgb, var(--system-fill) 52%, transparent);
+
+  --order-border-strong: color-mix(in srgb, var(--separator) 66%, transparent);
+  --order-border-soft: color-mix(in srgb, var(--separator) 44%, transparent);
+  --order-shadow-soft: 0 14px 34px color-mix(in srgb, var(--label) 8%, transparent);
+  --order-shadow-strong: 0 20px 50px color-mix(in srgb, var(--label) 12%, transparent);
+  --order-shadow-tight: 0 10px 22px color-mix(in srgb, var(--label) 7%, transparent);
+  --order-shadow-crisp: 0 8px 16px color-mix(in srgb, var(--label) 6%, transparent);
+
+  display: grid;
+  gap: 20px;
+}
+
+.page :where(*) {
+  border: 0 !important;
+}
+
+.heroShell {
+  display: grid;
+  gap: 12px;
+}
+
+.heroTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.backLink,
+.inlineLink,
+.secondaryAction,
+.inlineButton,
+.primaryTaskButton,
+.proofLink {
+  transition:
+    transform var(--order-fast) var(--order-ease),
+    opacity var(--order-fast) var(--order-ease),
+    background-color var(--order-fast) var(--order-ease),
+    color var(--order-fast) var(--order-ease),
+    box-shadow var(--order-fast) var(--order-ease);
+}
+
+.backLink,
+.inlineLink,
+.secondaryAction {
+  text-decoration: none;
+  color: var(--secondary-label);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.backLink:hover,
+.inlineLink:hover,
+.secondaryAction:hover,
+.proofLink:hover {
+  color: var(--label);
+}
+
+.backLink:active,
+.inlineLink:active,
+.secondaryAction:active,
+.inlineButton:active,
+.primaryTaskButton:active,
+.proofLink:active {
+  transform: scale(0.98);
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.heroCard {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 32px;
+  background: linear-gradient(180deg, var(--order-surface-hero), var(--order-surface-primary));
+  box-shadow:
+    var(--order-shadow-strong);
+  backdrop-filter: blur(22px) saturate(1.1);
+  -webkit-backdrop-filter: blur(22px) saturate(1.1);
+}
+
+.heroMain {
+  display: grid;
+  gap: 10px;
+}
+
+.heroLabel,
+.sectionEyebrow,
+.panelTitle,
+.topMetricLabel,
+.quietStatLabel,
+.metaLabel {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--tertiary-label);
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--label);
+}
+
+.heroSummary {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--secondary-label);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.heroStatusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.statusPill,
+.subtlePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.statusPill {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--label);
+}
+
+.subtlePill {
+  background: var(--order-surface-inline);
+  color: var(--secondary-label);
+}
+
+.heroStats {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.topMetric {
+  padding: 14px 14px 15px;
+  border-radius: 20px;
+  background: var(--order-surface-inline);
+  box-shadow: var(--order-shadow-crisp);
+}
+
+.topMetricValue {
+  margin-top: 5px;
+  color: var(--label);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.topMetricDetail {
+  margin-top: 4px;
+  color: var(--secondary-label);
+  font-size: 0.77rem;
+}
+
+.priorityStrip {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quietStat {
+  padding: 14px;
+  border-radius: 22px;
+  background: var(--order-surface-secondary);
+  box-shadow: var(--order-shadow-crisp);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.quietStatValue {
+  margin-top: 5px;
+  color: var(--label);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.quietStatDetail {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--secondary-label);
+}
+
+.layout {
+  display: grid;
+  gap: 16px;
+}
+
+.mainColumn,
+.sideColumn {
+  display: grid;
+  gap: 16px;
+}
+
+.panel {
+  border-radius: 32px;
+  padding: 18px;
+  transition:
+    opacity var(--order-med) var(--order-ease),
+    transform var(--order-med) var(--order-ease),
+    box-shadow var(--order-med) var(--order-ease),
+    background var(--order-med) var(--order-ease);
+}
+
+.panelPrimary {
+  background: linear-gradient(180deg, var(--order-surface-primary), var(--order-surface-secondary));
+  box-shadow:
+    var(--order-shadow-soft);
+  backdrop-filter: blur(20px) saturate(1.12);
+  -webkit-backdrop-filter: blur(20px) saturate(1.12);
+}
+
+.panelSecondary {
+  background: linear-gradient(180deg, var(--order-surface-secondary), var(--order-surface-muted));
+  box-shadow:
+    0 12px 30px color-mix(in srgb, var(--label) 6%, transparent);
+  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+}
+
+.panelMuted {
+  background: color-mix(in srgb, var(--order-surface-muted) 86%, transparent);
+  box-shadow:
+    0 10px 24px color-mix(in srgb, var(--label) 5%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.panelOverlay {
+  background: linear-gradient(180deg, var(--order-surface-overlay), var(--order-surface-primary));
+  box-shadow:
+    0 22px 52px color-mix(in srgb, var(--label) 10%, transparent);
+  backdrop-filter: blur(24px) saturate(1.14);
+  -webkit-backdrop-filter: blur(24px) saturate(1.14);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelBody {
+  margin-top: 14px;
+}
+
+.panelActionGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panelCaption,
+.inlineStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--secondary-label);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+}
+
+.inlineButton {
+  border: 0;
+  background: color-mix(in srgb, var(--system-fill) 72%, transparent);
+  color: var(--label);
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.inlineButton:hover {
+  background: color-mix(in srgb, var(--system-fill) 100%, transparent);
+}
+
+.taskShell {
+  display: grid;
+  gap: 14px;
+}
+
+.taskShellActive {
+  gap: 16px;
+}
+
+.taskIntro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.taskTitle {
+  color: var(--label);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.taskDescription {
+  margin-top: 4px;
+  color: var(--secondary-label);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.primaryTaskButton {
+  min-height: 46px;
+  width: fit-content;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 18px;
+  background: var(--accent);
+  color: var(--accent-label);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 24%, transparent);
+}
+
+.primaryTaskButton:hover {
+  opacity: 0.96;
+}
+
+.animatedSection {
+  overflow: hidden;
+}
+
+.formPanel {
+  padding: 14px;
+  border-radius: 24px;
+  background: var(--order-surface-inline);
+  box-shadow: var(--order-shadow-crisp);
+}
+
+.transferPending,
+.transferReady {
+  display: grid;
+  gap: 14px;
+}
+
+.transferAmount,
+.accountNumber {
+  color: var(--label);
+  letter-spacing: -0.03em;
+}
+
+.transferAmount {
+  font-size: clamp(1.8rem, 4vw, 2.2rem);
+  font-weight: 700;
+}
+
+.accountCard,
+.calloutCard,
+.metaCard,
+.itemCard,
+.timelineItem {
+  border-radius: 24px;
+  background: var(--order-surface-inline);
+  box-shadow: var(--order-shadow-crisp);
+}
+
+.accountCard {
+  padding: 16px;
+}
+
+.accountNumber {
+  margin-top: 6px;
+  font-size: clamp(1.35rem, 3vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.helperText {
+  margin-top: 8px;
+  color: var(--secondary-label);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.metaGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.metaCard {
+  padding: 14px;
+}
+
+.metaValue {
+  margin-top: 5px;
+  color: var(--label);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.calloutCard {
+  padding: 15px 16px;
+  color: var(--secondary-label);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.proofList {
+  display: grid;
+  gap: 8px;
+}
+
+.proofLink,
+.proofText {
+  color: var(--secondary-label);
+  font-size: 0.85rem;
+  width: fit-content;
+}
+
+.proofLink {
+  text-decoration: none;
+}
+
+.proofText {
+  cursor: default;
+}
+
+.itemList,
+.timelineList {
+  display: grid;
+  gap: 10px;
+}
+
+.itemCard,
+.timelineItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 15px;
+}
+
+.itemLeft,
+.timelineStatusGroup {
+  min-width: 0;
+}
+
+.itemTitle,
+.addressLine,
+.timelineStatus {
+  color: var(--label);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.itemMeta,
+.addressMeta,
+.timelineSubtext,
+.timelineTime {
+  margin-top: 4px;
+  color: var(--secondary-label);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.itemBadge {
+  margin-top: 8px;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--label);
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.itemTotal,
+.timelineAmount {
+  flex-shrink: 0;
+  color: var(--label);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.addressBlock {
+  display: grid;
+  gap: 4px;
+}
+
+.detailsShell {
+  padding: 18px;
+  border-radius: 32px;
+  background: linear-gradient(180deg, var(--order-surface-secondary), var(--order-surface-muted));
+  box-shadow:
+    0 16px 42px color-mix(in srgb, var(--label) 7%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition:
+    opacity var(--order-med) var(--order-ease),
+    transform var(--order-med) var(--order-ease);
+}
+
+.detailsShellOpen {
+  box-shadow: 0 22px 56px color-mix(in srgb, var(--label) 10%, transparent);
+}
+
+.detailsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.detailsTitle {
+  margin: 4px 0 0;
+  color: var(--label);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.detailsDescription {
+  margin: 6px 0 0;
+  max-width: 62ch;
+  color: var(--secondary-label);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.trackingLayout {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+  grid-template-columns: 1fr;
+}
+
+.trackingLayoutWithSide {
+  grid-template-columns: 1fr;
+}
+
+.timelinePanel {
+  grid-column: 1 / -1;
+}
+
+.trackingMapPanel {
+  grid-column: 1 / -1;
+}
+
+.trackingSecondaryPanel {
+  grid-column: 1 / -1;
+}
+
+.trackingPanelEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--secondary-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.trackingStepList {
+  display: grid;
+  gap: 8px;
+}
+
+.trackingStepListZigZag {
+  grid-template-columns: 1fr;
+}
+
+.trackingStep {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.trackingStepRail {
+  display: grid;
+  justify-items: center;
+  grid-template-rows: auto 1fr;
+  min-height: 72px;
+}
+
+.trackingStepIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--surface-alt) 72%, transparent);
+  color: var(--secondary-label);
+  box-shadow: var(--order-shadow-crisp);
+  transition:
+    transform var(--order-fast) var(--order-ease),
+    background-color var(--order-fast) var(--order-ease),
+    color var(--order-fast) var(--order-ease),
+    box-shadow var(--order-fast) var(--order-ease);
+}
+
+.trackingStepLine {
+  width: 2px;
+  height: 100%;
+  margin-top: 8px;
+  background: color-mix(in srgb, var(--surface-alt) 80%, transparent);
+  border-radius: 999px;
+}
+
+.trackingStepBody {
+  min-width: 0;
+  border-radius: 20px;
+  padding: 10px 12px;
+  background: var(--order-surface-inline);
+  box-shadow: var(--order-shadow-crisp);
+}
+
+.trackingStepTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trackingStepTitle {
+  color: var(--secondary-label);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.trackingStepTime {
+  margin-top: 3px;
+  color: var(--tertiary-label);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.trackingCurrentPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding-inline: 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%);
+  color: color-mix(in srgb, var(--accent) 84%, var(--label) 16%);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.trackingStepCompleted .trackingStepIcon {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface) 86%);
+  color: var(--accent);
+}
+
+.trackingStepCurrent .trackingStepIcon {
+  background: var(--accent);
+  color: var(--accent-label);
+  box-shadow: var(--order-shadow-tight);
+  transform: scale(1.03);
+}
+
+.trackingStepCurrent .trackingStepTitle {
+  color: var(--label);
+}
+
+.trackingStepUpcoming .trackingStepIcon {
+  opacity: 0.6;
+}
+
+.trackingStepUpcoming .trackingStepTitle {
+  color: var(--tertiary-label);
+}
+
+.returnActivityItem {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  border-radius: 20px;
+  background: var(--order-surface-inline);
+  box-shadow: var(--order-shadow-crisp);
+  padding: 10px 12px;
+}
+
+.returnActivityIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--selection) 72%, var(--surface-alt) 28%);
+  color: var(--label);
+  box-shadow: var(--order-shadow-crisp);
+}
+
+.mapFrame {
+  overflow: hidden;
+  border-radius: 26px;
+  box-shadow: var(--order-shadow-crisp);
+}
+
+.mapImage {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.emptyState {
+  padding: 24px;
+  border-radius: 32px;
+  background: var(--order-surface-primary);
+  box-shadow:
+    0 16px 42px color-mix(in srgb, var(--label) 7%, transparent);
+  color: var(--secondary-label);
+}
+
+.emptyStateActions {
+  margin-top: 14px;
+}
+
+.dimmed {
+  opacity: 0.56;
+  transform: scale(0.992);
+}
+
+:global(.dark) .page {
+  --order-shadow-soft: 0 6px 14px rgba(0, 0, 0, 0.28);
+  --order-shadow-strong: 0 10px 20px rgba(0, 0, 0, 0.34);
+  --order-shadow-tight: 0 8px 16px rgba(0, 0, 0, 0.24);
+  --order-shadow-crisp: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+:global(.dark) .heroCard,
+:global(.dark) .topMetric,
+:global(.dark) .quietStat,
+:global(.dark) .panelPrimary,
+:global(.dark) .panelSecondary,
+:global(.dark) .panelMuted,
+:global(.dark) .panelOverlay,
+:global(.dark) .detailsShell,
+:global(.dark) .formPanel {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:global(.dark) .heroCard,
+:global(.dark) .panelPrimary,
+:global(.dark) .panelSecondary,
+:global(.dark) .panelMuted,
+:global(.dark) .panelOverlay,
+:global(.dark) .detailsShell,
+:global(.dark) .detailsShellOpen,
+:global(.dark) .topMetric,
+:global(.dark) .quietStat,
+:global(.dark) .formPanel,
+:global(.dark) .accountCard,
+:global(.dark) .calloutCard,
+:global(.dark) .metaCard,
+:global(.dark) .itemCard,
+:global(.dark) .timelineItem,
+:global(.dark) .mapFrame,
+:global(.dark) .emptyState,
+:global(.dark) .trackingStepIcon,
+:global(.dark) .trackingStepBody,
+:global(.dark) .returnActivityItem,
+:global(.dark) .returnActivityIcon {
+  box-shadow: var(--order-shadow-crisp);
+}
+
+:global(.dark) .trackingStepLine {
+  background: color-mix(in srgb, var(--separator) 56%, transparent);
+}
+
+@media (min-width: 768px) {
+  .heroCard {
+    grid-template-columns: minmax(0, 1.4fr) minmax(340px, 0.9fr);
+    align-items: end;
+  }
+
+  .heroStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .priorityStrip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .trackingLayoutWithSide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trackingLayoutWithSide .timelinePanel {
+    grid-column: 1 / -1;
+  }
+
+  .trackingLayoutWithSide .trackingMapPanel {
+    grid-column: 1 / 2;
+  }
+
+  .trackingLayoutWithSide .trackingSecondaryPanel {
+    grid-column: 2 / 3;
+  }
+}
+
+@media (min-width: 980px) {
+  .trackingStepListZigZag {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 14px;
+    row-gap: 10px;
+  }
+
+  .trackingStepListZigZag .trackingStep {
+    align-self: stretch;
+  }
+
+  .trackingStepListZigZag .trackingStep:nth-child(odd) {
+    grid-column: 1 / 2;
+  }
+
+  .trackingStepListZigZag .trackingStep:nth-child(even) {
+    grid-column: 2 / 3;
+  }
+
+  .trackingStepListZigZag .trackingStepRail {
+    min-height: 58px;
+  }
+
+  .trackingStepListZigZag .trackingStepLine {
+    display: none;
+  }
+}
+
+@media (min-width: 1100px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+    align-items: start;
+  }
+
+  .trackingLayoutWithSide {
+    grid-template-columns: minmax(0, 0.96fr) minmax(340px, 1.04fr);
+    align-items: start;
+  }
+
+  .trackingLayoutWithSide .timelinePanel {
+    grid-column: 1 / 2;
+  }
+
+  .trackingLayoutWithSide .trackingMapPanel {
+    grid-column: 2 / 3;
+  }
+
+  .trackingLayoutWithSide .trackingSecondaryPanel {
+    grid-column: 2 / 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .detailsShell,
+  .backLink,
+  .inlineLink,
+  .secondaryAction,
+  .inlineButton,
+  .primaryTaskButton,
+  .proofLink {
+    transition: none !important;
+  }
+
+  .dimmed {
+    transform: none;
+  }
+}
