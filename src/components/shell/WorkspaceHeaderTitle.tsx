@@ -31,8 +31,7 @@ export function WorkspaceHeaderTitle({
     routes,
     fallbackTitle: title,
   });
-  const hasHistoryEntry = typeof window !== "undefined" && window.history.length > 1;
-  const hasMobileBack = context.breadcrumbs.length > 0 && hasHistoryEntry;
+  const hasMobileBack = context.breadcrumbs.length > 0;
 
   return (
     <div className="min-w-0">
@@ -68,7 +67,12 @@ export function WorkspaceHeaderTitle({
             type="button"
             onClick={() => {
               feedback.selection();
-              router.back();
+              if (window.history.length > 1) {
+                router.back();
+                return;
+              }
+
+              router.push(context.breadcrumbs[0]?.href ?? "/account");
             }}
             className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-system-fill/34 text-tertiary-label transition-colors duration-200 hover:bg-system-fill/52 hover:text-secondary-label"
             aria-label="Go back"

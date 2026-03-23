@@ -55,7 +55,7 @@ export function WorkspaceShell({
       <div className="min-h-svh w-full md:grid md:grid-cols-[80px_minmax(0,1fr)] lg:grid-cols-[300px_minmax(0,1fr)] transition-all duration-300">
         <aside
           className={cn(
-            "hidden px-3 py-6 md:sticky md:top-0 md:flex md:h-svh md:flex-col md:self-start md:overflow-hidden lg:px-6",
+            "hidden px-3 space-y-2 py-6 md:sticky md:top-0 md:flex md:h-svh md:flex-col md:self-start md:overflow-hidden lg:px-6",
             nativeMode ? "bg-[color:var(--surface)]/68" : "bg-[color:var(--surface)]/48"
           )}
         >
