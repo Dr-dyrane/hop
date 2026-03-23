@@ -114,7 +114,16 @@ export function Product3DViewer({
           setIsReady(true);
         }
       }, 300);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+
+        // Release the lock when this active viewer unmounts or section ownership changes.
+        if (globalSectionLock === safeSectionId) {
+          globalSectionLock = null;
+        }
+
+        activeWebGLContexts.delete(safeSectionId);
+      };
     }
 
     if (globalSectionLock === safeSectionId) {

@@ -47,7 +47,12 @@ export function HomeClient() {
       case "lifestyle_gallery":
         return <LifestyleGallery key={section.sectionKey} />;
       case "featured_products":
-        return <ProductSelector key={section.sectionKey} />;
+        return (
+          <ProductSelector
+            key={section.sectionKey}
+            isScrollingIntoSection={isScrollingIntoSection}
+          />
+        );
       case "review_highlight":
         return <SocialProof key={section.sectionKey} />;
       case "final_cta":

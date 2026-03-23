@@ -20,7 +20,11 @@ const Product3DViewer = dynamic(
   { ssr: false }
 );
 
-export function ProductSelector() {
+export function ProductSelector({
+  isScrollingIntoSection,
+}: {
+  isScrollingIntoSection?: (sectionId: string) => boolean;
+}) {
   const { categories, productIds, productsById } = useMarketingContent();
   const { resolvedTheme } = useTheme();
   const { addItem } = useCommerce();
@@ -33,7 +37,7 @@ export function ProductSelector() {
   const [activeCategory, setActiveCategory] = useState(visibleCategories[0]?.id ?? "");
   const [selectedProduct, setSelectedProduct] = useState<ProductId>(productIds[0]);
   const isDark = resolvedTheme === "dark";
-  const scrollActive = true;
+  const scrollActive = isScrollingIntoSection ? isScrollingIntoSection("shop") : true;
 
   // Logic for filtered products based on category
   const filteredProducts = productIds.filter((id) => productsById[id].categoryId === activeCategory);
@@ -116,7 +120,7 @@ export function ProductSelector() {
                       modelPath={activeProduct.model}
                       theme={isDark ? "dark" : "light"}
                       className="h-full w-full"
-                      sectionId={`shop-${safeSelectedProduct}`}
+                      sectionId="shop"
                       scrollActive={scrollActive}
                     />
                   ) : (
