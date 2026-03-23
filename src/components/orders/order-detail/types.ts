@@ -25,4 +25,5 @@ export type OrderDetailViewProps = {
   backHref: string;
   accessToken?: string;
   trackingHref?: string | null;
+  viewerRole?: "customer" | "admin";
 };

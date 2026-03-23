@@ -88,6 +88,7 @@ export function OrderDetailView({
   backHref,
   accessToken,
   trackingHref,
+  viewerRole = "customer",
 }: OrderDetailViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -110,11 +111,16 @@ export function OrderDetailView({
         fulfillmentStatus: order.fulfillmentStatus,
       })
     : null;
+  const isAdminViewer = viewerRole === "admin";
   const isDeliveredStage = ledgerState?.key === "delivered";
-  const showReturn = Boolean(order && (returnCase || isDeliveredStage));
-  const showReview = Boolean(order && (isDeliveredStage || reviewRequest || review));
+  const showReturn = Boolean(
+    !isAdminViewer && order && (returnCase || isDeliveredStage)
+  );
+  const showReview = Boolean(
+    !isAdminViewer && order && (isDeliveredStage || reviewRequest || review)
+  );
   const showPaymentWorkflow = Boolean(
-    order && order.paymentId && ledgerState?.ui.showPaymentWorkflow
+    !isAdminViewer && order && order.paymentId && ledgerState?.ui.showPaymentWorkflow
   );
   const hasDetailsSection = Boolean(
     order && (mapSrc || timeline.length > 0 || returnItems.length > 0)
