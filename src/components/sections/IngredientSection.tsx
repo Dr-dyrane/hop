@@ -1,210 +1,216 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Leaf, Sparkles, Beaker, CheckCircle2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { SectionContainer } from "@/components/ui/SectionContainer";
-import { HeroEyebrow } from "@/components/ui/HeroEyebrow";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  type PanInfo,
+} from "framer-motion";
 import { useMarketingContent } from "@/components/providers/MarketingContentProvider";
-import { useMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
-import type { IngredientProfile, MarketingProduct, ProductId } from "@/lib/marketing/types";
 
-const CATEGORIES = ["All", "Proteins", "Seeds", "Botanicals"];
+const DRAG_THRESHOLD = 50;
 
 export function IngredientSection() {
-  const { ingredients, products, productsById } = useMarketingContent();
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [selectedId, setSelectedId] = useState<string>(ingredients[0]?.id || "");
-  const isMobile = useMobile();
+  const { ingredients } = useMarketingContent();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+  
+  // 3D Tilt Values
+  const springConfig = { stiffness: 150, damping: 20 };
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(mouseY, [-300, 300], [10, -10]), springConfig);
+  const rotateY = useSpring(useTransform(mouseX, [-300, 300], [-15, 15]), springConfig);
 
-  // Filtered ingredients based on category
-  const filteredIngredients = useMemo(() => {
-    if (activeCategory === "All") return ingredients;
-    return ingredients.filter((ing) => ing.category === activeCategory);
-  }, [activeCategory, ingredients]);
+  // Custom Cursor Values
+  const cursorX = useMotionValue(-100);
+  const cursorY = useMotionValue(-100);
+  const cursorSpringX = useSpring(cursorX, { stiffness: 500, damping: 28 });
+  const cursorSpringY = useSpring(cursorY, { stiffness: 500, damping: 28 });
 
-  // Sync selectedId when category changes
-  const currentIngredients = useMemo(() => {
-    const list = filteredIngredients;
-    if (list.length > 0 && !list.find(i => i.id === selectedId)) {
-        // Only auto-switch if the current selection isn't in the new list
-        // Actually, let's keep it if it is, otherwise pick first.
+  useEffect(() => {
+    const moveCursor = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+    };
+    window.addEventListener("mousemove", moveCursor);
+    return () => window.removeEventListener("mousemove", moveCursor);
+  }, [cursorX, cursorY]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    mouseX.set(e.clientX - centerX);
+    mouseY.set(e.clientY - centerY);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+    setIsHovering(false);
+  };
+
+  const onDragEnd = (
+    _event: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo
+  ) => {
+    const { offset, velocity } = info;
+    if (offset.x < -DRAG_THRESHOLD || velocity.x < -500) {
+      setActiveIndex((prev) => (prev + 1) % ingredients.length);
+    } else if (offset.x > DRAG_THRESHOLD || velocity.x > 500) {
+      setActiveIndex((prev) => (prev - 1 + ingredients.length) % ingredients.length);
     }
-    return list;
-  }, [filteredIngredients, selectedId]);
-
-  const selectedIngredient = useMemo(() => 
-    ingredients.find((ing) => ing.id === selectedId) || ingredients[0]
-  , [ingredients, selectedId]);
-
-  // Find products that use this ingredient
-  const usedInProducts = useMemo(() => {
-    if (!selectedIngredient) return [];
-    return products.filter((prod) => 
-      selectedIngredient.aliases.some(alias => 
-        prod.ingredients.some(pi => pi.toLowerCase().includes(alias.toLowerCase()))
-      )
-    );
-  }, [products, selectedIngredient]);
+    handleMouseLeave();
+  };
 
   return (
-    <SectionContainer id="ingredients" className="bg-system-background">
-      <div className="container-shell">
-        {/* Header */}
-        <div className="mb-16 text-center max-w-3xl mx-auto">
-          <HeroEyebrow position="center" animated>
-            <Leaf className="mr-3 h-3.5 w-3.5 text-label" />
-            Transparency
-          </HeroEyebrow>
-          <h2 className="mt-8 text-4xl md:text-5xl lg:text-6xl font-headline font-bold text-label tracking-display leading-tight">
-            Nothing Hidden. <br /> Nothing Fake.
-          </h2>
-          <p className="mt-8 text-lg text-secondary-label leading-relaxed tracking-body italic">
-            Trace every component of our system. Transparent, plant-based formulation designed for performance.
-          </p>
-        </div>
+    <section className="relative h-[100vh] min-h-[700px] w-full overflow-hidden bg-system-background flex items-center justify-center cursor-none">
+      {/* Custom Magnetic Cursor */}
+      <motion.div
+        className="pointer-events-none fixed top-0 left-0 z-[100] flex items-center justify-center rounded-full bg-label mix-blend-difference"
+        style={{
+          x: cursorSpringX,
+          y: cursorSpringY,
+          translateX: "-50%",
+          translateY: "-50%",
+        }}
+        animate={{
+          width: isHovering ? 100 : 12,
+          height: isHovering ? 100 : 12,
+        }}
+      >
+        {isHovering && (
+          <motion.span 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            className="text-[10px] font-bold uppercase tracking-tighter text-system-background"
+          >
+            Drag
+          </motion.span>
+        )}
+      </motion.div>
 
-        {/* Category Filters */}
-        <div className="flex flex-wrap justify-center gap-3 mb-16">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={cn(
-                "px-6 py-2.5 rounded-full text-[11px] font-semibold uppercase tracking-headline transition-all duration-300",
-                activeCategory === cat 
-                  ? "bg-label text-system-background shadow-lg scale-105" 
-                  : "bg-system-fill text-secondary-label hover:text-label hover:bg-secondary-system-fill"
-              )}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Explorer Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 items-start">
-          
-          {/* Main Spotlight Panel */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedIngredient.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="card-premium glass-morphism overflow-hidden p-0 min-h-[600px] flex flex-col"
-            >
-              <div className="relative aspect-video w-full overflow-hidden">
-                <Image 
-                  src={selectedIngredient.image}
-                  alt={selectedIngredient.name}
-                  fill
-                  className="object-cover mask-soft-edge opacity-90"
-                />
-                <div className="absolute top-8 left-8 flex gap-3">
-                  <span className="bg-label/90 text-system-background backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-headline flex items-center gap-2">
-                    <Sparkles className="w-3 h-3" />
-                    {selectedIngredient.category}
-                  </span>
-                  <span className="bg-white/10 text-white backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-headline">
-                    {selectedIngredient.role}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-10 flex-1 flex flex-col justify-center">
-                <div className="max-w-xl">
-                  <h3 className="text-4xl md:text-5xl font-headline font-bold text-label tracking-display mb-6">
-                    {selectedIngredient.name}
-                  </h3>
-                  <div className="flex items-center gap-3 mb-8">
-                     <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                     <span className="text-accent font-semibold uppercase text-[11px] tracking-widest">
-                       {selectedIngredient.benefit}
-                     </span>
-                  </div>
-                  <p className="text-xl text-secondary-label leading-relaxed tracking-body mb-12">
-                    {selectedIngredient.detail}
-                  </p>
-
-                  <div className="pt-10">
-                    <h4 className="text-[10px] font-bold uppercase tracking-headline text-tertiary-label mb-6 flex items-center gap-2">
-                      <Beaker className="w-3.5 h-3.5" />
-                      Formulated In
-                    </h4>
-                    <div className="flex flex-wrap gap-4">
-                      {usedInProducts.map(prod => (
-                        <div key={prod.id} className="group/prod flex items-center gap-4 bg-system-fill rounded-2xl p-3 pr-6 transition-all hover:bg-secondary-system-fill">
-                           <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-white/50">
-                              <Image src={prod.image || ""} alt={prod.name} fill className="object-contain p-1" />
-                           </div>
-                           <div className="flex flex-col">
-                              <span className="text-[11px] font-bold text-label uppercase tracking-headline">{prod.name}</span>
-                              <span className="text-[9px] text-secondary-label uppercase tracking-body font-medium">{prod.flavor || "Original"}</span>
-                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Ingredient Selector / List */}
-          <div className="flex flex-col gap-4">
-            <h4 className="text-[10px] font-bold uppercase tracking-headline text-tertiary-label mb-2 px-2">
-              Select Ingredient ({filteredIngredients.length})
-            </h4>
-            <div className="grid grid-cols-1 gap-3 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
-              {filteredIngredients.map((ing) => (
-                <button
-                  key={ing.id}
-                  onClick={() => setSelectedId(ing.id)}
-                  className={cn(
-                    "flex items-center gap-6 p-5 rounded-[32px] transition-all duration-500 text-left",
-                    selectedId === ing.id 
-                      ? "bg-system-background shadow-float" 
-                      : "bg-system-fill/50 hover:bg-system-fill backdrop-blur-sm grayscale opacity-70 hover:grayscale-0 hover:opacity-100"
-                  )}
-                >
-                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-sm shrink-0">
-                    <Image src={ing.image} alt={ing.name} fill className="object-cover" />
-                  </div>
-                  <div className="flex flex-col flex-1 overflow-hidden">
-                    <div className="flex items-center justify-between mb-1">
-                      <h5 className="text-[13px] font-bold text-label uppercase tracking-headline truncate">
-                        {ing.name}
-                      </h5>
-                      {selectedId === ing.id && <CheckCircle2 className="w-4 h-4 text-accent" />}
-                    </div>
-                    <span className="text-[10px] text-secondary-label font-medium uppercase tracking-body truncate">
-                      {ing.benefit}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-        </div>
+      {/* Background Blur Circles */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] aspect-square rounded-full bg-accent blur-[160px]" 
+        />
+        <div className="absolute inset-0 backdrop-blur-[120px] bg-system-background/56" />
       </div>
 
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: var(--separator);
-          border-radius: 10px;
-        }
-      `}</style>
-    </SectionContainer>
+      <div className="relative z-10 w-full h-full flex flex-col justify-center">
+        <div 
+          className="relative h-[65vh] w-full flex items-center justify-center [perspective:2000px] touch-none"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onMouseEnter={() => setIsHovering(true)}
+        >
+          <AnimatePresence initial={false} mode="popLayout">
+            {ingredients.map((ing, index) => {
+              let offset = index - activeIndex;
+              if (offset > ingredients.length / 2) offset -= ingredients.length;
+              if (offset < -ingredients.length / 2) offset += ingredients.length;
+
+              const absOffset = Math.abs(offset);
+              const isActive = absOffset === 0;
+
+              if (absOffset > 2) return null;
+
+              return (
+                <motion.div
+                  key={ing.id}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  onDragEnd={onDragEnd}
+                  initial={{ opacity: 0, scale: 0.8, z: -500 }}
+                  animate={{
+                    x: offset * 540, 
+                    scale: isActive ? 1 : 0.7 - absOffset * 0.1,
+                    rotateY: isActive ? rotateY.get() : offset * -40,
+                    rotateX: isActive ? rotateX.get() : 0,
+                    z: isActive ? 0 : -800 * absOffset,
+                    opacity: 1 - absOffset * 0.4,
+                    filter: `blur(${isActive ? 0 : 15}px)`,
+                  }}
+                  style={{ 
+                    zIndex: 10 - absOffset,
+                    rotateX: isActive ? rotateX : 0,
+                    rotateY: isActive ? rotateY : (offset * -40),
+                  }}
+                  transition={{ type: "spring", stiffness: 140, damping: 20 }}
+                  className={cn(
+                    "absolute w-[90vw] max-w-[1000px] aspect-[16/10] rounded-[60px] overflow-hidden shadow-card",
+                    isActive
+                      ? "shadow-float ring-1 ring-ring/55"
+                      : "pointer-events-none ring-1 ring-separator/45"
+                  )}
+                >
+                  <div className="relative h-full w-full">
+                    <Image src={ing.image} alt={ing.name} fill priority={isActive} className="object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-system-background/90 via-system-background/56 to-transparent dark:from-system-background/88 dark:via-system-background/30" />
+                    
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 40 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="absolute inset-0 p-12 md:p-20 flex flex-col justify-end"
+                        >
+                          <span className="w-fit bg-system-background/62 dark:bg-system-fill/65 backdrop-blur-3xl px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.3em] text-label/75 mb-8">
+                            {ing.category}
+                          </span>
+                          <h2 className="text-8xl md:text-[140px] font-headline font-bold text-label tracking-tighter leading-[0.7] mb-10">
+                            {ing.name}
+                          </h2>
+                          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8">
+                            <p className="max-w-md text-xl text-secondary-label font-light leading-snug">
+                              {ing.detail}
+                            </p>
+                            <span className="text-[11px] font-bold uppercase tracking-widest text-accent pb-1">
+                              {ing.benefit}
+                            </span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+
+        {/* Cinematic Progress Bar */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4">
+          <span className="text-[10px] font-bold text-secondary-label/70">01</span>
+          <div className="flex gap-2">
+            {ingredients.map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{ 
+                  width: i === activeIndex ? 60 : 10,
+                  backgroundColor:
+                    i === activeIndex
+                      ? "var(--label)"
+                      : "color-mix(in srgb, var(--label) 16%, transparent)"
+                }}
+                className="h-[2px] rounded-full transition-all duration-700"
+              />
+            ))}
+          </div>
+          <span className="text-[10px] font-bold text-secondary-label/70">
+            {ingredients.length.toString().padStart(2, "0")}
+          </span>
+        </div>
+      </div>
+    </section>
   );
 }

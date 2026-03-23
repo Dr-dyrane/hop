@@ -20,7 +20,7 @@ import { Footer } from "@/components/sections/Footer";
 export function HomeClient() {
   const { homeSections } = useMarketingContent();
   // Centralized scroll-aware 3D animation - only ONE Intersection Observer instance
-  const { activeSection, isScrollingIntoSection, isScrollingOutOfSection } = useScrollAware3D({
+  const { isScrollingIntoSection } = useScrollAware3D({
     sectionIds: ["hero", "solution", "shop"],
   });
 
@@ -47,14 +47,7 @@ export function HomeClient() {
       case "lifestyle_gallery":
         return <LifestyleGallery key={section.sectionKey} />;
       case "featured_products":
-        return (
-          <ProductSelector
-            key={section.sectionKey}
-            activeSection={activeSection}
-            isScrollingIntoSection={isScrollingIntoSection}
-            isScrollingOutOfSection={isScrollingOutOfSection}
-          />
-        );
+        return <ProductSelector key={section.sectionKey} />;
       case "review_highlight":
         return <SocialProof key={section.sectionKey} />;
       case "final_cta":

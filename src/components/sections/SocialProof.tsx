@@ -3,95 +3,107 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { SectionContainer } from "@/components/ui/SectionContainer";
-import { Badge } from "@/components/ui/Badge";
+import { HeroEyebrow } from "@/components/ui/HeroEyebrow";
+import { LiquidGlassCard } from "@/components/ui/LiquidGlassCard";
 import { useMarketingContent } from "@/components/providers/MarketingContentProvider";
-import { Star } from "lucide-react";
+import { Star, Users, ShieldCheck, Trophy } from "lucide-react";
 
 export function SocialProof() {
   const { socialProof } = useMarketingContent();
+  
   const stats = [
-    { label: "Elite Rating", value: `${socialProof.rating}`, sub: "Verified Reviews" },
-    { label: "Community", value: socialProof.servings, sub: "Athletes Reached" },
-    { label: "Ingredient Quality", value: "100%", sub: "Zero Fillers" }
+    { label: "Elite Rating", value: `${socialProof.rating}`, sub: "Verified Reviews", icon: Star },
+    { label: "Community", value: socialProof.servings, sub: "Athletes Reached", icon: Users },
+    { label: "Ingredient Quality", value: "100%", sub: "Zero Fillers", icon: ShieldCheck }
   ];
 
   return (
-    <SectionContainer variant="alt" id="social" className="overflow-hidden">
-      <div className="container-shell">
-        <div className="mb-20 text-center">
-          <div
-            data-aos="fade-down"
-            data-aos-duration="600"
-            data-aos-delay="100"
-            className="flex items-center justify-center space-x-1 mb-12 text-accent/40"
-          >
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} size={16} fill="currentColor" stroke="none" />
-            ))}
-          </div>
-          <h2
-            data-aos="fade-up"
-            data-aos-duration="800"
-            data-aos-delay="200"
-            className="text-4xl md:text-6xl lg:text-7xl font-headline font-bold text-label tracking-display leading-tight"
-          >
-            Trusted by the Driven.
+    <SectionContainer variant="alt" id="social" spacing="flow" className="relative overflow-hidden">
+      {/* Background Atmosphere: The "Vignette" Look */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+        <div className="absolute -bottom-[20%] -right-[10%] w-[50%] aspect-square bg-accent/5 rounded-full blur-[140px]" />
+      </div>
+
+      <div className="mx-auto w-full max-w-7xl relative z-10">
+        <div className="mb-24 flex flex-col items-center text-center">
+          <HeroEyebrow position="center" animated className="bg-label text-system-background">
+            <Trophy className="w-3.5 h-3.5 mr-3" />
+            Social Validation
+          </HeroEyebrow>
+          
+          <h2 className="mt-12 text-6xl md:text-[140px] font-headline font-bold text-label tracking-tighter leading-[0.75] text-balance">
+            Trusted by <br /> 
+            <span className="italic opacity-20">the Driven.</span>
           </h2>
         </div>
 
-        <p
-          data-aos="fade-up"
-          data-aos-duration="700"
-          data-aos-delay="300"
-          className="text-xl text-secondary-label leading-normal tracking-body max-w-xl mx-auto text-center italic"
-        >
-          Powering thousands of sessions daily. Join a community built on uncompromising standards.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-24 max-w-6xl mx-auto w-full mt-8">
-          {stats.map((stat, i) => (
-            <div
-              key={stat.label}
-              data-aos="zoom-in-up"
-              data-aos-duration="600"
-              data-aos-delay={400 + i * 100}
-              className="text-center group"
-            >
+        {/* The Glass Stat Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {stats.map((stat, i) => {
+            const Icon = stat.icon;
+            return (
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-                className="text-5xl md:text-8xl font-headline font-bold text-label mb-6 tracking-display italic group-hover:scale-110 transition-transform duration-700 truncate"
+                key={stat.label}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.15, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                viewport={{ once: true }}
               >
-                {stat.value}
-              </motion.div>
+                <LiquidGlassCard
+                  variant="default"
+                  intensity="subtle"
+                  interactive
+                  className="h-full min-h-[300px] p-10 flex flex-col items-center justify-center text-center squircle group overflow-hidden"
+                >
+                  {/* Subtle Background Icon Scanline */}
+                  <Icon size={120} className="absolute -right-4 -bottom-4 text-label/[0.02] -rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
+                  
+                  <div className="relative z-10 space-y-6">
+                    <div className="text-6xl md:text-7xl font-headline font-bold text-label tracking-tighter italic">
+                      {stat.value}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="text-[11px] font-bold uppercase tracking-[0.4em] text-accent">
+                        {stat.label}
+                      </div>
+                      <div className="text-label/30 text-sm font-light italic">
+                        {stat.sub}
+                      </div>
+                    </div>
 
-              <Badge
-                variant="accent"
-                size="sm"
-                animated={true}
-                className="mb-3 font-semibold tracking-headline"
-              >
-                {stat.label}
-              </Badge>
-              <div className="w-1.5 h-1.5 rounded-full bg-accent/20 mx-auto my-8" />
-              <div className="text-secondary-label opacity-40 text-[10px] font-semibold uppercase tracking-headline">{stat.sub}</div>
-            </div>
-          ))}
+                    {/* Progress Indicator (Cinematic Detail) */}
+                    <div className="flex items-center justify-center gap-1.5 pt-4">
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div 
+                          key={i}
+                          initial={{ scale: 0 }}
+                          whileInView={{ scale: 1 }}
+                          transition={{ delay: 0.5 + (i * 0.1) }}
+                          className="w-1 h-1 rounded-full bg-accent/40"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </LiquidGlassCard>
+              </motion.div>
+            );
+          })}
         </div>
 
-        <div
-          data-aos="fade-up"
-          data-aos-duration="700"
-          data-aos-delay="800"
-          className="mt-32 opacity-20 filter grayscale"
-        >
+        {/* The Trusted By Marquee/Badge */}
+        <div className="mt-24 text-center">
           <motion.div
-            whileHover={{ filter: "grayscale(0%)", opacity: 0.4 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="inline-flex items-center gap-6 px-8 py-4 rounded-full bg-white/[0.02] backdrop-blur-xl "
           >
-            {/* Subtle separator or secondary social proof */}
-            <div className="text-[9px] font-semibold uppercase tracking-headline text-secondary-label">
-              Designed for Performance — Refined for Life
+            <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-label/20">Validated By</div>
+            <div className="h-4 w-[1px] bg-white/10" />
+            <div className="text-[11px] font-semibold text-label/60 italic tracking-wide">
+              {socialProof.trustedBy}
             </div>
           </motion.div>
         </div>
@@ -99,4 +111,3 @@ export function SocialProof() {
     </SectionContainer>
   );
 }
-

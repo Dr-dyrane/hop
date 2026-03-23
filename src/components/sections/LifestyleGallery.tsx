@@ -1,96 +1,188 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { SectionContainer } from "@/components/ui/SectionContainer";
 import { HeroEyebrow } from "@/components/ui/HeroEyebrow";
 import { BadgeList } from "@/components/ui/Badge";
-import { Camera } from "lucide-react";
+import { Camera, ChevronRight, ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const IMAGES = [
-  { src: "/images/lifestyle/gym.png", alt: "Workout session", span: "row-span-2" },
-  { src: "/images/lifestyle/smoothie.png", alt: "Smoothie prep", span: "" },
-  { src: "/images/lifestyle/desk.png", alt: "Desk work", span: "" },
-  { src: "/images/lifestyle/recovery.png", alt: "Post-gym recovery", span: "col-span-2" },
+  {
+    src: "/images/lifestyle/gym.png",
+    alt: "Workout session",
+    title: "Train with intent",
+    caption: "Strength work, clean recovery, no shortcuts.",
+    tag: "Performance"
+  },
+  {
+    src: "/images/lifestyle/smoothie.png",
+    alt: "Smoothie prep",
+    title: "Build the ritual",
+    caption: "One scoop, one shake, ready in seconds.",
+    tag: "Ritual"
+  },
+  {
+    src: "/images/lifestyle/desk.png",
+    alt: "Desk work",
+    title: "Sustain the day",
+    caption: "Steady fuel for focus and performance.",
+    tag: "Focus"
+  },
+  {
+    src: "/images/lifestyle/recovery.png",
+    alt: "Post-gym recovery",
+    title: "Recover with purpose",
+    caption: "Consistent habits, measurable progress.",
+    tag: "Restoration"
+  },
 ];
 
 export function LifestyleGallery() {
+  const [index, setIndex] = useState(0);
+
+  const next = () => setIndex((prev) => (prev + 1) % IMAGES.length);
+  const prev = () => setIndex((prev) => (prev - 1 + IMAGES.length) % IMAGES.length);
+
   return (
     <SectionContainer 
       id="gallery" 
-      className="bg-system-background"
+      spacing="flow"
+      className="bg-system-background relative overflow-hidden"
     >
-      <div className="container-shell">
-        <div className="mb-20 text-center flex flex-col items-center">
+      {/* Cinematic Background Elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <motion.div 
+          animate={{ 
+            x: [0, 50, 0], 
+            y: [0, 30, 0],
+            scale: [1, 1.2, 1] 
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[10%] -left-[10%] w-[50%] aspect-square rounded-full bg-accent/10 blur-[120px]" 
+        />
+        <div className="absolute inset-0 backdrop-blur-3xl bg-system-background/20" />
+      </div>
+
+      <div className="relative z-10 mx-auto w-full max-w-[1400px]">
+        {/* Header Section */}
+        <div className="mb-20 flex flex-col items-center text-center">
           <HeroEyebrow position="center" animated>
             <Camera className="w-3.5 h-3.5 mr-3 text-label" />
-            Life in HOP
+            The Living System
           </HeroEyebrow>
-          <h2 
-            data-aos="fade-up"
-            data-aos-duration="800"
-            data-aos-delay="200"
-            className="mt-12 text-4xl md:text-5xl lg:text-6xl font-headline font-bold text-label tracking-display leading-tight"
-          >
-            Fuel Your Training.
+          <h2 className="mt-8 text-6xl sm:text-8xl md:text-9xl font-headline font-bold text-label tracking-tighter leading-[0.8] mb-8">
+            Live the <span className="italic opacity-30">Ritual.</span>
           </h2>
           <BadgeList 
             items={["Daily Energy", "Muscle Growth", "Quick Recovery", "Clean Fuel"]}
-            className="my-10"
+            className="mb-8"
             animated
           />
-          <p
-            data-aos="fade-up"
-            data-aos-duration="700"
-            data-aos-delay="300"
-            className="mt-12 text-xl text-secondary-label leading-normal tracking-body font-medium italic max-w-xl mx-auto"
-          >
-            Designed for the athlete, refined for the everyday. Witness House of Prax in action.
-          </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 auto-rows-[250px] md:auto-rows-[300px]">
-          {IMAGES.map((img, i) => (
-            <div
-              key={i}
-              data-aos="zoom-in-up"
-              data-aos-duration="600"
-              data-aos-delay={400 + i * 100}
-              className={cn(
-                "relative squircle overflow-hidden group shadow-card",
-                img.span
-              )}
-            >
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.6 }}
-                className="relative w-full h-full"
-              >
-                <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-700 z-10" />
-                <Image 
-                  src={img.src}
-                  alt={img.alt}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  loading={img.src.includes("gym") ? "eager" : "lazy"}
-                  className="object-cover group-hover:scale-105 transition-transform duration-1000 ease-out mask-soft-edge"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20" />
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  whileHover={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute bottom-8 left-10 z-30 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700"
+        {/* Main Cinematic Stage */}
+        <div className="relative h-[65vh] md:h-[75vh] w-full flex items-center justify-center [perspective:2000px]">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {IMAGES.map((image, i) => {
+              const isCenter = i === index;
+              const isNext = i === (index + 1) % IMAGES.length;
+              const isPrev = i === (index - 1 + IMAGES.length) % IMAGES.length;
+
+              if (!isCenter && !isNext && !isPrev) return null;
+
+              return (
+                <motion.div
+                  key={image.src}
+                  initial={{ opacity: 0, scale: 0.8, x: isNext ? 500 : -500, rotateY: isNext ? -45 : 45 }}
+                  animate={{
+                    opacity: isCenter ? 1 : 0.4,
+                    scale: isCenter ? 1 : 0.85,
+                    x: isCenter ? 0 : isNext ? "65%" : "-65%",
+                    rotateY: isCenter ? 0 : isNext ? -35 : 35,
+                    z: isCenter ? 0 : -300,
+                    filter: isCenter ? "blur(0px)" : "blur(10px)",
+                  }}
+                  exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.4 } }}
+                  transition={{ type: "spring", stiffness: 180, damping: 24 }}
+                  onClick={() => setIndex(i)}
+                  className={cn(
+                    "absolute w-full max-w-[900px] aspect-[16/10] rounded-[40px] md:rounded-[60px] overflow-hidden cursor-pointer",
+                    isCenter ? "z-30 shadow-2xl" : "z-10 shadow-lg"
+                  )}
                 >
-                   <span className="text-[11px] font-semibold uppercase tracking-headline text-white bg-black/20 backdrop-blur-md px-4 py-2 rounded-full">
-                     {img.alt}
-                   </span>
-                  </motion.div>
-              </motion.div>
+                  <div className="relative w-full h-full group">
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      fill
+                      priority
+                      className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                    />
+                    
+                    {/* Theme-aware readability mask only under the text zone */}
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[44%] bg-gradient-to-t from-system-background/94 via-system-background/54 to-transparent dark:from-system-background/88 dark:via-system-background/34 dark:to-transparent" />
+
+                    {/* Content Layer (Only visible on active) */}
+                    {isCenter && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute inset-0 p-8 md:p-16 flex flex-col justify-end"
+                      >
+                        <span className="text-label/65 text-[10px] font-bold uppercase tracking-[0.3em] mb-4">
+                          {image.tag}
+                        </span>
+                        <h3 className="text-4xl md:text-6xl font-headline font-bold text-label mb-4 tracking-tight">
+                          {image.title}
+                        </h3>
+                        <p className="text-secondary-label text-lg max-w-md font-light italic">
+                          {image.caption}
+                        </p>
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+
+          {/* Invisible Interaction Zones */}
+          <div className="absolute inset-0 z-40 pointer-events-none flex justify-between px-4 md:px-12">
+            <button onClick={prev} className="pointer-events-auto h-full w-1/4" aria-label="Previous" />
+            <button onClick={next} className="pointer-events-auto h-full w-1/4" aria-label="Next" />
+          </div>
+        </div>
+
+        {/* Minimal Navigation Control */}
+        <div className="mt-16 flex items-center justify-between px-6">
+          <div className="flex gap-4">
+            <button onClick={prev} className="p-4 rounded-full bg-label/5 hover:bg-label/10 text-label transition-colors">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button onClick={next} className="p-4 rounded-full bg-label/5 hover:bg-label/10 text-label transition-colors">
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <span className="text-[10px] font-bold tracking-widest text-label/20 uppercase">Gallery View</span>
+            <div className="flex gap-2">
+              {IMAGES.map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{ 
+                    width: i === index ? 40 : 8,
+                    backgroundColor: i === index ? "var(--label)" : "var(--quaternary-label)" 
+                  }}
+                  className="h-1 rounded-full transition-all cursor-pointer"
+                  onClick={() => setIndex(i)}
+                />
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </SectionContainer>

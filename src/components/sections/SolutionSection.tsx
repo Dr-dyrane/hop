@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Image from "next/image";
 import { SectionContainer } from "@/components/ui/SectionContainer";
 import { HeroEyebrow } from "@/components/ui/HeroEyebrow";
@@ -13,16 +13,18 @@ import { LiquidGlassCard } from "@/components/ui/LiquidGlassCard";
 import type { ProductId } from "@/lib/marketing/types";
 
 const Product3DViewer = dynamic(
-  () =>
-    import("@/components/3d/Product3DViewer").then((mod) => mod.Product3DViewer),
+  () => import("@/components/3d/Product3DViewer").then((mod) => mod.Product3DViewer),
   { ssr: false }
 );
 
-const TRUST_INDICATORS = [
-  { label: "Clean Ingredients", icon: CleanIcon },
-  { label: "Plant-Based", icon: PlantIcon },
-  { label: "Easy Digestion", icon: DigestionIcon },
-  { label: "Zero Additives", icon: CleanIcon },
+type IndicatorIcon = React.ComponentType<{ size?: number; className?: string }>;
+type TrustIndicator = { label: string; icon: IndicatorIcon; delay: number };
+
+const TRUST_INDICATORS: TrustIndicator[] = [
+  { label: "Clean Ingredients", icon: CleanIcon, delay: 0 },
+  { label: "Plant-Based", icon: PlantIcon, delay: 0.1 },
+  { label: "Easy Digestion", icon: DigestionIcon, delay: 0.2 },
+  { label: "Zero Additives", icon: CleanIcon, delay: 0.3 },
 ];
 
 export function SolutionSection({
@@ -31,118 +33,135 @@ export function SolutionSection({
   isScrollingIntoSection: (sectionId: string) => boolean;
 }) {
   const { brand, homeSectionsByKey, productIds, productsById } = useMarketingContent();
-  const solutionSettings = homeSectionsByKey.solution?.settings as
-    | { featuredProductId?: ProductId }
-    | undefined;
-  const currentProduct =
-    solutionSettings?.featuredProductId && productsById[solutionSettings.featuredProductId]
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  const solutionSettings = homeSectionsByKey.solution?.settings as { featuredProductId?: ProductId } | undefined;
+  const currentProduct = solutionSettings?.featuredProductId && productsById[solutionSettings.featuredProductId]
       ? solutionSettings.featuredProductId
       : productIds[0] ?? null;
+  
   const scrollActive = isScrollingIntoSection("solution");
 
-  if (!currentProduct || !productsById[currentProduct]) {
-    return null;
-  }
+  // Parallax & Scroll Effects
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, 45]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.9]);
+  const springScale = useSpring(scale, { stiffness: 100, damping: 30 });
+
+  if (!currentProduct || !productsById[currentProduct]) return null;
 
   return (
-    <SectionContainer variant="white" id="solution">
-      <div className="container-shell">
-        <div className="flex flex-col items-center text-center">
-          <div className="mb-12">
-            <HeroEyebrow position="center" animated>
-              <Lightbulb className="w-3.5 h-3.5 mr-3 text-label" />
-              The System
-            </HeroEyebrow>
-            <h2
-              data-aos="fade-up"
-              data-aos-duration="800"
-              data-aos-delay="200"
-              className="mt-12 text-5xl md:text-6xl lg:text-7xl font-headline font-bold text-label tracking-display leading-tight"
-            >
-              Meet {brand.name}
-            </h2>
-          </div>
+    <SectionContainer variant="white" id="solution" spacing="flow" className="relative overflow-hidden min-h-screen">
+      {/* Background Cinematic Atmosphere */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div 
+          style={{ rotate }}
+          className="absolute -top-[20%] -right-[10%] w-[60%] aspect-square rounded-full bg-accent/5 blur-[120px]" 
+        />
+        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-system-background to-transparent" />
+      </div>
 
-          <p
-            data-aos="fade-up"
-            data-aos-duration="700"
-            data-aos-delay="300"
-            className="text-xl text-secondary-label max-w-2xl leading-normal tracking-body italic mx-auto mb-20"
-          >
-            Protein redesigned for the modern athlete. No fillers, no excuses.
-            Just pure, plant-powered performance.
+      <div ref={containerRef} className="mx-auto flex w-full max-w-7xl flex-col items-center relative z-10">
+        <div className="mb-20 flex flex-col items-center text-center">
+          <HeroEyebrow position="center" animated>
+            <Lightbulb className="w-3.5 h-3.5 mr-3 text-label" />
+            The Living Formula
+          </HeroEyebrow>
+          <h2 className="mt-12 text-6xl md:text-[140px] font-headline font-bold text-label tracking-tighter leading-[0.75]">
+            Meet <span className="italic opacity-20">{brand.name}.</span>
+          </h2>
+          <p className="mt-12 text-xl md:text-2xl text-secondary-label/60 max-w-3xl font-light italic leading-relaxed">
+            Redesigned for the athlete. Refined for the everyday. 
+            No fillers, just plant-powered performance.
           </p>
+        </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 lg:gap-16 w-full">
-            {TRUST_INDICATORS.map((indicator, i) => {
-              const Icon = indicator.icon;
-              return (
-                <LiquidGlassCard
-                  key={indicator.label}
-                  variant="default"
-                  intensity="subtle"
-                  interactive
-                  className="flex flex-col items-center justify-center p-8 min-h-[120px] squircle"
-                  data-aos="zoom-in-up"
-                  data-aos-duration="600"
-                  data-aos-delay={400 + i * 100}
-                >
-                  <div className="flex items-center justify-center">
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ duration: 0.3 }}
-                      className="w-16 h-16 rounded-2xl bg-accent/5 flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 group-hover:shadow-float transition-all duration-700"
-                    >
-                      <Icon
-                        size={28}
-                        className="text-accent group-hover:scale-110 transition-transform duration-700 justify-center items-center"
-                      />
-                    </motion.div>
-                  </div>
-
-                  <div className="text-[11px] text-center font-semibold text-label tracking-headline uppercase max-w-[120px] leading-tight opacity-70 group-hover:opacity-100 transition-opacity">
-                    {indicator.label}
-                  </div>
-                </LiquidGlassCard>
-              );
-            })}
+        <div className="relative w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Side Indicators */}
+          <div className="lg:col-span-3 flex flex-col gap-6 order-2 lg:order-1">
+            {TRUST_INDICATORS.slice(0, 2).map((indicator) => (
+              <IndicatorCard key={indicator.label} indicator={indicator} />
+            ))}
           </div>
 
-          <div className="mt-32 relative group perspective-2000 w-full max-w-2xl mx-auto">
-            <div className="absolute inset-0 bg-accent/5 rounded-full blur-[100px] group-hover:bg-accent/10 transition-colors duration-1000" />
-
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-accent/[0.015] rounded-full pointer-events-none"
-            />
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-accent/[0.02] rounded-full pointer-events-none"
-            />
+          {/* Central 3D Showcase */}
+          <motion.div 
+            style={{ scale: springScale }}
+            className="lg:col-span-6 relative flex items-center justify-center order-1 lg:order-2 py-12"
+          >
+            {/* Orbital Glass Rings */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                className="absolute w-[110%] aspect-square shadow rounded-full"
+              />
+              <motion.div 
+                animate={{ rotate: -360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="absolute w-[95%] aspect-square shadow rounded-full border-dashed"
+              />
+              <div className="absolute w-[70%] aspect-square bg-accent/[0.03] rounded-full blur-3xl" />
+            </div>
 
             {scrollActive ? (
               <Product3DViewer
                 modelPath={productsById[currentProduct]?.model ?? ""}
                 theme="light"
-                className="relative z-10 mx-auto w-64 md:w-80 h-96 md:h-[450px]"
+                className="relative z-10 w-72 md:w-[400px] h-[500px] md:h-[600px]"
                 sectionId="solution"
                 scrollActive={scrollActive}
               />
             ) : (
               <Image
                 src={productsById[currentProduct]?.image ?? ""}
-                alt={productsById[currentProduct]?.name ?? "House of Prax product"}
-                width={640}
-                height={900}
-                sizes="(max-width: 768px) 16rem, 20rem"
-                className="relative z-10 mx-auto h-96 w-64 object-contain drop-shadow-2xl mask-radial md:h-[450px] md:w-80"
+                alt={productsById[currentProduct]?.name ?? "Product"}
+                width={800}
+                height={1000}
+                className="relative z-10 w-72 md:w-[400px] object-contain drop-shadow-[0_50px_100px_rgba(0,0,0,0.15)]"
               />
             )}
+          </motion.div>
+
+          {/* Right Side Indicators */}
+          <div className="lg:col-span-3 flex flex-col gap-6 order-3">
+            {TRUST_INDICATORS.slice(2, 4).map((indicator) => (
+              <IndicatorCard key={indicator.label} indicator={indicator} />
+            ))}
           </div>
         </div>
       </div>
     </SectionContainer>
+  );
+}
+
+function IndicatorCard({ indicator }: { indicator: TrustIndicator }) {
+  const Icon = indicator.icon;
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      transition={{ delay: indicator.delay, duration: 0.8 }}
+      viewport={{ once: true }}
+    >
+      <LiquidGlassCard
+        variant="default"
+        intensity="subtle"
+        interactive
+        className="group p-8 flex flex-col items-center lg:items-start text-center lg:text-left gap-4 squircle shadow"
+      >
+        <div className="w-12 h-12 rounded-2xl bg-accent/5 flex items-center justify-center group-hover:bg-accent/10 transition-colors">
+          <Icon size={24} className="text-accent group-hover:scale-110 transition-transform" />
+        </div>
+        <div className="text-[10px] font-bold text-label tracking-[0.2em] uppercase opacity-40 group-hover:opacity-100 transition-opacity">
+          {indicator.label}
+        </div>
+      </LiquidGlassCard>
+    </motion.div>
   );
 }

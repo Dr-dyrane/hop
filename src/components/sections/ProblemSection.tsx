@@ -1,68 +1,9 @@
 "use client";
 
-/* 
-  CHANGES DOCUMENTATION:
-  
-  ORIGINAL IMPLEMENTATION (for rollback reference):
-  <div
-    key={problem}
-    data-aos="zoom-in-up"
-    data-aos-duration="600"
-    data-aos-delay={400 + i * 100}
-    className="card-premium p-10 flex flex-col items-start justify-between min-h-[220px] group hover:bg-system-background transition-all duration-700 hover:shadow-float squircle"
-  >
-    <div className="w-10 h-10 rounded-xl bg-accent/5 flex items-center justify-center text-accent text-[10px] font-semibold tracking-headline group-hover:scale-110 transition-transform">
-      0{i + 1}
-    </div>
-    <div>
-      <h3 className="text-2xl font-headline font-bold text-label tracking-headline leading-tight group-hover:text-accent transition-colors">{problem}</h3>
-      <div className="h-[2px] w-0 bg-accent/20 mt-4 group-hover:w-full transition-all duration-700" />
-    </div>
-  </div>
-
-  ORIGINAL CTA IMPLEMENTATION:
-  <div
-    data-aos="fade-up"
-    data-aos-duration="1000"
-    data-aos-delay="800"
-    className="p-24 md:p-48 flex flex-col items-center justify-center squircle cta-inverse text-center relative overflow-hidden shadow-[0_50px_100px_-30px_rgba(0,0,0,0.3)] dark:shadow-none"
-  >
-    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#d7c5a3_0%,_transparent_70%)] opacity-10 pointer-events-none blur-3xl" />
-    <span className="text-[10px] font-bold uppercase tracking-[0.6em] text-accent mb-10 block">Perspective</span>
-    <h3 className="relative z-10 text-4xl md:text-7xl font-headline font-bold tracking-display mb-12 leading-tight">
-      Your body deserves <br /> better fuel.
-    </h3>
-    <div className="w-12 h-[4px] bg-accent/30 mx-auto mb-12 rounded-full" />
-    <p className="relative z-10 text-xl leading-normal tracking-body w-full italic opacity-70">
-      "Don't build your foundation on sand. Choose a system <br className="hidden md:block" /> designed for longevity and power."
-    </p>
-  </div>
-  
-  CHANGES MADE:
-  REMOVED: card-premium class and basic hover effects on problem cards
-  ADDED: LiquidGlassCard wrapper component for problem cards
-  ADDED: variant="default" intensity="subtle" interactive={true} for problem cards
-  ADDED: squircle class for Apple-style corners
-  ADDED: proper z-index layering for content
-  
-  REMOVED: cta-inverse class and basic styling on CTA section
-  ADDED: LiquidGlassCard wrapper component for CTA section
-  ADDED: variant="default" intensity="subtle" interactive={false} for CTA
-  ADDED: full liquid glass system with bubble oil effects to declaration
-  
-  MAINTAINED: All original AOS animations and delays across both sections
-  MAINTAINED: Original hover states and transitions on problem cards
-  MAINTAINED: Number badges and text hierarchy on problem cards
-  MAINTAINED: All CTA content including atmosphere bridge, typography, and styling
-  MAINTAINED: Original visual hierarchy and spacing throughout section
-  
-  LIQUID GLASS FEATURES: Mouse-tracking light refraction, soap bubble iridescence, surface tension morphing, three-layer system
-*/
-
-import React from "react";
+import React, { useRef } from "react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { SectionContainer } from "@/components/ui/SectionContainer";
 import { HeroEyebrow } from "@/components/ui/HeroEyebrow";
-import { BadgeList } from "@/components/ui/Badge";
 import { AlertTriangle } from "lucide-react";
 import { LiquidGlassCard } from "@/components/ui/LiquidGlassCard";
 import { useMobile } from "@/hooks/useMobile";
@@ -76,151 +17,105 @@ const PROBLEMS = [
 
 export function ProblemSection() {
   const isMobile = useMobile();
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Mobile-optimized card component
-  const MobileProblemCard = ({ problem, index }: { problem: string; index: number }) => (
-    <LiquidGlassCard
-      key={`mobile-${problem}`}
-      variant="default"
-      intensity="subtle"
-      interactive={true}
-      className="min-h-[140px] p-4 flex items-start gap-3 overflow-hidden squircle h-full w-full"
-      data-aos="zoom-in-up"
-      data-aos-duration="600"
-      data-aos-delay={400 + index * 100}
-    >
-      <div className="flex flex-col justify-between h-full w-full">
-        <div className="w-8 h-8 rounded-xl bg-accent/5 flex items-center justify-center text-accent text-[9px] font-semibold tracking-headline group-hover:scale-110 transition-transform flex-shrink-0">
-          0{index + 1}
-        </div>
-        <div className="min-w-0">
-          <h3 className="text-lg font-headline font-bold text-label tracking-headline leading-tight group-hover:text-accent transition-colors">{problem}</h3>
-          <div className="h-[2px] w-0 bg-accent/20 mt-2 group-hover:w-full transition-all duration-700" />
-        </div>
-      </div>
-    </LiquidGlassCard>
-  );
+  // Mouse tracking for the entire grid's perspective
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  
+  const rotateX = useSpring(useTransform(y, [-400, 400], [5, -5]), { stiffness: 100, damping: 30 });
+  const rotateY = useSpring(useTransform(x, [-400, 400], [-5, 5]), { stiffness: 100, damping: 30 });
 
-  // Desktop card component (original implementation)
-  const DesktopProblemCard = ({ problem, index }: { problem: string; index: number }) => (
-    <LiquidGlassCard
-      key={`desktop-${problem}`}
-      variant="default"
-      intensity="subtle"
-      interactive={true}
-      className="min-h-[220px] p-10 flex flex-col items-start justify-between overflow-hidden squircle"
-      data-aos="zoom-in-up"
-      data-aos-duration="600"
-      data-aos-delay={400 + index * 100}
-    >
-      <div className="w-10 h-10 rounded-xl bg-accent/5 flex items-center justify-center text-accent text-[10px] font-semibold tracking-headline group-hover:scale-110 transition-transform">
-        0{index + 1}
-      </div>
-      <div>
-        <h3 className="text-2xl font-headline font-bold text-label tracking-headline leading-tight group-hover:text-accent transition-colors">{problem}</h3>
-        <div className="h-[2px] w-0 bg-accent/20 mt-4 group-hover:w-full transition-all duration-700" />
-      </div>
-    </LiquidGlassCard>
-  );
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    x.set(e.clientX - (rect.left + rect.width / 2));
+    y.set(e.clientY - (rect.top + rect.height / 2));
+  };
 
   return (
-    <SectionContainer variant="alt" id="problem" className="overflow-hidden">
-      <div className="flex flex-col lg:flex-row items-center gap-20 py-12">
-        <div className="lg:w-1/2 flex flex-col gap-4">
-          <HeroEyebrow
-            position="left"
-            animated
-            className="bg-label text-system-background"
-          >
-            <AlertTriangle className="w-3.5 h-3.5 mr-3" />
-            The Market Status
-          </HeroEyebrow>
-          <h2
-            data-aos="fade-right"
-            data-aos-duration="800"
-            data-aos-delay="200"
-            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-headline font-bold text-label leading-tight tracking-display"
-          >
-            Most Protein <br />
-            <span className="text-secondary-label opacity-20 tracking-tight">Are Junk.</span>
-          </h2>
-          <p
-            data-aos="fade-up"
-            data-aos-duration="700"
-            data-aos-delay="300"
-            className="mt-12 text-xl text-secondary-label opacity-60 leading-normal tracking-body max-w-md italic"
-          >
-            The industry is built on compromises. We chose a different path—prioritizing gut health and biological performance over cheap manufacturing.
-          </p>
-
-          <BadgeList
-            items={PROBLEMS}
-            className="mt-16"
-            animated
-          />
-        </div>
-
-        <div className="lg:w-1/2 w-full">
-          {isMobile ? (
-            // Mobile: 2x2 compact grid
-            <div className="grid grid-cols-2 gap-4 w-full">
-              {PROBLEMS.map((problem, i) => (
-                <MobileProblemCard key={problem} problem={problem} index={i} />
-              ))}
-            </div>
-          ) : (
-            // Desktop: Original 2-column layout
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-              {PROBLEMS.map((problem, i) => (
-                <DesktopProblemCard key={problem} problem={problem} index={i} />
-              ))}
-            </div>
-          )}
-        </div>
+    <SectionContainer variant="alt" id="problem" spacing="flow" className="relative overflow-hidden">
+      {/* Background Liquid Blobs (Matching your "Circles" requirement) */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-accent/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-white/5 rounded-full blur-[150px]" />
       </div>
 
-      <div className="relative mt-40">
-        {/* Atmosphere bridge - extreme soft gold bleed */}
-        <div className="absolute inset-x-0 -top-40 h-80 bg-[radial-gradient(circle_at_center,_#d7c5a3_0%,_transparent_70%)] opacity-[0.06] pointer-events-none blur-3xl" />
+      <div 
+        className="mx-auto w-full max-w-6xl relative z-10"
+        onMouseMove={!isMobile ? handleMouseMove : undefined}
+        ref={containerRef}
+      >
+        <div className="flex flex-col items-center text-center mb-24">
+          <HeroEyebrow position="center" animated className="bg-label text-system-background">
+            <AlertTriangle className="w-3.5 h-3.5 mr-3" />
+            Industry Standard
+          </HeroEyebrow>
+          
+          <h2 className="mt-12 text-6xl md:text-9xl font-headline font-bold text-label tracking-tighter leading-[0.8] text-center">
+            Most Protein <br />
+            <span className="opacity-20 italic">Are Junk.</span>
+          </h2>
+        </div>
 
-        <LiquidGlassCard
-          variant="default"
-          intensity="subtle"
-          interactive={false}
-          className="p-24 md:p-48 flex flex-col items-center justify-center squircle text-center relative overflow-hidden"
-          data-aos="fade-up"
-          data-aos-duration="1000"
-          data-aos-delay="800"
+        {/* The 3D Floating Grid */}
+        <motion.div 
+          style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-5xl mx-auto"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#d7c5a3_0%,_transparent_70%)] opacity-10 pointer-events-none blur-3xl" />
+          {PROBLEMS.map((problem, i) => (
+            <motion.div
+              key={problem}
+              whileHover={{ scale: 1.02, z: 50 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            >
+              <LiquidGlassCard
+                variant="default"
+                intensity="subtle"
+                interactive={true}
+                className="relative min-h-[220px] p-12 flex flex-col items-start justify-between overflow-hidden squircle shadow"
+                data-aos="fade-up"
+                data-aos-delay={i * 100}
+              >
+                {/* Internal Refraction Light */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-accent/10 transition-colors" />
+                
+                <div className="text-[10px] font-bold text-accent tracking-[0.3em] opacity-40">
+                  ISSUE_0{i + 1}
+                </div>
 
-          <span
-            data-aos="fade-down"
-            data-aos-duration="600"
-            data-aos-delay="1000"
-            className="text-[10px] font-bold uppercase tracking-[0.6em] text-accent mb-10 block"
+                <div>
+                  <h3 className="text-3xl font-headline font-bold text-label tracking-tight group-hover:text-accent transition-all duration-500">
+                    {problem}
+                  </h3>
+                  <div className="h-[1px] w-full bg-gradient-to-r from-accent/40 to-transparent mt-4 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
+                </div>
+              </LiquidGlassCard>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* The CTA Bridge (Refined for Immersion) */}
+        <div className="mt-40 relative flex flex-col justify-center items-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative"
           >
-            Perspective
-          </span>
-
-          <h3
-            data-aos="zoom-in"
-            data-aos-duration="800"
-            data-aos-delay="1200"
-            className="relative z-10 text-4xl md:text-7xl font-headline font-bold tracking-display mb-12 leading-tight"
-          >
-            Your body deserves <br /> better fuel.
-          </h3>
-
-          <div className="w-12 h-[4px] bg-accent/30 mx-auto mb-12 rounded-full" />
-
-          <p className="relative z-10 text-xl leading-normal tracking-body w-full italic opacity-70">
-            Don&apos;t build your foundation on sand. Choose a system
-            <br className="hidden md:block" /> designed for longevity and power.
-          </p>
-        </LiquidGlassCard>
+             <LiquidGlassCard
+                variant="default"
+                intensity="subtle"
+                className="p-24 md:p-32 flex flex-col items-center gap-4 justify-center squircle overflow-hidden text-center"
+              >  
+                <span className="text-[10px] font-bold uppercase tracking-[0.8em] text-accent/60 mb-12">House of prax</span>
+                <h3 className="text-5xl md:text-8xl font-headline font-bold tracking-tighter leading-[0.9] text-center mb-10">
+                  Your body deserves <br /> better fuel.
+                </h3>
+             </LiquidGlassCard>
+          </motion.div>
+        </div>
       </div>
     </SectionContainer>
   );
 }
-

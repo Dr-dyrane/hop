@@ -1,147 +1,133 @@
 "use client";
 
 import React from "react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { SectionContainer } from "@/components/ui/SectionContainer";
 import { HeroEyebrow } from "@/components/ui/HeroEyebrow";
 import { LiquidGlassCard } from "@/components/ui/LiquidGlassCard";
 import { useMarketingContent } from "@/components/providers/MarketingContentProvider";
-import { useMobile } from "@/hooks/useMobile";
 import { Zap, Wind, Activity, Leaf, Sparkles } from "lucide-react";
-import type { MarketingBenefit } from "@/lib/marketing/types";
 
-const ICON_MAP = {
-  Zap: Zap,
-  Wind: Wind,
-  Activity: Activity,
-  Leaf: Leaf,
-};
+const ICON_MAP = { Zap, Wind, Activity, Leaf };
 
 export function BenefitsGrid() {
   const { benefits } = useMarketingContent();
-  const isMobile = useMobile();
-
-  const MobileBenefitCard = ({
-    benefit,
-    index,
-  }: {
-    benefit: MarketingBenefit;
-    index: number;
-  }) => {
-    const Icon = ICON_MAP[benefit.icon as keyof typeof ICON_MAP] || Activity;
-    return (
-      <LiquidGlassCard
-        key={`mobile-${benefit.title}`}
-        variant="default"
-        intensity="subtle"
-        interactive={true}
-        className="min-h-[180px] p-4 flex flex-col justify-between overflow-hidden squircle h-full w-full"
-        data-aos="zoom-in-up"
-        data-aos-duration="600"
-        data-aos-delay={400 + index * 100}
-      >
-        <div className="absolute -right-10 -bottom-10 w-20 h-20 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-colors" />
-
-        <div className="relative z-10 flex flex-col justify-between h-full w-full text-left">
-          <div className="w-10 h-10 bg-system-fill rounded-2xl flex items-center justify-center text-accent shadow-sm group-hover:scale-110 group-hover:shadow-soft transition-all duration-700 squircle">
-            <Icon size={16} strokeWidth={1.5} />
-          </div>
-          <div className="flex flex-col gap-1">
-            <h3 className="text-lg font-headline font-bold text-label tracking-headline">{benefit.title}</h3>
-            <p className="text-secondary-label opacity-60 text-xs leading-tight tracking-body line-clamp-2">
-              {benefit.description}
-            </p>
-            <div className="flex items-center gap-1 overflow-hidden">
-              <div className="h-[1px] w-4 bg-accent/30 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
-              <span className="text-[8px] font-semibold uppercase tracking-headline text-accent opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-700">Result</span>
-            </div>
-          </div>
-        </div>
-      </LiquidGlassCard>
-    );
-  };
-
-  const DesktopBenefitCard = ({ benefit }: { benefit: MarketingBenefit }) => {
-    const Icon = ICON_MAP[benefit.icon as keyof typeof ICON_MAP] || Activity;
-    return (
-      <LiquidGlassCard
-        key={`desktop-${benefit.title}`}
-        variant="default"
-        intensity="subtle"
-        interactive={true}
-        className="min-h-[300px] p-10 flex flex-col justify-between overflow-hidden squircle text-left"
-        data-aos="zoom-in-up"
-        data-aos-duration="600"
-        data-aos-delay={400}
-      >
-        <div className="absolute -right-20 -bottom-20 w-40 h-40 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-colors" />
-
-        <div className="relative z-10">
-          <div className="w-14 h-14 bg-system-fill rounded-2xl flex items-center justify-center mb-10 text-accent shadow-sm group-hover:scale-110 group-hover:shadow-soft transition-all duration-700 squircle">
-            <Icon size={24} strokeWidth={1.5} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <h3 className="text-2xl font-headline font-bold text-label tracking-headline">{benefit.title}</h3>
-            <p className="text-secondary-label opacity-60 text-sm leading-normal tracking-body">
-              {benefit.description}
-            </p>
-          </div>
-        </div>
-
-        <div className="relative z-10 flex items-center gap-2 overflow-hidden">
-          <div className="h-[1px] w-8 bg-accent/30 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
-          <span className="text-[9px] font-semibold uppercase tracking-headline text-accent opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-700">Measured Result</span>
-        </div>
-      </LiquidGlassCard>
-    );
-  };
 
   return (
-    <SectionContainer variant="alt" id="benefits">
-      <div className="container-shell">
-        <div className="flex flex-col lg:flex-row items-start justify-between mb-32 gap-y-12 gap-x-20">
-          <div className="max-w-4xl text-left">
-            <HeroEyebrow
-              position="left"
-              animated
-              className="bg-label text-system-background"
-            >
-              <Sparkles className="w-3.5 h-3.5 mr-3" />
-              Capabilities
-            </HeroEyebrow>
-            <h2
-              data-aos="fade-up"
-              data-aos-duration="800"
-              data-aos-delay="200"
-              className="text-5xl md:text-8xl lg:text-9xl font-headline font-bold text-label tracking-display leading-[0.85] text-balance mt-12"
-            >
-              Built for <br /> <span className="text-secondary-label opacity-20 tracking-tight">Real Performance.</span>
-            </h2>
-          </div>
+    <SectionContainer variant="alt" id="benefits" spacing="flow" className="relative overflow-hidden">
+      {/* Cinematic Background: Large "Oil" Blobs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.03, 0.07, 0.03] }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute -top-[20%] -left-[10%] w-[60%] aspect-square rounded-full bg-accent blur-[140px]" 
+        />
+        <div className="absolute bottom-0 right-0 w-[50%] aspect-square bg-white/[0.02] rounded-full blur-[120px]" />
+      </div>
 
-          <p
-            data-aos="fade-left"
-            data-aos-duration="700"
-            data-aos-delay="300"
-            className="text-secondary-label opacity-60 text-lg md:text-xl font-medium tracking-body max-w-md lg:text-right leading-normal mt-12 lg:mt-48 italic"
-          >
-            Each benefit is a result of meticulous engineering and plant-powered science.
+      <div className="mx-auto w-full max-w-7xl relative z-10">
+        <div className="mb-28 flex flex-col items-center text-center">
+          <HeroEyebrow position="center" animated className="bg-label text-system-background">
+            <Sparkles className="w-3.5 h-3.5 mr-3" />
+            Bio-Architecture
+          </HeroEyebrow>
+          
+          <h2 className="mt-12 text-6xl md:text-[140px] font-headline font-bold text-label tracking-tighter leading-[0.75] text-balance">
+            Built for <br /> 
+            <span className="italic opacity-20">Elite Output.</span>
+          </h2>
+
+          <p className="mt-12 text-xl md:text-2xl text-secondary-label/40 max-w-3xl font-light italic leading-relaxed">
+            Meticulously engineered for those who refuse to compromise. 
+            Pure science, encased in glass.
           </p>
         </div>
 
-        {isMobile ? (
-          <div className="grid grid-cols-2 gap-3">
-            {benefits.map((benefit, i) => (
-              <MobileBenefitCard key={benefit.title} benefit={benefit} index={i} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {benefits.map((benefit) => (
-              <DesktopBenefitCard key={benefit.title} benefit={benefit} />
-            ))}
-          </div>
-        )}
+        {/* The "Floating Lens" Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:perspective-2000">
+          {benefits.map((benefit, i) => (
+            <BenefitPane 
+              key={benefit.title} 
+              benefit={benefit} 
+              index={i}
+            />
+          ))}
+        </div>
       </div>
     </SectionContainer>
+  );
+}
+
+type BenefitPaneData = {
+  title: string;
+  description: string;
+  icon: string;
+};
+
+function BenefitPane({ benefit, index }: { benefit: BenefitPaneData; index: number }) {
+  const Icon = ICON_MAP[benefit.icon as keyof typeof ICON_MAP] || Activity;
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { left, top } = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - left);
+    mouseY.set(e.clientY - top);
+  };
+
+  // Light beam that follows the mouse inside the glass
+  const background = useTransform(
+    [mouseX, mouseY],
+    ([x, y]) => `radial-gradient(400px circle at ${x}px ${y}px, rgba(var(--accent-rgb), 0.12), transparent 40%)`
+  );
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      initial={{ opacity: 0, y: 40, rotateX: 10 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      transition={{ delay: index * 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+      viewport={{ once: true }}
+      className="group relative"
+    >
+      <LiquidGlassCard
+        variant="default"
+        intensity="subtle"
+        interactive
+        className="h-full min-h-[340px] p-10 flex flex-col justify-between overflow-hidden squircle shadow-2xl"
+      >
+        {/* The Refractive Layer */}
+        <motion.div 
+          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+          style={{ background }}
+        />
+
+        <div className="relative z-10">
+          {/* Embossed Icon Container */}
+          <div className="w-16 h-16 bg-white/[0.03] backdrop-blur-xl rounded-2xl flex items-center justify-center mb-12 text-accent shadow-inner group-hover:scale-110 transition-all duration-700 group-hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.2)]">
+            <Icon size={28} strokeWidth={1} className="group-hover:rotate-12 transition-transform duration-700" />
+          </div>
+          
+          <div className="space-y-4">
+            <h3 className="text-3xl font-headline font-bold text-label tracking-tight leading-none group-hover:tracking-tighter transition-all duration-700">
+              {benefit.title}
+            </h3>
+            <p className="text-label/30 text-lg leading-snug font-light italic group-hover:text-label/60 transition-colors duration-500">
+              {benefit.description}
+            </p>
+          </div>
+        </div>
+
+        {/* The "Result" Trigger */}
+        <div className="relative z-10 flex items-center gap-4">
+          <motion.div 
+            className="h-[1px] bg-accent/40 w-0 group-hover:w-16 transition-all duration-1000 ease-out"
+          />
+          <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-accent/0 group-hover:text-accent/100 transition-all duration-700 translate-x-4 group-hover:translate-x-0">
+            Validated
+          </span>
+        </div>
+      </LiquidGlassCard>
+    </motion.div>
   );
 }

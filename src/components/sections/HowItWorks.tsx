@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { SectionContainer } from "@/components/ui/SectionContainer";
 import { HeroEyebrow } from "@/components/ui/HeroEyebrow";
-import { Cog } from "lucide-react";
-import { Plus, MoveRight } from "lucide-react";
+import { Cog, Plus, MoveRight, Timer } from "lucide-react";
 import Image from "next/image";
+import { LiquidGlassCard } from "@/components/ui/LiquidGlassCard";
 
 export function HowItWorks() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const steps = [
     { label: "1 Scoop", sub: "Clean Fuel" },
     { label: "Water", sub: "Or Milk" },
@@ -16,111 +17,115 @@ export function HowItWorks() {
     { label: "Growth", sub: "Recover" }
   ];
 
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  const imageScale = useTransform(scrollYProgress, [0, 0.5], [1.1, 1]);
+  const imageOpacity = useTransform(scrollYProgress, [0, 0.3, 0.6], [0.5, 1, 0.8]);
+
   return (
-    <SectionContainer variant="alt" id="how-it-works">
-      <div className="flex flex-col items-center justify-center gap-4 text-center mb-12">
-        <HeroEyebrow
-          position="center"
-          animated
-          className="bg-label text-system-background"
-        >
+    <SectionContainer variant="alt" id="how-it-works" spacing="flow" className="relative overflow-hidden">
+      {/* Cinematic Background Blobs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] aspect-square bg-accent/5 rounded-full blur-[140px]" />
+      </div>
+
+      <div className="mb-24 flex flex-col items-center text-center relative z-10">
+        <HeroEyebrow position="center" animated className="bg-label text-system-background">
           <Cog className="w-3.5 h-3.5 mr-3" />
           The Ritual
         </HeroEyebrow>
-        <h2
-          data-aos="fade-up"
-          data-aos-duration="800"
-          data-aos-delay="200"
-          className="my-12 text-4xl md:text-5xl lg:text-6xl font-headline font-bold text-label tracking-display leading-tight"
-        >
-          Simple Daily Fuel.
+        
+        <h2 className="mt-12 text-6xl md:text-[140px] font-headline font-bold text-label tracking-tighter leading-[0.75]">
+          Simple Daily <br />
+          <span className="italic opacity-20">Fuel.</span>
         </h2>
 
-        <p
-          data-aos="fade-up"
-          data-aos-duration="700"
-          data-aos-delay="300"
-          className="text-xl text-secondary-label leading-normal tracking-body w-full text-center italic"
-        >
-          A minimalist ritual designed for the maximalist life. Pure performance in under 30 seconds.
+        <p className="mt-12 text-xl md:text-2xl text-secondary-label/40 max-w-2xl font-light italic leading-relaxed">
+          A minimalist ritual designed for the maximalist life. <br />
+          Pure performance in under 30 seconds.
         </p>
       </div>
 
-      <div
-        data-aos="zoom-in"
-        data-aos-duration="800"
-        data-aos-delay="400"
-        className="relative max-w-6xl mx-auto squircle overflow-hidden bg-system-background shadow-float mb-20 group"
-      >
+      {/* Central Visual Showcase */}
+      <div ref={containerRef} className="relative max-w-6xl mx-auto mb-24 perspective-2000">
         <motion.div
-          whileHover={{ scale: 1.02 }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          style={{ scale: imageScale, opacity: imageOpacity }}
+          className="relative aspect-[21/9] w-full squircle overflow-hidden -white/10 shadow-2xl"
         >
           <Image
             src="/images/how-it-works.png"
-            alt="How it works ritual"
-            width={1200}
-            height={600}
-            className="w-full h-[300px] md:h-[500px] object-cover opacity-80 group-hover:scale-105 transition-transform duration-[3s] mask-soft-edge"
+            alt="The Ritual"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-[5s]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-system-background via-transparent to-transparent" />
+          {/* Liquid Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-system-background via-transparent to-transparent opacity-60" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(0,0,0,0.4)_100%)]" />
         </motion.div>
       </div>
 
-      <div className="container-shell grid md:flex grid-cols-2 md:flex-row items-center justify-between gap-8 relative z-10">
-        {steps.map((step, i) => (
-          <React.Fragment key={step.label}>
-            <div
-              data-aos="zoom-in-up"
-              data-aos-duration="600"
-              data-aos-delay={600 + i * 100}
-              className="flex flex-col items-center group"
-            >
+      {/* Kinetic Step Flow */}
+      <div className="mx-auto relative z-10 w-full max-w-6xl">
+        <div className="grid grid-cols-2 md:flex md:flex-row items-center justify-between gap-4 md:gap-0">
+          {steps.map((step, i) => (
+            <React.Fragment key={step.label}>
               <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ duration: 0.3 }}
-                className="w-20 h-20 bg-system-fill rounded-2xl flex items-center justify-center mb-8 text-accent shadow-sm group-hover:scale-110 group-hover:shadow-float transition-all duration-700 squircle"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1, duration: 0.8 }}
+                viewport={{ once: true }}
+                className="flex-1"
               >
-                <span className="text-[10px] font-semibold uppercase tracking-headline text-accent/60">HOP</span>
-              </motion.div>
-              <h3 className="text-xl font-headline font-bold text-label tracking-headline">{step.label}</h3>
-              <p className="text-[10px] text-accent font-semibold uppercase tracking-headline mt-3 opacity-60">{step.sub}</p>
-            </div>
-
-            {i < steps.length - 1 && (
-              <div
-                data-aos="fade-left"
-                data-aos-duration="600"
-                data-aos-delay={800 + i * 100}
-                className="hidden md:flex text-border/40"
-              >
-                <motion.div
-                  whileHover={{ x: 5 }}
-                  transition={{ duration: 0.2 }}
+                <LiquidGlassCard
+                  variant="default"
+                  intensity="subtle"
+                  interactive
+                  className="p-8 flex flex-col items-center text-center squircle"
                 >
-                  {i === steps.length - 2 ? <MoveRight size={24} strokeWidth={1} /> : <Plus size={20} />}
-                </motion.div>
-              </div>
-            )}
-          </React.Fragment>
-        ))}
+                  <div className="w-16 h-16 bg-accent/5 rounded-2xl flex items-center justify-center mb-6 text-accent group-hover:scale-110 transition-all duration-700">
+                    <span className="text-[9px] font-bold tracking-[0.2em]">0{i + 1}</span>
+                  </div>
+                  <h3 className="text-xl font-headline font-bold text-label tracking-tight">{step.label}</h3>
+                  <p className="text-[10px] text-accent font-bold uppercase tracking-[0.2em] mt-3 opacity-40">{step.sub}</p>
+                </LiquidGlassCard>
+              </motion.div>
+
+              {/* Connecting Physics */}
+              {i < steps.length - 1 && (
+                <div className="hidden md:flex items-center justify-center px-4 text-accent/20">
+                  <motion.div
+                    animate={{ x: [0, 5, 0], opacity: [0.2, 0.5, 0.2] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    {i === steps.length - 2 ? <MoveRight size={24} strokeWidth={1} /> : <Plus size={20} />}
+                  </motion.div>
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
 
-      <div
-        data-aos="fade-up"
-        data-aos-duration="700"
-        data-aos-delay="1200"
-        className="mt-24 text-center"
-      >
-        <motion.span
+      {/* The Closing Cinematic Badge */}
+      <div className="mt-32 text-center">
+        <motion.div
           whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-          className="bg-system-fill px-8 py-4 rounded-full text-[11px] font-semibold uppercase tracking-headline text-secondary-label shadow-sm squircle"
+          className="inline-flex items-center gap-4 bg-label/[0.03] backdrop-blur-md pl-6 pr-10 py-5 rounded-full shadow-2xl group"
         >
-          Total Prep Time: <span className="text-accent underline decoration-2 underline-offset-4 tracking-tight">Under 30 Seconds</span>
-        </motion.span>
+          <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+            <Timer size={18} strokeWidth={1.5} className="group-hover:rotate-[360deg] transition-transform duration-1000" />
+          </div>
+          <div className="text-left">
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-label/40">Efficiency Metric</div>
+            <div className="text-sm font-headline font-bold text-label">
+              Activation in <span className="text-accent underline decoration-accent/30 underline-offset-4">Under 30 Seconds</span>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </SectionContainer>
   );
 }
-
