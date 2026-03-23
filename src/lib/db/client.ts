@@ -33,6 +33,32 @@ export function getDatabasePool() {
   return global.__hopPgPool;
 }
 
+function mapDatabaseConnectionError(error: unknown) {
+  if (
+    error instanceof Error &&
+    error.message.toLowerCase().includes("vercel oidc token")
+  ) {
+    return new Error(
+      "Database connection failed because local Vercel OIDC refresh was forbidden (403). Run `vercel login` and `vercel pull`, set `DATABASE_DIRECT_URL`/`PGPASSWORD`, or keep IAM disabled locally unless you set `ALLOW_LOCAL_IAM_DB=true`.",
+      { cause: error }
+    );
+  }
+
+  if (error instanceof Error) {
+    return error;
+  }
+
+  return new Error("Database connection failed.");
+}
+
+async function connectDatabaseClient() {
+  try {
+    return await getDatabasePool().connect();
+  } catch (error) {
+    throw mapDatabaseConnectionError(error);
+  }
+}
+
 async function applyActorContext(
   queryFn: <TRow extends QueryResultRow>(
     text: string,
@@ -68,7 +94,7 @@ export async function query<T extends QueryResultRow>(
     return pool.query<T>(text, values);
   }
 
-  const client = await getDatabasePool().connect();
+  const client = await connectDatabaseClient();
 
   try {
     await client.query("BEGIN");
@@ -93,7 +119,7 @@ export async function withTransaction<T>(
   ) => Promise<QueryResult<TRow>>) => Promise<T>,
   options?: { actor?: DatabaseActorContext }
 ) {
-  const client = await getDatabasePool().connect();
+  const client = await connectDatabaseClient();
 
   try {
     await client.query("BEGIN");

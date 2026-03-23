@@ -43,6 +43,7 @@ export const serverEnv = {
     name: readOptionalEnv(process.env.PGDATABASE),
     user: readOptionalEnv(process.env.PGUSER),
     password: readOptionalEnv(process.env.PGPASSWORD),
+    allowLocalIam: process.env.ALLOW_LOCAL_IAM_DB?.trim() === "true",
     sslMode: readEnumEnv(
       "PGSSLMODE",
       process.env.PGSSLMODE,
@@ -95,7 +96,10 @@ export const hasDatabaseConfig = Boolean(
     (serverEnv.database.host &&
       serverEnv.database.name &&
       serverEnv.database.user &&
-      (serverEnv.database.password || (serverEnv.aws.region && serverEnv.aws.roleArn)))
+      (serverEnv.database.password ||
+        (serverEnv.aws.region &&
+          serverEnv.aws.roleArn &&
+          (!serverEnv.isDevelopment || serverEnv.database.allowLocalIam))))
 );
 
 export const hasStorageConfig = Boolean(

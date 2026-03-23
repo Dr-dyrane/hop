@@ -50,12 +50,16 @@ function hasDirectCredentialConfig() {
 }
 
 function hasIamConfig() {
+  const localIamAllowed =
+    !serverEnv.isDevelopment || serverEnv.database.allowLocalIam;
+
   return Boolean(
     serverEnv.database.host &&
       serverEnv.database.name &&
       serverEnv.database.user &&
       serverEnv.aws.region &&
-      serverEnv.aws.roleArn
+      serverEnv.aws.roleArn &&
+      localIamAllowed
   );
 }
 

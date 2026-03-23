@@ -444,10 +444,10 @@ This audit covers:
 - [x] Restore global keyboard focus visibility policy and keep per-component premium focus states.
 - [x] Convert `PortalStoreShelf` preview into an accessible dialog contract (role, aria, focus trap, return focus).
 - [x] Wire payment proof `note` through API contract or remove the field.
-- [ ] Refactor `/account` landing into clearer hierarchy:
+- [x] Refactor `/account` landing into clearer hierarchy:
   - primary: resume order or shop
   - secondary: account shortcuts
   - archival: counts/history
-- [ ] Localize `/account` and `/account/reorder` surface styling into page modules to reduce global class coupling.
-- [ ] Revisit portal shelf 3D activation policy to avoid unnecessary always-on WebGL work.
-- [ ] Add panel-query -> state sync effect in `OrderDetailView` for navigation consistency.
+- [x] Localize `/account` and `/account/reorder` surface styling into page modules to reduce global class coupling.
+- [x] Revisit portal shelf 3D activation policy to avoid unnecessary always-on WebGL work.
+- [x] Add panel-query -> state sync effect in `OrderDetailView` for navigation consistency.

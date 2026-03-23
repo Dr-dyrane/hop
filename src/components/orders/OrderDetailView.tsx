@@ -364,6 +364,34 @@ export function OrderDetailView({
     updatePanelQuery(activePanel);
   }, [activePanel, panelChoice, updatePanelQuery]);
 
+  // Keep local panel state in sync with browser back/forward navigation.
+  useEffect(() => {
+    const syncPanelFromLocation = () => {
+      const nextSearchParams = new URL(window.location.href).searchParams;
+      const requestedPanel = clampActivePanel({
+        requestedPanel: parseActivePanel(nextSearchParams.get(PANEL_QUERY_KEY)),
+        showPaymentWorkflow,
+        showReturn,
+        showReview,
+        hasDetailsSection,
+      });
+
+      setPanelChoice((currentPanel) =>
+        currentPanel === requestedPanel ? currentPanel : requestedPanel
+      );
+    };
+
+    window.addEventListener("popstate", syncPanelFromLocation);
+    return () => {
+      window.removeEventListener("popstate", syncPanelFromLocation);
+    };
+  }, [
+    hasDetailsSection,
+    showPaymentWorkflow,
+    showReturn,
+    showReview,
+  ]);
+
   // Track quick action should stay available from global FAB/header actions.
   const canTrack = Boolean(
     trackingHref && TRACKABLE_FULFILLMENT_STATUSES.has(order?.fulfillmentStatus ?? "")

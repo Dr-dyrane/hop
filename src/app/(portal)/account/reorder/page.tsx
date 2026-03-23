@@ -1,6 +1,7 @@
 import { requireAuthenticatedSession } from "@/lib/auth/guards";
 import { listOrdersForPortal } from "@/lib/db/repositories/orders-repository";
 import { ReorderBoard } from "@/components/account/ReorderBoard";
+import styles from "./reorder-page.module.css";
 
 function getBannerState(input: {
   totalOrders: number;
@@ -48,10 +49,11 @@ export default async function ReorderPage() {
   });
 
   return (
-    <div className="space-y-4 pb-20 md:space-y-6">
-      <section className="rounded-[30px] bg-[color:var(--surface)]/88 px-5 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
-        <h1 className="text-base font-semibold tracking-tight text-label">{banner.title}</h1>
-        <p className="mt-1 text-sm text-secondary-label">{banner.detail}</p>
+    <div className={styles.page}>
+      <section className={styles.banner}>
+        <p className={styles.bannerEyebrow}>Reorder</p>
+        <h1 className={styles.bannerTitle}>{banner.title}</h1>
+        <p className={styles.bannerDetail}>{banner.detail}</p>
       </section>
 
       <ReorderBoard orders={orders} />

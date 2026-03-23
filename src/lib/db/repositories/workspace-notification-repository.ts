@@ -1,6 +1,7 @@
 import "server-only";
 
 import { isDatabaseConfigured, query } from "@/lib/db/client";
+import { serverEnv } from "@/lib/config/server";
 import { applyWorkspaceNotificationState } from "@/lib/db/repositories/notification-preferences-repository";
 import type { WorkspaceNotification } from "@/lib/db/types";
 
@@ -89,6 +90,40 @@ function sortAndLimit<T extends { createdAt: string }>(notifications: T[], limit
       return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
     })
     .slice(0, limit);
+}
+
+function isLocalOidcRefreshError(error: unknown) {
+  if (!serverEnv.isDevelopment) {
+    return false;
+  }
+
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+
+  return (
+    message.includes("vercel oidc token") ||
+    message.includes("oidc token") ||
+    message.includes("oidc refresh")
+  );
+}
+
+function handleNotificationReadFailure(
+  scope: "customer" | "admin",
+  error: unknown
+) {
+  if (!isLocalOidcRefreshError(error)) {
+    throw error;
+  }
+
+  console.warn(
+    `[workspace-notifications:${scope}] Falling back to an empty notification list in development because local Vercel OIDC refresh failed.`,
+    error
+  );
+
+  return [] as WorkspaceNotification[];
 }
 
 function mapCustomerOrderNotification(
@@ -269,9 +304,10 @@ export async function listWorkspaceNotificationsForCustomer(
   ];
   const returnStatuses = ["approved", "rejected", "received", "refunded"];
 
-  const [ordersResult, returnsResult] = await Promise.all([
-    query<CustomerOrderNotificationRow>(
-      `
+  try {
+    const [ordersResult, returnsResult] = await Promise.all([
+      query<CustomerOrderNotificationRow>(
+        `
         with matched_user as (
           select id
           from app.users
@@ -305,11 +341,11 @@ export async function listWorkspaceNotificationsForCustomer(
         order by "createdAt" desc
         limit $3
       `,
-      [normalizedEmail, orderStatuses, limit],
-      { actor }
-    ),
-    query<CustomerReturnNotificationRow>(
-      `
+        [normalizedEmail, orderStatuses, limit],
+        { actor }
+      ),
+      query<CustomerReturnNotificationRow>(
+        `
         with matched_user as (
           select id
           from app.users
@@ -342,24 +378,27 @@ export async function listWorkspaceNotificationsForCustomer(
         order by "createdAt" desc
         limit $3
       `,
-      [normalizedEmail, returnStatuses, limit],
-      { actor }
-    ),
-  ]);
+        [normalizedEmail, returnStatuses, limit],
+        { actor }
+      ),
+    ]);
 
-  const notifications: PendingWorkspaceNotification[] = [
-    ...ordersResult.rows
-      .map((row) => mapCustomerOrderNotification(row))
-      .filter((row): row is PendingWorkspaceNotification => row !== null),
-    ...returnsResult.rows
-      .map((row) => mapCustomerReturnNotification(row))
-      .filter((row): row is PendingWorkspaceNotification => row !== null),
-  ];
+    const notifications: PendingWorkspaceNotification[] = [
+      ...ordersResult.rows
+        .map((row) => mapCustomerOrderNotification(row))
+        .filter((row): row is PendingWorkspaceNotification => row !== null),
+      ...returnsResult.rows
+        .map((row) => mapCustomerReturnNotification(row))
+        .filter((row): row is PendingWorkspaceNotification => row !== null),
+    ];
 
-  return applyWorkspaceNotificationState(
-    normalizedEmail,
-    sortAndLimit(notifications, limit)
-  );
+    return applyWorkspaceNotificationState(
+      normalizedEmail,
+      sortAndLimit(notifications, limit)
+    );
+  } catch (error) {
+    return handleNotificationReadFailure("customer", error);
+  }
 }
 
 export async function listWorkspaceNotificationsForAdmin(email: string, limit = 8) {
@@ -369,15 +408,16 @@ export async function listWorkspaceNotificationsForAdmin(email: string, limit = 
 
   const actor = buildAdminActor(email);
 
-  const [
-    requestsResult,
-    paymentsResult,
-    dispatchResult,
-    returnsResult,
-    stockResult,
-  ] = await Promise.all([
-    query<AdminOrderRequestRow>(
-      `
+  try {
+    const [
+      requestsResult,
+      paymentsResult,
+      dispatchResult,
+      returnsResult,
+      stockResult,
+    ] = await Promise.all([
+      query<AdminOrderRequestRow>(
+        `
         select
           o.id as "orderId",
           o.public_order_number as "orderNumber",
@@ -388,11 +428,11 @@ export async function listWorkspaceNotificationsForAdmin(email: string, limit = 
         order by o.placed_at desc
         limit $1
       `,
-      [limit],
-      { actor }
-    ),
-    query<AdminPaymentNotificationRow>(
-      `
+        [limit],
+        { actor }
+      ),
+      query<AdminPaymentNotificationRow>(
+        `
         select
           p.id as "paymentId",
           o.id as "orderId",
@@ -407,11 +447,11 @@ export async function listWorkspaceNotificationsForAdmin(email: string, limit = 
         order by "createdAt" desc
         limit $1
       `,
-      [limit],
-      { actor }
-    ),
-    query<AdminDispatchNotificationRow>(
-      `
+        [limit],
+        { actor }
+      ),
+      query<AdminDispatchNotificationRow>(
+        `
         select
           o.id as "orderId",
           o.public_order_number as "orderNumber",
@@ -431,11 +471,11 @@ export async function listWorkspaceNotificationsForAdmin(email: string, limit = 
         order by "createdAt" desc
         limit $1
       `,
-      [limit],
-      { actor }
-    ),
-    query<AdminReturnNotificationRow>(
-      `
+        [limit],
+        { actor }
+      ),
+      query<AdminReturnNotificationRow>(
+        `
         select
           rc.id as "returnCaseId",
           rc.order_id as "orderId",
@@ -449,11 +489,11 @@ export async function listWorkspaceNotificationsForAdmin(email: string, limit = 
         order by rc.created_at desc
         limit $1
       `,
-      [limit],
-      { actor }
-    ),
-    query<AdminLowStockNotificationRow>(
-      `
+        [limit],
+        { actor }
+      ),
+      query<AdminLowStockNotificationRow>(
+        `
         select
           p.id as "productId",
           coalesce(nullif(p.marketing_name, ''), p.name) as "productName",
@@ -476,63 +516,66 @@ export async function listWorkspaceNotificationsForAdmin(email: string, limit = 
         order by "availableUnits" asc, "createdAt" desc
         limit $1
       `,
-      [limit],
-      { actor }
-    ),
-  ]);
+        [limit],
+        { actor }
+      ),
+    ]);
 
-  const notifications: PendingWorkspaceNotification[] = [
-    ...requestsResult.rows.map((row) => ({
-      notificationId: `request:${row.orderId}`,
-      eventKey: "workspace" as const,
-      title: "New request",
-      detail: `#${row.orderNumber} ${row.customerName}`,
-      href: `/admin/orders/${row.orderId}`,
-      createdAt: row.createdAt,
-      tone: "default" as const,
-      icon: "order" as const,
-    })),
-    ...paymentsResult.rows.map((row) => ({
-      notificationId: `payment:${row.paymentId}`,
-      eventKey: "workspace" as const,
-      title: row.status === "under_review" ? "Proof in review" : "Proof waiting",
-      detail: `#${row.orderNumber} ${row.customerName}`,
-      href: `/admin/orders/${row.orderId}`,
-      createdAt: row.createdAt,
-      tone: "warning" as const,
-      icon: "payment" as const,
-    })),
-    ...dispatchResult.rows.map((row) => ({
-      notificationId: `dispatch:${row.orderId}`,
-      eventKey: "workspace" as const,
-      title: "Ready for dispatch",
-      detail: `#${row.orderNumber} ${row.customerName}`,
-      href: `/admin/delivery`,
-      createdAt: row.createdAt,
-      tone: "default" as const,
-      icon: "delivery" as const,
-    })),
-    ...returnsResult.rows.map((row) => ({
-      notificationId: `return:${row.returnCaseId}`,
-      eventKey: "workspace" as const,
-      title: "Return request",
-      detail: `#${row.orderNumber} ${row.customerName}`,
-      href: `/admin/orders/${row.orderId}`,
-      createdAt: row.createdAt,
-      tone: "warning" as const,
-      icon: "return" as const,
-    })),
-    ...stockResult.rows.map((row) => ({
-      notificationId: `stock:${row.productId}:${row.variantName}`,
-      eventKey: "workspace" as const,
-      title: "Low stock",
-      detail: `${row.productName} - ${row.availableUnits}/${row.reorderThreshold}`,
-      href: `/admin/catalog/products/${row.productId}`,
-      createdAt: row.createdAt,
-      tone: "warning" as const,
-      icon: "alert" as const,
-    })),
-  ];
+    const notifications: PendingWorkspaceNotification[] = [
+      ...requestsResult.rows.map((row) => ({
+        notificationId: `request:${row.orderId}`,
+        eventKey: "workspace" as const,
+        title: "New request",
+        detail: `#${row.orderNumber} ${row.customerName}`,
+        href: `/admin/orders/${row.orderId}`,
+        createdAt: row.createdAt,
+        tone: "default" as const,
+        icon: "order" as const,
+      })),
+      ...paymentsResult.rows.map((row) => ({
+        notificationId: `payment:${row.paymentId}`,
+        eventKey: "workspace" as const,
+        title: row.status === "under_review" ? "Proof in review" : "Proof waiting",
+        detail: `#${row.orderNumber} ${row.customerName}`,
+        href: `/admin/orders/${row.orderId}`,
+        createdAt: row.createdAt,
+        tone: "warning" as const,
+        icon: "payment" as const,
+      })),
+      ...dispatchResult.rows.map((row) => ({
+        notificationId: `dispatch:${row.orderId}`,
+        eventKey: "workspace" as const,
+        title: "Ready for dispatch",
+        detail: `#${row.orderNumber} ${row.customerName}`,
+        href: `/admin/delivery`,
+        createdAt: row.createdAt,
+        tone: "default" as const,
+        icon: "delivery" as const,
+      })),
+      ...returnsResult.rows.map((row) => ({
+        notificationId: `return:${row.returnCaseId}`,
+        eventKey: "workspace" as const,
+        title: "Return request",
+        detail: `#${row.orderNumber} ${row.customerName}`,
+        href: `/admin/orders/${row.orderId}`,
+        createdAt: row.createdAt,
+        tone: "warning" as const,
+        icon: "return" as const,
+      })),
+      ...stockResult.rows.map((row) => ({
+        notificationId: `stock:${row.productId}:${row.variantName}`,
+        eventKey: "workspace" as const,
+        title: "Low stock",
+        detail: `${row.productName} - ${row.availableUnits}/${row.reorderThreshold}`,
+        href: `/admin/catalog/products/${row.productId}`,
+        createdAt: row.createdAt,
+        tone: "warning" as const,
+        icon: "alert" as const,
+      })),
+    ];
 
-  return applyWorkspaceNotificationState(email, sortAndLimit(notifications, limit));
+    return applyWorkspaceNotificationState(email, sortAndLimit(notifications, limit));
+  } catch (error) {
+    return handleNotificationReadFailure("admin", error);
+  }
 }

@@ -2,9 +2,9 @@
 /* eslint-disable @next/next/no-img-element */
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
-import { Box, ShoppingBag, X } from "lucide-react";
+import { Box, Cuboid, ShoppingBag, X } from "lucide-react";
 import { useCommerce } from "@/components/providers/CommerceProvider";
 import { useOverlayPresence } from "@/components/providers/UIProvider";
 import { formatNgn } from "@/lib/commerce";
@@ -84,6 +84,7 @@ export function PortalStoreShelf({
   const dialogRef = useRef<HTMLElement | null>(null);
   const focusRestoreRef = useRef<HTMLElement | null>(null);
   const [activeProductId, setActiveProductId] = useState<string | null>(null);
+  const [isThreePreviewEnabled, setIsThreePreviewEnabled] = useState(false);
   const availableProducts = products.filter((product) =>
     isStorefrontVisibleProduct(product)
   );
@@ -93,6 +94,16 @@ export function PortalStoreShelf({
   const dialogTitleId = activeProduct
     ? `portal-store-preview-title-${activeProduct.productId}`
     : undefined;
+
+  const openPreview = useCallback((productId: string) => {
+    setIsThreePreviewEnabled(false);
+    setActiveProductId(productId);
+  }, []);
+
+  const closePreview = useCallback(() => {
+    setIsThreePreviewEnabled(false);
+    setActiveProductId(null);
+  }, []);
 
   useOverlayPresence("portal-store-preview", isPreviewOpen);
 
@@ -111,7 +122,7 @@ export function PortalStoreShelf({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        setActiveProductId(null);
+        closePreview();
         return;
       }
 
@@ -148,7 +159,7 @@ export function PortalStoreShelf({
         }, 0);
       }
     };
-  }, [isPreviewOpen]);
+  }, [closePreview, isPreviewOpen]);
 
   if (availableProducts.length === 0) {
     return null;
@@ -167,7 +178,7 @@ export function PortalStoreShelf({
             >
               <button
                 type="button"
-                onClick={() => setActiveProductId(product.productId)}
+                onClick={() => openPreview(product.productId)}
                 className="absolute inset-0 z-10 block"
                 aria-label={`Open ${title}`}
                 aria-haspopup="dialog"
@@ -232,7 +243,7 @@ export function PortalStoreShelf({
         <button
           type="button"
           aria-label="Close product preview"
-          onClick={() => setActiveProductId(null)}
+          onClick={closePreview}
           tabIndex={isPreviewOpen ? 0 : -1}
           className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         />
@@ -264,7 +275,7 @@ export function PortalStoreShelf({
 
               <button
                 type="button"
-                onClick={() => setActiveProductId(null)}
+                onClick={closePreview}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-system-fill/80 text-label transition-colors duration-300 hover:bg-system-fill"
                 aria-label="Close product preview"
               >
@@ -280,14 +291,26 @@ export function PortalStoreShelf({
 
                 {activeProduct.modelUrl ? (
                   <div className="relative z-10 h-full w-full p-3 sm:p-5">
-                    <Product3DViewer
-                      modelPath={activeProduct.modelUrl}
-                      fallbackImagePath={activeProduct.imageUrl ?? undefined}
-                      theme={resolvedTheme === "dark" ? "dark" : "light"}
-                      className="h-full w-full"
-                      sectionId={`portal-${activeProduct.productSlug}`}
-                      scrollActive
-                    />
+                    {isThreePreviewEnabled ? (
+                      <Product3DViewer
+                        modelPath={activeProduct.modelUrl}
+                        fallbackImagePath={activeProduct.imageUrl ?? undefined}
+                        theme={resolvedTheme === "dark" ? "dark" : "light"}
+                        className="h-full w-full"
+                        sectionId="portal-store-preview"
+                        scrollActive={isPreviewOpen && isThreePreviewEnabled}
+                      />
+                    ) : activeProduct.imageUrl ? (
+                      <img
+                        src={activeProduct.imageUrl}
+                        alt={getProductTitle(activeProduct)}
+                        className="absolute inset-0 h-full w-full object-contain p-6 sm:p-8"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Box className="h-12 w-12 text-label/70" strokeWidth={1.6} />
+                      </div>
+                    )}
                   </div>
                 ) : activeProduct.imageUrl ? (
                   <img
@@ -317,6 +340,17 @@ export function PortalStoreShelf({
                   {activeProduct.shortDescription}
                 </p>
 
+                {activeProduct.modelUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsThreePreviewEnabled((current) => !current)}
+                    className="mt-5 inline-flex min-h-[40px] w-fit items-center gap-2 rounded-full bg-system-fill/56 px-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-label transition-colors duration-200 hover:bg-system-fill/72"
+                  >
+                    <Cuboid className="h-3.5 w-3.5" strokeWidth={1.8} />
+                    {isThreePreviewEnabled ? "Use image preview" : "Enable 3D preview"}
+                  </button>
+                ) : null}
+
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                   <button
                     type="button"
@@ -328,7 +362,7 @@ export function PortalStoreShelf({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveProductId(null)}
+                    onClick={closePreview}
                     className="button-secondary min-h-[48px] px-5 text-[10px] font-semibold uppercase tracking-[0.16em]"
                   >
                     Close

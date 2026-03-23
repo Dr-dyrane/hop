@@ -1,0 +1,394 @@
+.page {
+  display: grid;
+  gap: 1rem;
+  padding-bottom: 5rem;
+}
+
+.hero {
+  border-radius: 2rem;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  box-shadow: var(--shadow-soft);
+  padding: 1.1rem 1rem;
+}
+
+.heroEyebrow {
+  margin: 0;
+  color: var(--secondary-label);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+}
+
+.heroTitle {
+  margin: 0.32rem 0 0;
+  color: var(--label);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.heroDetail {
+  margin: 0.42rem 0 0;
+  color: var(--secondary-label);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.heroActions {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.52rem;
+}
+
+.primaryAction,
+.secondaryAction {
+  min-height: 2.55rem;
+  border-radius: 999px;
+  padding: 0 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 0.67rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+  transition:
+    transform var(--duration-fast) var(--ease-premium),
+    background-color var(--duration-base) var(--ease-premium),
+    color var(--duration-base) var(--ease-premium);
+}
+
+.primaryAction {
+  background: var(--accent);
+  color: var(--accent-label);
+  box-shadow: var(--shadow-soft);
+}
+
+.secondaryAction {
+  background: color-mix(in srgb, var(--surface-alt) 78%, transparent);
+  color: var(--label);
+}
+
+.primaryAction:hover,
+.secondaryAction:hover {
+  transform: translateY(-1px);
+}
+
+.activityPill {
+  margin-top: 0.8rem;
+  width: fit-content;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-alt) 72%, transparent);
+  color: var(--secondary-label);
+  padding: 0.36rem 0.72rem;
+  font-size: 0.71rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.primaryWorkflow {
+  border-radius: 2rem;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  box-shadow: var(--shadow-card);
+  padding: 1rem;
+}
+
+.primaryWorkflowHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.panelEyebrow {
+  margin: 0;
+  color: var(--secondary-label);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+}
+
+.orderTitle {
+  margin: 0.26rem 0 0;
+  color: var(--label);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.orderStatus {
+  margin: 0.26rem 0 0;
+  color: var(--secondary-label);
+  font-size: 0.83rem;
+  line-height: 1.35;
+}
+
+.orderBadge {
+  min-height: 1.65rem;
+  border-radius: 999px;
+  padding: 0 0.62rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface-alt) 70%, transparent);
+  color: var(--secondary-label);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+  white-space: nowrap;
+}
+
+.primaryActionGrid {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.52rem;
+}
+
+.surfaceAction {
+  min-height: 2.9rem;
+  border-radius: 1.1rem;
+  background: color-mix(in srgb, var(--surface-alt) 76%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  text-decoration: none;
+  padding: 0.72rem 0.8rem;
+  transition: background-color var(--duration-base) var(--ease-premium);
+}
+
+.surfaceAction:hover {
+  background: color-mix(in srgb, var(--surface-alt) 88%, transparent);
+}
+
+.surfaceActionLabel {
+  color: var(--label);
+  font-size: 0.79rem;
+  font-weight: 600;
+}
+
+.surfaceActionMeta {
+  color: var(--secondary-label);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+}
+
+.emptyWorkflow {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.emptyTitle {
+  margin: 0.2rem 0 0;
+  color: var(--label);
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.secondarySection,
+.storeSection {
+  display: grid;
+  gap: 0.62rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-inline: 0.08rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--label);
+  font-size: 0.94rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-title);
+}
+
+.quickGrid {
+  border-radius: 1.6rem;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  box-shadow: var(--shadow-soft);
+  padding: 0.38rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.quickLink {
+  min-height: 2.45rem;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--label);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+  transition:
+    background-color var(--duration-base) var(--ease-premium),
+    transform var(--duration-fast) var(--ease-premium);
+}
+
+.quickLink:hover {
+  background: color-mix(in srgb, var(--surface-alt) 76%, transparent);
+  transform: translateY(-1px);
+}
+
+.storeTitle {
+  margin: 0;
+  color: var(--label);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.storeMeta {
+  margin: 0.16rem 0 0;
+  color: var(--secondary-label);
+  font-size: 0.8rem;
+}
+
+.archiveGrid {
+  display: grid;
+  gap: 0.72rem;
+}
+
+.archivePanel {
+  border-radius: 2rem;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  box-shadow: var(--shadow-card);
+  padding: 1rem;
+}
+
+.archivePanelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.archivePanelTitle {
+  margin: 0;
+  color: var(--label);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.archivePanelBadge {
+  min-height: 1.65rem;
+  border-radius: 999px;
+  padding: 0 0.62rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--surface-alt) 72%, transparent);
+  color: var(--secondary-label);
+  font-size: 0.61rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-headline);
+}
+
+.archivePanelBody {
+  margin-top: 0.72rem;
+  display: grid;
+  gap: 0.52rem;
+}
+
+.archiveMetaCard {
+  border-radius: 1.2rem;
+  background: color-mix(in srgb, var(--surface-alt) 74%, transparent);
+  padding: 0.72rem 0.82rem;
+}
+
+.archiveMetaValue {
+  color: var(--label);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.archiveMetaSub {
+  margin-top: 0.14rem;
+  color: var(--secondary-label);
+  font-size: 0.74rem;
+  overflow-wrap: anywhere;
+}
+
+.archiveAction {
+  min-height: 2.9rem;
+  border-radius: 1.15rem;
+  background: color-mix(in srgb, var(--surface-alt) 74%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  text-decoration: none;
+  padding: 0.72rem 0.8rem;
+  transition: background-color var(--duration-base) var(--ease-premium);
+}
+
+.archiveAction:hover,
+.archiveSubAction:hover {
+  background: color-mix(in srgb, var(--surface-alt) 88%, transparent);
+}
+
+.archiveSubGrid {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.archiveSubAction {
+  min-height: 2.72rem;
+  border-radius: 1.05rem;
+  background: color-mix(in srgb, var(--surface-alt) 74%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  text-decoration: none;
+  padding: 0.68rem 0.8rem;
+  transition: background-color var(--duration-base) var(--ease-premium);
+}
+
+@media (min-width: 768px) {
+  .page {
+    gap: 1.15rem;
+  }
+
+  .hero,
+  .primaryWorkflow,
+  .archivePanel {
+    padding: 1.2rem 1.25rem;
+  }
+
+  .heroTitle {
+    font-size: 1.7rem;
+  }
+
+  .quickGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .archiveGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .archiveSubGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
