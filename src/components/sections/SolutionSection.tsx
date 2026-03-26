@@ -91,7 +91,7 @@ export function SolutionSection({
       </div>
 
       <div ref={containerRef} className="mx-auto flex w-full max-w-7xl flex-col items-center relative z-10">
-        <div className="mb-20 flex flex-col items-center text-center">
+        <div className="mb-12 flex flex-col items-center text-center sm:mb-16 lg:mb-20">
           <HeroEyebrow position="center" animated>
             <Lightbulb className="w-3.5 h-3.5 mr-3 text-label" />
             The Living Formula
@@ -99,16 +99,16 @@ export function SolutionSection({
           <h2 className="mt-12 text-6xl md:text-[140px] font-headline font-bold text-label tracking-tighter leading-[0.75]">
             Meet <span className="italic opacity-70">{brand.name}.</span>
           </h2>
-          <p className="mt-12 text-xl md:text-2xl text-secondary-label/60 max-w-3xl font-light italic leading-relaxed">
+          <p className="mt-8 max-w-3xl text-lg font-light italic leading-relaxed text-secondary-label/60 sm:mt-10 sm:text-xl md:mt-12 md:text-2xl">
             Redesigned for the athlete. Refined for the everyday. 
             No fillers, just plant-powered performance.
           </p>
         </div>
 
-        <div className="relative w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="relative flex w-full flex-col gap-8 sm:gap-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-12">
           
           {/* Left Side Indicators */}
-          <div className="lg:col-span-3 flex flex-col gap-6 order-2 lg:order-1">
+          <div className="order-2 hidden lg:order-1 lg:col-span-3 lg:flex lg:flex-col lg:gap-6">
             {TRUST_INDICATORS.slice(0, 2).map((indicator) => (
               <IndicatorCard key={indicator.label} indicator={indicator} />
             ))}
@@ -117,7 +117,7 @@ export function SolutionSection({
           {/* Central 3D Showcase */}
           <motion.div 
             style={{ scale: springScale }}
-            className="lg:col-span-6 relative flex items-center justify-center order-1 lg:order-2 py-12"
+            className="order-1 relative flex items-center justify-center py-4 sm:py-6 md:py-8 lg:order-2 lg:col-span-6 lg:py-12"
           >
             {/* Orbital Glass Rings */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -146,7 +146,7 @@ export function SolutionSection({
               <Product3DViewerComponent
                 modelPath={productsById[currentProduct]?.model ?? ""}
                 theme="light"
-                className="relative z-10 w-72 md:w-[400px] h-[500px] md:h-[600px]"
+                className="relative z-10 h-[360px] w-[270px] sm:h-[420px] sm:w-[320px] md:h-[500px] md:w-[360px] lg:h-[600px] lg:w-[400px]"
                 sectionId="solution"
                 scrollActive={scrollActive}
               />
@@ -156,13 +156,19 @@ export function SolutionSection({
                 alt={productsById[currentProduct]?.name ?? "Product"}
                 width={800}
                 height={1000}
-                className="relative z-10 w-72 md:w-[400px] object-contain drop-shadow-[0_50px_100px_rgba(0,0,0,0.15)]"
+                className="relative z-10 w-[270px] object-contain drop-shadow-[0_50px_100px_rgba(0,0,0,0.15)] sm:w-[320px] md:w-[360px] lg:w-[400px]"
               />
             )}
           </motion.div>
 
+          <div className="order-2 grid w-full grid-cols-2 gap-3 sm:gap-4 md:mx-auto md:max-w-3xl md:gap-5 lg:hidden">
+            {TRUST_INDICATORS.map((indicator) => (
+              <IndicatorCard key={indicator.label} indicator={indicator} />
+            ))}
+          </div>
+
           {/* Right Side Indicators */}
-          <div className="lg:col-span-3 flex flex-col gap-6 order-3">
+          <div className="order-3 hidden lg:col-span-3 lg:flex lg:flex-col lg:gap-6">
             {TRUST_INDICATORS.slice(2, 4).map((indicator) => (
               <IndicatorCard key={indicator.label} indicator={indicator} />
             ))}
@@ -177,21 +183,22 @@ function IndicatorCard({ indicator }: { indicator: TrustIndicator }) {
   const Icon = indicator.icon;
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      whileInView={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
       transition={{ delay: indicator.delay, duration: 0.8 }}
       viewport={{ once: true }}
+      className="h-full"
     >
       <LiquidGlassCard
         variant="default"
         intensity="subtle"
         interactive
-        className="group flex flex-col gap-4 rounded-3xl p-8 text-center shadow lg:items-start lg:text-left"
+        className="group flex h-full flex-col items-start gap-3 rounded-3xl p-4 text-left shadow sm:gap-4 sm:p-5 md:p-6 lg:p-8"
       >
-        <div className="w-12 h-12 rounded-2xl bg-accent/5 flex items-center justify-center group-hover:bg-accent/10 transition-colors">
-          <Icon size={24} className="text-accent group-hover:scale-110 transition-transform" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/5 transition-colors group-hover:bg-accent/10 sm:h-11 sm:w-11 lg:h-12 lg:w-12">
+          <Icon size={20} className="text-accent transition-transform group-hover:scale-110 sm:h-[22px] sm:w-[22px] lg:h-6 lg:w-6" />
         </div>
-        <div className="text-[10px] font-bold text-label tracking-[0.2em] uppercase opacity-40 group-hover:opacity-100 transition-opacity">
+        <div className="text-[9px] font-bold uppercase leading-snug tracking-[0.16em] text-label/55 transition-opacity group-hover:text-label sm:text-[10px] sm:tracking-[0.18em] lg:tracking-[0.2em]">
           {indicator.label}
         </div>
       </LiquidGlassCard>

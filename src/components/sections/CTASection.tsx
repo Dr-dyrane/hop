@@ -83,19 +83,19 @@ export function CTASection() {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex w-full max-w-[30rem] flex-nowrap gap-2 sm:max-w-none sm:gap-4">
               <Button
                 size="lg"
-                className="!h-[80px] px-12 rounded-[24px] bg-label text-system-background text-sm font-bold uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.02] transition-transform group"
+                className="group !h-14 min-w-0 flex-1 whitespace-nowrap rounded-[20px] bg-label px-4 text-[10px] font-bold uppercase tracking-[0.14em] text-system-background shadow-2xl transition-transform hover:scale-[1.02] sm:!h-[80px] sm:flex-none sm:rounded-[24px] sm:px-12 sm:text-sm sm:tracking-[0.2em]"
                 onClick={handlePrimaryAction}
               >
                 {itemCount > 0 ? (
-                  <span className="flex items-center gap-3">
+                  <span className="flex items-center gap-2 whitespace-nowrap sm:gap-3">
                     <ShoppingBag size={18} strokeWidth={2.5} />
                     Finalize Order
                   </span>
                 ) : (
-                  <span className="flex items-center gap-3">
+                  <span className="flex items-center gap-2 whitespace-nowrap sm:gap-3">
                     <Zap size={18} fill="currentColor" />
                     Deploy Fuel
                   </span>
@@ -104,10 +104,10 @@ export function CTASection() {
 
               <Link
                 href="#shop"
-                className="h-[80px] px-12 rounded-[24px]  liquid-glass flex items-center justify-center text-[10px] font-bold uppercase tracking-[0.3em] text-label/75 hover:bg-label/[0.02] transition-all group"
+                className="group liquid-glass flex h-14 min-w-0 flex-1 items-center justify-center whitespace-nowrap rounded-[20px] px-4 text-[9px] font-bold uppercase tracking-[0.18em] text-label/75 transition-all hover:bg-label/[0.02] sm:h-[80px] sm:flex-none sm:rounded-[24px] sm:px-12 sm:text-[10px] sm:tracking-[0.3em]"
               >
                 Browse All
-                <ArrowRight size={14} className="ml-3 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight size={14} className="ml-2 transition-transform group-hover:translate-x-1 sm:ml-3" />
               </Link>
             </div>
           </div>

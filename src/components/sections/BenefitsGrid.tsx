@@ -38,7 +38,7 @@ export function BenefitsGrid() {
       </div>
 
       <div className="mx-auto w-full max-w-7xl relative z-10">
-        <div className="mb-28 flex flex-col items-center text-center">
+        <div className="mb-16 flex flex-col items-center text-center sm:mb-20 lg:mb-28">
           <HeroEyebrow position="center" animated className="bg-label text-system-background">
             <Sparkles className="w-3.5 h-3.5 mr-3" />
             Bio-Architecture
@@ -49,14 +49,14 @@ export function BenefitsGrid() {
             <span className="italic opacity-70">Elite Output.</span>
           </h2>
 
-          <p className="mt-12 text-xl md:text-2xl text-secondary-label/65 max-w-3xl font-light italic leading-relaxed">
+          <p className="mt-8 max-w-3xl text-lg font-light italic leading-relaxed text-secondary-label/65 sm:mt-10 sm:text-xl md:mt-12 md:text-2xl">
             Meticulously engineered for those who refuse to compromise. 
             Pure science, encased in glass.
           </p>
         </div>
 
         {/* The "Floating Lens" Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:perspective-2000">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-4 lg:perspective-2000">
           {benefits.map((benefit, i) => (
             <BenefitPane 
               key={benefit.title} 
@@ -104,7 +104,7 @@ function BenefitPane({
         variant="default"
         intensity="subtle"
         interactive
-        className="h-full min-h-[340px] p-10 flex flex-col justify-between overflow-hidden squircle shadow-2xl"
+        className="flex h-full min-h-[220px] flex-col justify-between overflow-hidden p-5 squircle shadow-2xl sm:min-h-[280px] sm:p-8 lg:min-h-[340px] lg:p-10"
       >
         {/* The Refractive Layer */}
         <div
@@ -117,24 +117,28 @@ function BenefitPane({
 
         <div className="relative z-10">
           {/* Embossed Icon Container */}
-          <div className="w-16 h-16 bg-white/[0.03] backdrop-blur-xl rounded-2xl flex items-center justify-center mb-12 text-accent shadow-inner group-hover:scale-110 transition-all duration-700 group-hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.2)]">
-            <Icon size={28} strokeWidth={1} className="group-hover:rotate-12 transition-transform duration-700" />
+          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.03] text-accent shadow-inner backdrop-blur-xl transition-all duration-700 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(var(--accent-rgb),0.2)] sm:mb-8 sm:h-14 sm:w-14 lg:mb-12 lg:h-16 lg:w-16">
+            <Icon
+              size={20}
+              strokeWidth={1}
+              className="transition-transform duration-700 group-hover:rotate-12 sm:h-6 sm:w-6 lg:h-7 lg:w-7"
+            />
           </div>
           
-          <div className="space-y-4">
-            <h3 className="text-3xl font-headline font-bold text-label tracking-tight leading-none group-hover:tracking-tighter transition-all duration-700">
+          <div className="space-y-2 sm:space-y-3 lg:space-y-4">
+            <h3 className="text-lg font-headline font-bold leading-tight text-label tracking-tight transition-all duration-700 group-hover:tracking-tighter sm:text-2xl lg:text-3xl lg:leading-none">
               {benefit.title}
             </h3>
-            <p className="text-label/30 text-lg leading-snug font-light italic group-hover:text-label/60 transition-colors duration-500">
+            <p className="text-sm leading-snug font-light italic text-label/40 transition-colors duration-500 group-hover:text-label/60 sm:text-base lg:text-lg">
               {benefit.description}
             </p>
           </div>
         </div>
 
         {/* The "Result" Trigger */}
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="h-[1px] w-0 bg-accent/40 transition-all duration-1000 ease-out group-hover:w-16" />
-          <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-accent/0 group-hover:text-accent/100 transition-all duration-700 translate-x-4 group-hover:translate-x-0">
+        <div className="relative z-10 flex items-center gap-2 sm:gap-3 lg:gap-4">
+          <div className="h-[1px] w-0 bg-accent/40 transition-all duration-1000 ease-out group-hover:w-10 sm:group-hover:w-12 lg:group-hover:w-16" />
+          <span className="translate-x-2 text-[8px] font-bold uppercase tracking-[0.28em] text-accent/0 transition-all duration-700 group-hover:translate-x-0 group-hover:text-accent/100 sm:text-[9px] sm:tracking-[0.34em] lg:translate-x-4 lg:tracking-[0.4em]">
             Validated
           </span>
         </div>

@@ -62,7 +62,7 @@ export function ProblemSection() {
         onMouseLeave={enableTilt ? handleMouseLeave : undefined}
         ref={containerRef}
       >
-        <div className="flex flex-col items-center text-center mb-24">
+        <div className="mb-16 flex flex-col items-center text-center sm:mb-20 md:mb-24">
           <HeroEyebrow position="center" animated className="bg-label text-system-background">
             <AlertTriangle className="w-3.5 h-3.5 mr-3" />
             Industry Standard
@@ -81,7 +81,7 @@ export function ProblemSection() {
               ? { rotateX, rotateY, transformStyle: "preserve-3d" }
               : undefined
           }
-          className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-5xl mx-auto"
+          className="mx-auto grid w-full max-w-5xl grid-cols-2 gap-3 sm:gap-5 md:gap-8"
         >
           {PROBLEMS.map((problem, i) => (
             <motion.div
@@ -93,17 +93,17 @@ export function ProblemSection() {
                 variant="default"
                 intensity="subtle"
                 interactive={true}
-                className="relative min-h-[220px] p-12 flex flex-col items-start justify-between overflow-hidden squircle shadow"
+                className="relative flex min-h-[160px] flex-col items-start justify-between overflow-hidden p-5 squircle shadow sm:min-h-[190px] sm:p-8 lg:min-h-[220px] lg:p-12"
               >
                 {/* Internal Refraction Light */}
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-accent/10 transition-colors" />
                 
-                <div className="text-[10px] font-bold text-accent tracking-[0.3em] opacity-40">
+                <div className="text-[8px] font-bold tracking-[0.24em] text-accent opacity-40 sm:text-[9px] sm:tracking-[0.28em] lg:text-[10px] lg:tracking-[0.3em]">
                   ISSUE_0{i + 1}
                 </div>
 
                 <div>
-                  <h3 className="text-3xl font-headline font-bold text-label tracking-tight group-hover:text-accent transition-all duration-500">
+                  <h3 className="text-lg font-headline font-bold tracking-tight text-label transition-all duration-500 group-hover:text-accent sm:text-2xl lg:text-3xl">
                     {problem}
                   </h3>
                   <div className="h-[1px] w-full bg-gradient-to-r from-accent/40 to-transparent mt-4 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
@@ -114,7 +114,7 @@ export function ProblemSection() {
         </motion.div>
 
         {/* The CTA Bridge (Refined for Immersion) */}
-        <div className="mt-40 relative flex flex-col justify-center items-center">
+        <div className="relative mt-24 flex flex-col items-center justify-center sm:mt-32 lg:mt-40">
           <motion.div 
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -124,10 +124,10 @@ export function ProblemSection() {
              <LiquidGlassCard
                 variant="default"
                 intensity="subtle"
-                className="p-24 md:p-32 flex flex-col items-center gap-4 justify-center squircle overflow-hidden text-center"
+                className="flex flex-col items-center justify-center gap-4 overflow-hidden p-10 text-center squircle sm:p-16 md:p-32"
               >  
-                <span className="text-[10px] font-bold uppercase tracking-[0.8em] text-accent/60 mb-12">House of prax</span>
-                <h3 className="text-5xl md:text-8xl font-headline font-bold tracking-tighter leading-[0.9] text-center mb-10">
+                <span className="mb-6 text-[9px] font-bold uppercase tracking-[0.45em] text-accent/60 sm:mb-8 sm:text-[10px] sm:tracking-[0.6em] md:mb-12 md:tracking-[0.8em]">House of prax</span>
+                <h3 className="mb-4 text-center text-3xl font-headline font-bold tracking-tighter leading-[0.95] sm:mb-6 sm:text-5xl md:mb-10 md:text-8xl md:leading-[0.9]">
                   Your body deserves <br /> better fuel.
                 </h3>
              </LiquidGlassCard>

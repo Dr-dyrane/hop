@@ -35,7 +35,7 @@ The goal is that product, engineering, operations, and database rules are all re
 
 ## Design Reference
 
-- [Apple HIG Integration Notes](C:/Users/Dyrane/Documents/GitHub/hop/docs/ui/apple_hig_integration.md)
+- [Smoothness and Experience Guide](C:/Users/Dyrane/Documents/GitHub/hop/docs/ui/hop-analysis-and-improvements.md)
 
 ## Historical Feature Notes
 

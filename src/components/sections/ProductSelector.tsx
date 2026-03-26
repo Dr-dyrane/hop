@@ -155,14 +155,18 @@ export function ProductSelector({
               layoutId="price-badge"
               className="absolute -bottom-10 left-1/2 -translate-x-1/2 z-30 w-full max-w-xs"
             >
-              <LiquidGlassCard variant="default" intensity="subtle" className="p-4 flex items-center justify-between gap-4 -white/10 squircle">
-                <div className="pl-4">
+              <LiquidGlassCard
+                variant="default"
+                intensity="subtle"
+                className="flex items-center justify-between gap-3 p-3 sm:gap-4 sm:p-4 -white/10 squircle"
+              >
+                <div className="min-w-0 pl-2 sm:pl-4">
                   <div className="text-[9px] font-bold uppercase tracking-widest text-accent">Investment</div>
                   <div className="text-xl font-bold text-label">{formatNgn(pricing.currentNgn)}</div>
                 </div>
                 <Button 
                   onClick={() => addItem(safeSelectedProduct)}
-                  className="rounded-2xl h-12 px-6 font-bold uppercase text-[10px] tracking-widest"
+                  className="h-11 min-w-0 whitespace-nowrap rounded-2xl px-4 text-[9px] font-bold uppercase tracking-[0.18em] sm:h-12 sm:px-6 sm:text-[10px] sm:tracking-widest"
                 >
                   Deploy Fuel
                 </Button>
@@ -175,7 +179,7 @@ export function ProductSelector({
             {/* Category Toggle */}
             <div className="flex flex-col gap-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-label/70 ml-2">Category</span>
-              <div className="flex flex-col gap-1 p-1 bg-label/[0.03] rounded-[24px] -white/5">
+              <div className="grid grid-cols-2 gap-1 rounded-[24px] bg-label/[0.03] p-1 -white/5">
                 {visibleCategories.map((cat) => (
                   <button
                     key={cat.id}
@@ -185,7 +189,7 @@ export function ProductSelector({
                       if (first) setSelectedProduct(first);
                     }}
                     className={cn(
-                      "px-6 py-3 rounded-[20px] text-[10px] font-bold uppercase tracking-widest transition-all",
+                      "min-w-0 whitespace-nowrap rounded-[20px] px-3 py-3 text-[9px] font-bold uppercase tracking-[0.16em] transition-all sm:px-4 sm:text-[10px] sm:tracking-[0.18em]",
                       activeCategory === cat.id ? "bg-label text-system-background shadow-xl" : "text-label/75 hover:text-label"
                     )}
                   >

@@ -26,7 +26,7 @@ export function SocialProof() {
       </div>
 
       <div className="mx-auto w-full max-w-7xl relative z-10">
-        <div className="mb-24 flex flex-col items-center text-center">
+        <div className="mb-16 flex flex-col items-center text-center sm:mb-20 lg:mb-24">
           <HeroEyebrow position="center" animated className="bg-label text-system-background">
             <Trophy className="w-3.5 h-3.5 mr-3" />
             Social Validation
@@ -39,7 +39,7 @@ export function SocialProof() {
         </div>
 
         {/* The Glass Stat Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-6">
           {stats.map((stat, i) => {
             const Icon = stat.icon;
             return (
@@ -49,23 +49,31 @@ export function SocialProof() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.15, duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 viewport={{ once: true }}
+                className={i === stats.length - 1 ? "col-span-2 flex justify-center md:col-span-1 md:block" : undefined}
               >
                 <LiquidGlassCard
                   variant="default"
                   intensity="subtle"
                   interactive
-                  className="h-full min-h-[300px] p-10 flex flex-col items-center justify-center text-center squircle group overflow-hidden"
+                  className={`group flex h-full min-h-[220px] flex-col items-center justify-center overflow-hidden p-5 text-center squircle ${
+                    i === stats.length - 1
+                      ? "w-full max-w-[15rem] sm:max-w-[17rem] md:max-w-none"
+                      : ""
+                  } sm:min-h-[250px] sm:p-6 md:min-h-[300px] md:p-10`}
                 >
                   {/* Subtle Background Icon Scanline */}
-                  <Icon size={120} className="absolute -right-4 -bottom-4 text-label/[0.02] -rotate-12 group-hover:rotate-0 transition-transform duration-1000" />
+                  <Icon
+                    size={96}
+                    className="absolute -bottom-4 -right-4 -rotate-12 text-label/[0.02] transition-transform duration-1000 group-hover:rotate-0 sm:h-[108px] sm:w-[108px] md:h-[120px] md:w-[120px]"
+                  />
                   
-                  <div className="relative z-10 space-y-6">
-                    <div className="text-6xl md:text-7xl font-headline font-bold text-label tracking-tighter italic">
+                  <div className="relative z-10 space-y-4 sm:space-y-5 md:space-y-6">
+                    <div className="text-4xl font-headline font-bold italic tracking-tighter text-label sm:text-5xl md:text-7xl">
                       {stat.value}
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="text-[11px] font-bold uppercase tracking-[0.4em] text-accent">
+                      <div className="text-[9px] font-bold uppercase tracking-[0.24em] text-accent sm:text-[10px] sm:tracking-[0.3em] md:text-[11px] md:tracking-[0.4em]">
                         {stat.label}
                       </div>
                       <div className="text-label/30 text-sm font-light italic">
@@ -74,7 +82,7 @@ export function SocialProof() {
                     </div>
 
                     {/* Progress Indicator (Cinematic Detail) */}
-                    <div className="flex items-center justify-center gap-1.5 pt-4">
+                    <div className="flex items-center justify-center gap-1.5 pt-2 sm:pt-3 md:pt-4">
                       {[...Array(5)].map((_, i) => (
                         <motion.div 
                           key={i}
@@ -93,15 +101,15 @@ export function SocialProof() {
         </div>
 
         {/* The Trusted By Marquee/Badge */}
-        <div className="mt-24 text-center">
+        <div className="mt-16 text-center sm:mt-20 md:mt-24">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="inline-flex items-center gap-6 px-8 py-4 rounded-full bg-white/[0.02] backdrop-blur-xl "
+            className="inline-flex flex-wrap items-center justify-center gap-3 rounded-full bg-white/[0.02] px-5 py-3 text-center backdrop-blur-xl sm:gap-4 sm:px-6 md:gap-6 md:px-8 md:py-4"
           >
-            <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-label/70">Validated By</div>
-            <div className="h-4 w-[1px] bg-white/10" />
+            <div className="text-[9px] font-bold uppercase tracking-[0.26em] text-label/70 sm:text-[10px] sm:tracking-[0.32em] md:tracking-[0.4em]">Validated By</div>
+            <div className="hidden h-4 w-[1px] bg-white/10 sm:block" />
             <div className="text-[11px] font-semibold text-label/60 italic tracking-wide">
               {socialProof.trustedBy}
             </div>

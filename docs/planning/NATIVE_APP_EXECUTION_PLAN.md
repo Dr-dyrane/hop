@@ -10,7 +10,7 @@ Read this with:
 - `docs/planning/RENDEZVOUS_STATUS.md`
 - `docs/planning/END_TO_END_FLOWS.md`
 - `docs/planning/UI_IMPLEMENTATION_DOCTRINE.md`
-- `docs/ui/apple_hig_integration.md`
+- `docs/ui/hop-analysis-and-improvements.md`
 
 Dont make any changes to market page - alreaady perfect.
 

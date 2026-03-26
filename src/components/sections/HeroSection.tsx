@@ -189,12 +189,12 @@ export function HeroSection() {
             initial="hidden"
             animate="visible"
             variants={revealVariants}
-            className="mt-12 flex flex-col sm:flex-row gap-5 items-center justify-center"
+            className="mt-12 flex w-full max-w-[26rem] flex-nowrap items-center justify-center gap-2 sm:max-w-none sm:gap-5"
           >
             <Button
               size="lg"
               variant="primary"
-              className="px-12 w-full sm:w-auto sm:min-w-[260px] h-[64px] rounded-full shadow-float text-sm font-bold tracking-widest uppercase transition-all duration-500 hover:scale-[1.02]"
+              className="h-14 min-w-0 flex-1 whitespace-nowrap rounded-full px-4 text-[11px] font-bold uppercase tracking-[0.18em] shadow-float transition-all duration-500 hover:scale-[1.02] sm:h-[64px] sm:flex-none sm:px-12 sm:text-sm sm:tracking-widest sm:min-w-[260px]"
               whileTap={{ scale: 0.98 }}
               onClick={() => {
                 const el = document.getElementById("shop");
@@ -206,7 +206,7 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="secondary"
-              className="px-12 w-full sm:w-auto sm:min-w-[260px] h-[64px] rounded-full liquid-glass !border-none text-label font-bold shadow-soft overflow-hidden transition-all duration-500 hover:bg-white/10 dark:hover:bg-white/5 active:scale-95"
+              className="liquid-glass h-14 min-w-0 flex-1 whitespace-nowrap rounded-full px-4 text-[11px] font-bold text-label shadow-soft overflow-hidden transition-all duration-500 hover:bg-white/10 active:scale-95 dark:hover:bg-white/5 sm:h-[64px] sm:flex-none sm:px-12 sm:text-sm sm:min-w-[260px]"
               onClick={() => {
                 const el = document.getElementById("ingredients");
                 if (el) el.scrollIntoView({ behavior: "smooth" });
