@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { formatNgn } from "@/lib/commerce";
 import { cn } from "@/lib/utils";
+import { RouteFeedbackLink } from "@/components/ui/RouteFeedbackLink";
 import styles from "./OrderListScene.module.css";
 
 export type OrderListBannerTone = "idle" | "active" | "action";
@@ -166,7 +166,7 @@ function OrderEntryBody({
         <span className={styles.footerState}>
           {entry.footnote} - {formatDate(entry.placedAt)}
         </span>
-        <Link
+        <RouteFeedbackLink
           href={entry.href}
           className={cn(
             styles.actionButton,
@@ -176,7 +176,7 @@ function OrderEntryBody({
           )}
         >
           {entry.actionLabel}
-        </Link>
+        </RouteFeedbackLink>
       </div>
     </div>
   );

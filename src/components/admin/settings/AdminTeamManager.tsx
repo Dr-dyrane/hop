@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Mail, Shield, UserRound } from "lucide-react";
+import { useOverlayPresence } from "@/components/providers/UIProvider";
 import type { AdminUserSummary } from "@/lib/db/types";
 import {
   createAdminUserAction,
@@ -31,6 +32,7 @@ export function AdminTeamManager({ users }: { users: AdminUserSummary[] }) {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const normalizedQuery = query.trim().toLowerCase();
   const scope = parseTeamScope(searchParams.get("scope")) ?? "all";
+  useOverlayPresence("admin-team-manager", sheetMode !== null);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {

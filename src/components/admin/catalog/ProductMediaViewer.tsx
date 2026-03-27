@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
@@ -206,70 +207,81 @@ export function ProductMediaViewer({
     return null;
   }
 
-  return (
-    <div
-      className="z-layer-modal fixed inset-0 flex items-center justify-center bg-[color:var(--surface)]/54 px-4 py-6 backdrop-blur-2xl"
-      onClick={onClose}
-    >
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(
+    <>
       <div
-        role="dialog"
-        aria-modal="true"
-        className="glass-morphism max-h-[90vh] w-full max-w-[min(980px,100%)] overflow-y-auto rounded-[36px] bg-[color:var(--surface)]/84 p-4 shadow-[0_32px_80px_rgba(15,23,42,0.16)] md:p-5"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
-              {getMediaLabel(item.mediaType)}
-            </p>
-            <h2 className="mt-2 truncate text-lg font-semibold tracking-tight text-label">
-              {resolveFileName(item)}
-            </h2>
-            <p className="mt-1 text-sm text-secondary-label">
-              {item.altText?.trim() || "Preview"}
-            </p>
+        className="z-layer-modal-backdrop fixed inset-0 bg-[color:var(--surface)]/54 backdrop-blur-2xl"
+        onClick={onClose}
+      />
+
+      <div className="z-layer-modal fixed inset-0 flex items-end justify-center px-2 pb-2 pt-8 sm:items-center sm:px-4 sm:py-6">
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="glass-morphism max-h-[calc(100svh-0.5rem)] w-full max-w-[min(980px,100%)] overflow-y-auto rounded-[34px] bg-[color:var(--surface)]/84 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_32px_80px_rgba(15,23,42,0.16)] sm:max-h-[90vh] sm:rounded-[36px] sm:p-5"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-system-fill/90 sm:hidden" />
+
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary-label">
+                {getMediaLabel(item.mediaType)}
+              </p>
+              <h2 className="mt-2 truncate text-lg font-semibold tracking-tight text-label">
+                {resolveFileName(item)}
+              </h2>
+              <p className="mt-1 text-sm text-secondary-label">
+                {item.altText?.trim() || "Preview"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-system-fill/56 text-secondary-label transition-colors duration-200 hover:text-label"
+              aria-label="Close preview"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-system-fill/56 text-secondary-label transition-colors duration-200 hover:text-label"
-            aria-label="Close preview"
-          >
-            <X size={18} />
-          </button>
-        </div>
 
-        <div className="mt-4 overflow-hidden rounded-[30px] bg-system-fill/28 p-3 md:p-4">
-          {item.mediaType === "image" ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={item.publicUrl}
-              alt={item.altText || ""}
-              className="h-[min(72vh,680px)] w-full rounded-[24px] object-contain"
-            />
-          ) : item.mediaType === "video" ? (
-            <video
-              src={item.publicUrl}
-              controls
-              playsInline
-              className="h-[min(72vh,680px)] w-full rounded-[24px] object-contain"
-            />
-          ) : (
-            <ModelViewport
-              url={item.publicUrl}
-              interactive
-              className="h-[min(72vh,680px)] w-full rounded-[24px]"
-            />
-          )}
-        </div>
+          <div className="mt-4 overflow-hidden rounded-[30px] bg-system-fill/28 p-3 md:p-4">
+            {item.mediaType === "image" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={item.publicUrl}
+                alt={item.altText || ""}
+                className="h-[min(72vh,680px)] w-full rounded-[24px] object-contain"
+              />
+            ) : item.mediaType === "video" ? (
+              <video
+                src={item.publicUrl}
+                controls
+                playsInline
+                className="h-[min(72vh,680px)] w-full rounded-[24px] object-contain"
+              />
+            ) : (
+              <ModelViewport
+                url={item.publicUrl}
+                interactive
+                className="h-[min(72vh,680px)] w-full rounded-[24px]"
+              />
+            )}
+          </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <MetaCell label="Type" value={getMediaLabel(item.mediaType)} />
-          <MetaCell label="Order" value={`${item.sortOrder}`} />
-          <MetaCell label="State" value={item.isPrimary ? "Primary" : "Library"} />
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <MetaCell label="Type" value={getMediaLabel(item.mediaType)} />
+            <MetaCell label="Order" value={`${item.sortOrder}`} />
+            <MetaCell label="State" value={item.isPrimary ? "Primary" : "Library"} />
+          </div>
         </div>
       </div>
-    </div>
+    </>,
+    document.body
   );
 }
 

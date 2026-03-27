@@ -1,11 +1,12 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { useOverlayPresence } from "@/components/providers/UIProvider";
+import { RouteFeedbackLink } from "@/components/ui/RouteFeedbackLink";
 import type {
   AdminCatalogCategoryDetail,
   AdminCatalogIngredient,
@@ -306,25 +307,31 @@ function TaxonomyModal({
     return null;
   }
 
+  if (typeof document === "undefined") {
+    return null;
+  }
+
   const deleteKey = `${entry.taxonomyType}:${entry.taxonomyId}:delete`;
   const deleteBlocked = isDeleteBlocked(entry);
   const previewUrl = getPreviewUrl(entry.imagePath);
 
-  return (
+  return createPortal(
     <>
       <div
         className="z-layer-modal-backdrop fixed inset-0 bg-black/40 backdrop-blur-md"
         onClick={onClose}
       />
 
-      <div className="z-layer-modal fixed inset-0 flex items-center justify-center px-4 py-6">
+      <div className="z-layer-modal fixed inset-0 flex items-end justify-center px-2 pb-2 pt-8 sm:items-center sm:px-4 sm:py-6">
         <div
           role="dialog"
           aria-modal="true"
           aria-label={entry.name}
-          className="glass-morphism max-h-[92vh] w-full max-w-[min(980px,100%)] overflow-y-auto rounded-[40px] bg-[color:var(--surface)]/92 p-5 shadow-[0_32px_120px_rgba(0,0,0,0.22)]"
+          className="glass-morphism max-h-[calc(100svh-0.5rem)] w-full max-w-[min(980px,100%)] overflow-y-auto rounded-[34px] bg-[color:var(--surface)]/92 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0_32px_120px_rgba(0,0,0,0.22)] sm:max-h-[92vh] sm:rounded-[40px] sm:p-5"
           onClick={(event) => event.stopPropagation()}
         >
+          <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-system-fill/90 sm:hidden" />
+
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -407,7 +414,7 @@ function TaxonomyModal({
 
               <section className="rounded-[32px] bg-[color:var(--surface)]/86 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <Link
+                  <RouteFeedbackLink
                     href={`/admin/catalog/taxonomy/${entry.taxonomyType}/${entry.taxonomyId}`}
                     className="button-primary min-h-[44px] justify-center text-[11px] font-semibold uppercase tracking-[0.16em]"
                   >
@@ -415,7 +422,7 @@ function TaxonomyModal({
                       <Icon name="edit" size={15} />
                       Edit
                     </span>
-                  </Link>
+                  </RouteFeedbackLink>
                   <button
                     type="button"
                     onClick={() => onDelete(entry)}
@@ -441,7 +448,8 @@ function TaxonomyModal({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
 

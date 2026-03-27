@@ -317,7 +317,7 @@
 .sheetBackdrop {
   position: fixed;
   inset: 0;
-  z-index: var(--z-layer-modal-backdrop, 45);
+  z-index: var(--z-modal-backdrop, 90);
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -326,7 +326,7 @@
 .sheetWrap {
   position: fixed;
   inset: 0;
-  z-index: var(--z-layer-modal, 50);
+  z-index: var(--z-modal, 100);
   display: flex;
   align-items: flex-end;
   justify-content: center;

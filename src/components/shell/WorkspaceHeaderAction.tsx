@@ -2,11 +2,13 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import {
+  getRouteTransitionDirection,
   getShellMatchedRoute,
   type ShellFabAction,
   type ShellHeaderRoute,
 } from "@/lib/app-shell";
 import { useFeedback } from "@/components/providers/FeedbackProvider";
+import { useUI } from "@/components/providers/UIProvider";
 
 function triggerHeaderAction(action: ShellFabAction, router: ReturnType<typeof useRouter>) {
   if (action.kind === "cart") {
@@ -40,6 +42,7 @@ export function WorkspaceHeaderAction({
   const pathname = usePathname();
   const router = useRouter();
   const feedback = useFeedback();
+  const { startRouteNavigation } = useUI();
   const action = getShellMatchedRoute(pathname, routes)?.headerAction ?? null;
 
   if (!action) {
@@ -51,6 +54,12 @@ export function WorkspaceHeaderAction({
       type="button"
       onClick={() => {
         feedback.selection();
+        if (action.href) {
+          startRouteNavigation(
+            action.href,
+            getRouteTransitionDirection(pathname, action.href)
+          );
+        }
         triggerHeaderAction(action, router);
       }}
       className="hidden min-h-[38px] items-center rounded-full bg-system-fill/64 px-4 text-[10px] font-semibold uppercase tracking-headline text-secondary-label transition-colors duration-200 hover:bg-system-fill md:inline-flex"

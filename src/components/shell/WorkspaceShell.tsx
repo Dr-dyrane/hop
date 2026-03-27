@@ -5,6 +5,7 @@ import { Logo } from "@/components/ui/Logo";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { WorkspaceHeaderTitle } from "@/components/shell/WorkspaceHeaderTitle";
 import { WorkspaceHeaderAction } from "@/components/shell/WorkspaceHeaderAction";
+import { WorkspaceContentFrame } from "@/components/shell/WorkspaceContentFrame";
 import { WorkspaceNav } from "@/components/shell/WorkspaceNav";
 import { WorkspaceCartTrigger } from "@/components/shell/WorkspaceCartTrigger";
 import { WorkspaceNotificationSheet } from "@/components/shell/WorkspaceNotificationSheet";
@@ -169,7 +170,7 @@ export function WorkspaceShell({
           </header>
 
           <main className="relative z-[1] w-full px-2.5 pb-32 pt-2.5 md:px-6 md:pb-12 md:pt-8">
-            {children}
+            <WorkspaceContentFrame>{children}</WorkspaceContentFrame>
           </main>
         </div>
       </div>

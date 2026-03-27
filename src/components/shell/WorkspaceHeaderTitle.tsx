@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -9,6 +8,8 @@ import {
   type ShellNavItem,
 } from "@/lib/app-shell";
 import { useFeedback } from "@/components/providers/FeedbackProvider";
+import { useUI } from "@/components/providers/UIProvider";
+import { RouteFeedbackLink } from "@/components/ui/RouteFeedbackLink";
 import { cn } from "@/lib/utils";
 
 export function WorkspaceHeaderTitle({
@@ -25,6 +26,7 @@ export function WorkspaceHeaderTitle({
   const pathname = usePathname();
   const router = useRouter();
   const feedback = useFeedback();
+  const { startRouteNavigation } = useUI();
   const context = getShellHeaderContext({
     pathname,
     navItems,
@@ -43,15 +45,16 @@ export function WorkspaceHeaderTitle({
           {context.breadcrumbs.map((breadcrumb, index) => (
             <div key={breadcrumb.href} className="flex items-center gap-1 shrink-0">
               {index > 0 ? <ChevronRight size={12} className="text-tertiary-label" /> : null}
-              <Link
+              <RouteFeedbackLink
                 href={breadcrumb.href}
+                navigationDirection="back"
                 className={cn(
                   "rounded-full px-1.5 py-0.5 transition-colors duration-200",
                   "hover:bg-system-fill/60 hover:text-label"
                 )}
               >
                 {breadcrumb.label}
-              </Link>
+              </RouteFeedbackLink>
             </div>
           ))}
         </nav>
@@ -67,6 +70,7 @@ export function WorkspaceHeaderTitle({
             type="button"
             onClick={() => {
               feedback.selection();
+              startRouteNavigation(context.breadcrumbs[0]?.href ?? null, "back");
               if (window.history.length > 1) {
                 router.back();
                 return;

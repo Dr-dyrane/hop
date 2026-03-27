@@ -52,7 +52,7 @@ export type ShellHeaderContext = {
   activeItem: ShellNavItem | null;
 };
 
-function normalizePathname(pathname: string) {
+export function normalizePathname(pathname: string) {
   if (pathname.length > 1 && pathname.endsWith("/")) {
     return pathname.slice(0, -1);
   }
@@ -60,7 +60,7 @@ function normalizePathname(pathname: string) {
   return pathname;
 }
 
-function splitPathname(pathname: string) {
+export function splitPathname(pathname: string) {
   return normalizePathname(pathname)
     .split("/")
     .filter(Boolean);
@@ -95,6 +95,25 @@ export function isActiveShellPath(currentPath: string, item: ShellNavItem) {
   }
 
   return pathname.startsWith(`${href}/`);
+}
+
+export function getRouteTransitionDirection(fromPath: string, toPath: string) {
+  const from = normalizePathname(fromPath);
+  const to = normalizePathname(toPath);
+
+  if (from === to) {
+    return "none" as const;
+  }
+
+  if (to.startsWith(`${from}/`)) {
+    return "forward" as const;
+  }
+
+  if (from.startsWith(`${to}/`)) {
+    return "back" as const;
+  }
+
+  return "lateral" as const;
 }
 
 function matchShellRoutePattern(pathname: string, pattern: string) {

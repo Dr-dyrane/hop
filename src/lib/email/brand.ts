@@ -36,8 +36,8 @@ export function buildEmailThemeStyles() {
       }
       .hop-email-legal {
         margin: 24px auto 0;
-        font-size: 12px;
-        line-height: 1.5;
+        font-size: 10px;
+        line-height: 1.2;
         color: #6b7280;
         font-family: ${EMAIL_FONT_STACK};
       }
@@ -178,9 +178,6 @@ export function buildEditorialEmail(input: {
           }
           <p class="hop-email-legal" style="margin-top:24px;">
             Need help? <a href="${supportUrl}">Contact support</a> or visit <a href="${helpUrl}">Help Center</a>.
-          </p>
-          <p class="hop-email-legal" style="margin-top:8px;">
-            <a href="${termsUrl}">Terms of Service</a> | <a href="${privacyUrl}">Privacy Policy</a>
           </p>
           <p style="font-size:11px;color:#9ca3af;margin:40px 0 0;font-family:${EMAIL_FONT_STACK};">
             &copy; ${new Date().getFullYear()} House of Prax

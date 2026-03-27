@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { MapPinHouse, Phone, UserRoundCheck } from "lucide-react";
+import { useOverlayPresence } from "@/components/providers/UIProvider";
 import type { AdminCustomerAddressRow, AdminCustomerDetail } from "@/lib/db/types";
 import {
   deleteAdminCustomerAddressAction,
@@ -62,6 +63,9 @@ export function AdminCustomerCRM({ customer }: { customer: AdminCustomerDetail }
   const [supportOpen, setSupportOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [addressDraft, setAddressDraft] = useState<AddressDraft | null>(null);
+  const isSheetOpen = supportOpen || profileOpen || addressDraft !== null;
+
+  useOverlayPresence("admin-customer-crm", isSheetOpen);
 
   return (
     <div className={styles.stack}>

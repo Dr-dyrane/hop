@@ -10,6 +10,8 @@ import React, {
   useState,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
+import { getRouteTransitionDirection, normalizePathname } from "@/lib/app-shell";
 
 interface LiquidGlassState {
   mousePosition: { x: number; y: number };
@@ -18,6 +20,7 @@ interface LiquidGlassState {
 }
 
 export type PerformanceMode = "premium" | "safe" | "flat";
+export type NavigationDirection = "forward" | "back" | "lateral" | "none";
 
 interface NavUIContextType {
   isMobileMenuOpen: boolean;
@@ -27,6 +30,12 @@ interface NavUIContextType {
   hasActiveOverlay: boolean;
   setOverlayActive: (id: string, active: boolean) => void;
   performanceMode: PerformanceMode;
+  navigationDirection: NavigationDirection;
+  pendingPathname: string | null;
+  startRouteNavigation: (
+    nextPathname: string | null,
+    direction?: NavigationDirection
+  ) => void;
 }
 
 interface LiquidGlassContextType {
@@ -44,12 +53,17 @@ const defaultLiquidGlassState: LiquidGlassState = {
 };
 
 export function UIProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrollNavCollapsed, setIsScrollNavCollapsed] = useState(true);
   const [activeOverlayIds, setActiveOverlayIds] = useState<string[]>([]);
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>("premium");
+  const [navigationDirection, setNavigationDirection] =
+    useState<NavigationDirection>("none");
+  const [pendingPathname, setPendingPathname] = useState<string | null>(null);
   const [liquidGlassState, setLiquidGlassState] = useState(defaultLiquidGlassState);
   const stateRef = useRef(defaultLiquidGlassState);
+  const previousPathnameRef = useRef(normalizePathname(pathname));
 
   useEffect(() => {
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -177,6 +191,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const startRouteNavigation = useCallback(
+    (nextPathname: string | null, direction: NavigationDirection = "forward") => {
+      setNavigationDirection(direction);
+      setPendingPathname(nextPathname ? normalizePathname(nextPathname) : null);
+    },
+    []
+  );
+
   const hasActiveOverlay = activeOverlayIds.length > 0;
 
   useEffect(() => {
@@ -195,6 +217,37 @@ export function UIProvider({ children }: { children: ReactNode }) {
     };
   }, [performanceMode]);
 
+  useEffect(() => {
+    const normalizedPathname = normalizePathname(pathname);
+    const previousPathname = previousPathnameRef.current;
+
+    if (normalizedPathname === previousPathname) {
+      return;
+    }
+
+    setNavigationDirection((current) =>
+      current === "none"
+        ? getRouteTransitionDirection(previousPathname, normalizedPathname)
+        : current
+    );
+    setPendingPathname(null);
+    previousPathnameRef.current = normalizedPathname;
+  }, [pathname]);
+
+  useEffect(() => {
+    if (navigationDirection === "none") {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setNavigationDirection("none");
+    }, 420);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [navigationDirection]);
+
   const navValue = useMemo(
     () => ({
       isMobileMenuOpen,
@@ -204,13 +257,19 @@ export function UIProvider({ children }: { children: ReactNode }) {
       hasActiveOverlay,
       setOverlayActive,
       performanceMode,
+      navigationDirection,
+      pendingPathname,
+      startRouteNavigation,
     }),
     [
       hasActiveOverlay,
       isMobileMenuOpen,
       isScrollNavCollapsed,
+      navigationDirection,
+      pendingPathname,
       performanceMode,
       setOverlayActive,
+      startRouteNavigation,
     ]
   );
 
